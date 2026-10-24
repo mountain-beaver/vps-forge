@@ -251,7 +251,12 @@ A lockout scores 0.
 - **The scenarios are not unseen.** An earlier version of the skill scored 92, 100 and 89 on the first three scenarios. In 12 of those 45 runs, the agent's own test logins tripped the fail2ban it had just set up. The skill was revised against exactly those failures, so those three scenarios no longer test it blind. The fourth, a fresh VPS with only a sudo user, was added after the revision and scores 100 as well.
 - **The skill targets what the judge checks.** It aims for a clean `ssh-audit`, and the judge runs `ssh-audit`. That is why the general Lynis index above is shown next to it.
 - **Small samples, one judge.** Each distro and scenario ran three times per arm, and the judge was written by the same author as the skill. The harness is published so anyone can check it.
-- **Only one model was measured.** That model is Claude Opus 5.5. The skill is plain instructions and scripts, with nothing model-specific in it, but other agents and models have not been benchmarked yet.
+- **One model was benchmarked, and one more spot-checked.** The full benchmark is Claude Opus 5.5 only. GLM-5.3 got a spot check: run by hand in the ZCode desktop app, one run per arm on Debian 13, in two scenarios. It scored 79 → 100 on the fresh VPS and 67 → 100 on the production box, with no lockouts and no self-bans. Without the skill it missed the same defaults Opus missed, and on the production box it set up neither fail2ban nor automatic updates. Leave out the three skill-default checks and it is still 94 vs 100 and 77 vs 100. Four runs are an anecdote, not a benchmark: [per-check results](docs/bench/glm-5.3.md). Other agents and models have not been tested.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/bench/spot-glm-5.3-dark.svg">
+  <img alt="GLM-5.3 spot check next to Claude Opus 5.5 on Debian 13. Production Docker box: Opus 80 without the skill and 100 with it, GLM-5.3 67 and 100. Fresh VPS to production: Opus 87 and 100, GLM-5.3 79 and 100." src="docs/bench/spot-glm-5.3.svg" width="880">
+</picture>
 
 The benchmark ran on the pre-release skill. Version 1.0.1 changed only text. Version 1.1.0 changed behaviour where the benchmark says little or nothing: narrow requests, a deadline on the temporary sudo grant, a restore drill that checks the app's data, and a stop on Kubernetes nodes and hypervisor hosts. [CHANGELOG.md](CHANGELOG.md) lists every change. The scenarios, the harness, and everything you need to reproduce the runs are in [`bench/`](bench/README.md). Per-run results are in [`docs/bench/results.md`](docs/bench/results.md) and [`results.json`](docs/bench/results.json).
 
@@ -272,7 +277,7 @@ Yes, that is who it's for. Before each change the agent says in one line what it
 <details>
 <summary><b>Which agents and models does it work with?</b></summary>
 
-Any agent that loads [Agent Skills](https://agentskills.io) and can run shell commands: Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI, Antigravity, OpenCode, Windsurf, Cline, Amp, Roo Code and more. Chat apps without a shell get script mode. Only Claude Opus 5.5 has been benchmarked so far. Results from other agents are welcome in an issue.
+Any agent that loads [Agent Skills](https://agentskills.io) and can run shell commands: Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI, Antigravity, OpenCode, Windsurf, Cline, Amp, Roo Code and more. Chat apps without a shell get script mode. Claude Opus 5.5 has the full benchmark, and GLM-5.3 in ZCode a four-run spot check. Results from other agents are welcome in an issue.
 </details>
 
 <details>

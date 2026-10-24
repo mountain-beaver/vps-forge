@@ -219,6 +219,48 @@ def agent_env(home):
     return env
 
 
+MANUAL = os.environ.get("BENCH_MANUAL")  # e.g. "zcode": a person drives a desktop agent instead of `claude -p`
+MANUAL_TIMEOUT = 4 * 3600
+
+
+def manual_agent(run_dir, cfg, arm, skill_dir):
+    """Hand the VM to an agent outside the pod, driven by a person (a desktop app such as ZCode).
+    SSH reaches the guest through socat relays that run inside the pod and bind to PUBLIC_IP, so the
+    guest sees the same admin address as in automated runs; outside the pod they are unix sockets in
+    the run directory. The workspace holds the key, an ssh_config, the prompt and, for the skill arm,
+    the skill under .zcode/skills (workspace scope, so parallel sessions don't share it). The run
+    ends when manual/DONE appears."""
+    socat = shutil.which("socat")
+    m, ws = run_dir / "manual", run_dir / "manual" / "workspace"
+    ssh = ws / "ssh"
+    ssh.mkdir(parents=True, exist_ok=True)
+    real_dir(ssh)
+    shutil.copy(KEY, ssh / "id_ed25519")
+    os.chmod(ssh / "id_ed25519", 0o600)
+    ports = sorted({22, int(cfg.get("ssh_port", 22))})
+    relays = [subprocess.Popen([socat, f"UNIX-LISTEN:{m}/ssh-{p}.sock,fork,mode=600,unlink-early",
+                                f"TCP:{PUBLIC_IP}:{p},bind={PUBLIC_IP}"]) for p in ports]
+    (ssh / "config").write_text(
+        f"Host vps\n  HostName {run_dir.name}\n  User {cfg['ssh_user']}\n  IdentityFile {ssh}/id_ed25519\n  IdentitiesOnly yes\n"
+        f"  UserKnownHostsFile {ssh}/known_hosts\n  StrictHostKeyChecking accept-new\n"
+        f"  ProxyCommand {socat} - UNIX-CONNECT:{m}/ssh-%p.sock\n")
+    if arm == "skill":
+        (ws / ".zcode" / "skills").mkdir(parents=True, exist_ok=True)
+        shutil.copytree(skill_dir / "skills" / "vps-forge", real_dir(ws / ".zcode" / "skills") / "vps-forge", dirs_exist_ok=True)
+    prompt = (BENCH / "scenarios" / cfg["id"] / "prompt.md").read_text().replace("{ssh_user}", cfg["ssh_user"])
+    prompt = prompt.replace("`ssh vps`", f"`ssh -F {ssh}/config vps`")
+    (ws / "PROMPT.md").write_text(prompt)
+    (m / "READY").write_text(f"{time.strftime('%FT%TZ', time.gmtime())}\n")
+    t0 = time.time()
+    try:
+        while not (m / "DONE").exists() and time.time() - t0 < MANUAL_TIMEOUT:
+            time.sleep(5)
+    finally:
+        for r in relays:
+            r.terminate()
+    return ("done" if (m / "DONE").exists() else "timeout"), time.time() - t0
+
+
 def jail(run_dir, home, skill_dir):
     """The agent's sandbox (bubblewrap, nested in the pod): the host's /home, /tmp and /run are empty
     tmpfs, and only this run's private home and work dir come back read-write (the skill and the
@@ -344,10 +386,14 @@ def run(distro, scen, arm, run_id, skill_dir):
         watcher.start()
         started = time.time()
         if arm != "noop":  # noop = judge the untouched server: the "before" picture
-            home = fake_home(run_dir, cfg)
-            rc, secs = run_agent(run_dir, home, cfg, arm, skill_dir)
-            meta.update({"agent_rc": rc, "agent_seconds": round(secs)})
-            meta["agent"] = agent_stats(run_dir / "agent.jsonl")
+            if MANUAL:
+                rc, secs = manual_agent(run_dir, cfg, arm, skill_dir)
+                meta.update({"agent_rc": rc, "agent_seconds": round(secs), "manual": MANUAL})
+            else:
+                home = fake_home(run_dir, cfg)
+                rc, secs = run_agent(run_dir, home, cfg, arm, skill_dir)
+                meta.update({"agent_rc": rc, "agent_seconds": round(secs)})
+                meta["agent"] = agent_stats(run_dir / "agent.jsonl")
             time.sleep(30)  # let restarts settle, like a user who reconnects a bit later
         try:
             meta["judge"] = judge.judge(vm, cfg, KEY, run_dir / "alerts.jsonl", started, published=watcher.added)

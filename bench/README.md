@@ -99,6 +99,9 @@ Routine tasks that Claude solves anyway were left out on purpose.
   numbers, which the README quotes for comparison, are judge v3 verdicts on the saved v2 disks
   (`report.py --tag v2 --rejudged`).
 - **v1** was thrown away: see "Separate source addresses" above.
+- **zc2** (24 Oct 2026, [`docs/bench/glm-5.3.md`](../docs/bench/glm-5.3.md)): a spot check of GLM-5.3 in the
+  ZCode desktop app, 2 scenarios × Debian 13 × 2 arms × 1 run, judge v3, the same skill as v3. See
+  "Manual runs" below.
 
 ## Running it
 
@@ -115,3 +118,25 @@ python3 bench/report.py --tag v2 --rejudged --out /tmp/v2  # report from the rej
 
 `--budget` stops launching new runs once your 7-day Claude usage has grown by that share. Results,
 VM disks and transcripts go to `~/.cache/vps-forge-bench/runs/`.
+
+## Manual runs
+
+For an agent that only runs as a desktop app, a person drives it and the harness does the rest:
+
+```bash
+BENCH_MANUAL=zcode BENCH_MODEL=zcode-glm-5.3 bench/pod.sh python3 -I bench/cell.py run \
+  --distro debian-13 --scenario fresh-docker-web --arm skill --run-id zc2--debian-13--fresh-docker-web--skill--r1 \
+  --skill-dir <frozen skill>
+```
+
+The cell boots the VM as usual, then writes `runs/<run-id>/manual/workspace/` with the key, an
+`ssh/config`, the scenario's `PROMPT.md` and, for the skill arm, the skill in `.zcode/skills/`. SSH
+reaches the guest from the same admin address as in automated runs, through relays that run inside
+the cell's namespace. Open the workspace in the app, paste `PROMPT.md`, let the agent finish, then
+`touch runs/<run-id>/manual/DONE`, and the judge takes over. The agent runs on your machine, outside
+the bubblewrap jail, and there is no transcript, so time and cost aren't reported. Nothing stops it
+from reading the rest of the run directory either, including the VM's guest-agent socket, so a manual
+run relies on the person watching the session, not on the harness.
+
+`python3 bench/spot.py --tag zc2 --model GLM-5.3` draws the spot check next to the Opus runs on the
+same distro and scenarios.

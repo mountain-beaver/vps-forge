@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Docs
+- **GLM-5.3 spot check.** Four runs of GLM-5.3 in the ZCode desktop app, with and without the skill: 79 → 100 and 67 → 100, no lockouts. Results in `docs/bench/glm-5.3.md`, caveats in the README.
+- **Benchmark harness:** `BENCH_MANUAL` lets a person drive a desktop agent while the harness boots, relays and judges the VM.
+
 ## 1.1.0 (2026-10-24)
 
 Behaviour changes. The benchmark in the README ran before them; see its caveats.
