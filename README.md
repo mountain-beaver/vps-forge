@@ -38,7 +38,7 @@ vps-forge teaches the agent to do the whole job, in the right order, with a safe
   </picture>
 </p>
 
-<p align="center"><sub>120 runs of Claude Opus 5.5 on real VMs, the same prompts with and without the skill, scored from outside the server by a separate judge written by the same author. This is a checklist score, not a general security index, and about 70% of the gap comes from three checks that match the skill's own defaults. A run with the skill costs about 3× as much. <a href="#benchmark">How it was measured, and its limits</a>.</sub></p>
+<p align="center"><sub>120 runs of Claude Opus 5.5 on real VMs, the same prompts with and without the skill, scored from outside the server by a separate judge written by the same author. This is a checklist score, not a general security index, and about 70% of the gap comes from three checks that match the skill's own defaults. A run with the skill costs about 3× as much. A four-run spot check of GLM-5.3 shows the same pattern: 67–79 without the skill, 100 with it. <a href="#benchmark">How it was measured, and its limits</a>.</sub></p>
 
 ## See it work
 
