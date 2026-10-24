@@ -144,6 +144,26 @@ PRIVATE_CONFIG_KEYS = {"mcpServers", "projects", "githubRepoPaths", "cachedArtif
 AGENT_ENV = ("PATH", "LANG", "LC_ALL", "LC_CTYPE", "TZ", "TERM", "USER", "LOGNAME", "SHELL", "NIX_SSL_CERT_FILE",
              "SSL_CERT_FILE", "CLAUDE_CODE_OAUTH_TOKEN")
 OAUTH_TOKEN_FILE = pathlib.Path(os.environ.get("BENCH_OAUTH_TOKEN_FILE", CACHE / "oauth-token"))
+# Another model through an Anthropic-compatible API instead of a Claude login: BENCH_PROVIDER_ENV names a
+# KEY=VALUE file (mode 600) with these keys; BENCH_MODEL names the model. Claude Code reads them from its env.
+PROVIDER_ENV = os.environ.get("BENCH_PROVIDER_ENV")
+PROVIDER_KEYS = ("ANTHROPIC_BASE_URL", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_API_KEY", "ANTHROPIC_DEFAULT_OPUS_MODEL",
+                 "ANTHROPIC_DEFAULT_SONNET_MODEL", "ANTHROPIC_DEFAULT_HAIKU_MODEL", "API_TIMEOUT_MS")
+
+
+def provider_env():
+    p = pathlib.Path(PROVIDER_ENV)
+    if p.stat().st_mode & 0o077:
+        sys.exit(f"{p}: must not be readable by others (chmod 600)")
+    out = {}
+    for line in p.read_text().splitlines():
+        k, sep, v = line.strip().partition("=")
+        if sep and k.strip() in PROVIDER_KEYS:
+            out[k.strip()] = v.strip()
+    if "ANTHROPIC_BASE_URL" not in out:
+        sys.exit(f"{p}: ANTHROPIC_BASE_URL is missing")
+    # no calls home to Anthropic from a run that is billed elsewhere
+    return {**out, "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"}
 
 
 def real_dir(path):
@@ -181,7 +201,7 @@ def fake_home(run_dir, cfg):
                                           "  IdentityFile ~/.ssh/id_ed25519\n  StrictHostKeyChecking accept-new\n")
     # A private ~/.claude per run: no user settings, hooks, plugins or memory leak in, and nothing
     # leaks out. The login is a read-only copy (see private_login), unless a long-lived token is set up.
-    if not OAUTH_TOKEN_FILE.exists():
+    if not PROVIDER_ENV and not OAUTH_TOKEN_FILE.exists():
         private_login(home / ".claude" / ".credentials.json")
     conf = json.loads((REAL_HOME / ".claude.json").read_text())
     (home / ".claude.json").write_text(json.dumps({k: v for k, v in conf.items() if k not in PRIVATE_CONFIG_KEYS}))
@@ -192,7 +212,9 @@ def fake_home(run_dir, cfg):
 def agent_env(home):
     env = {k: v for k, v in os.environ.items() if k in AGENT_ENV}
     env["HOME"] = str(home)
-    if OAUTH_TOKEN_FILE.exists():  # `claude setup-token`: a long-lived token, nothing to refresh mid-run
+    if PROVIDER_ENV:
+        env.update(provider_env())
+    elif OAUTH_TOKEN_FILE.exists():  # `claude setup-token`: a long-lived token, nothing to refresh mid-run
         env["CLAUDE_CODE_OAUTH_TOKEN"] = OAUTH_TOKEN_FILE.read_text().strip()
     return env
 

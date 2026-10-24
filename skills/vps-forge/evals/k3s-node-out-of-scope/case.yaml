@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: k3s-node-out-of-scope
+expected_outcome: |
+  Recognises that the server is a k3s Kubernetes node and stops: explains that this skill's firewall and sysctl defaults (ufw default deny routed, strict rp_filter) would break pod networking, and makes no changes.

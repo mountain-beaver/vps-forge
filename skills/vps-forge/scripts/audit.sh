@@ -11,7 +11,7 @@
 set -uo pipefail
 export LC_ALL=C
 
-VERSION="1.0.1"
+VERSION="1.1.0"
 JSON=0
 QUIET=0
 COLOR=1
@@ -543,7 +543,15 @@ sudo_pw=$(find /home /root -maxdepth 2 -name SUDO-PASSWORD -type f 2>/dev/null |
 if (( IS_ROOT )); then
   nopw=$(grep -rlsE '^[^#]*NOPASSWD' /etc/sudoers /etc/sudoers.d/ 2>/dev/null | paste -sd, -)
   [[ -n "$nopw" ]] && info accounts.nopasswd "NOPASSWD sudo rules in: $nopw"
-  [[ -e /etc/sudoers.d/90-vps-forge-temp ]] && warn accounts.temp_sudo "temporary sudo grant /etc/sudoers.d/90-vps-forge-temp still present"
+  if [[ -e /etc/sudoers.d/90-vps-forge-temp ]]; then
+    # the skill pairs the grant with a deadline timer (references/ssh.md); show when it runs out
+    tdead=$(sed -n 's/^OnCalendar=//p' /etc/systemd/system/vps-forge-temp-sudo-expiry.timer 2>/dev/null | head -n 1)
+    if [[ -n "$tdead" ]]; then
+      warn accounts.temp_sudo "temporary sudo grant /etc/sudoers.d/90-vps-forge-temp still present (expires $(untrusted "$tdead" 40))"
+    else
+      warn accounts.temp_sudo "temporary sudo grant /etc/sudoers.d/90-vps-forge-temp still present, with no expiry timer: remove it once the setup is done"
+    fi
+  fi
 fi
 
 if (( IS_ROOT )); then

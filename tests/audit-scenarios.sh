@@ -546,13 +546,21 @@ step "hand-off leftovers"
 install -m 600 /dev/null /home/forgeadmin/SUDO-PASSWORD
 mkdir -p /etc/fail2ban/jail.d
 printf '[DEFAULT]\nignoreip = 127.0.0.1/8 ::1 198.51.100.7 203.0.113.50 # agent session\n' > /etc/fail2ban/jail.d/zz-test.local
+mkdir -p /etc/sudoers.d && echo 'forgeadmin ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/90-vps-forge-temp && chmod 440 /etc/sudoers.d/90-vps-forge-temp
 run_audit leftovers
 expect leftovers accounts.sudo_password_file WARN
 expect leftovers intrusion.agent_ip WARN
-rm -f /home/forgeadmin/SUDO-PASSWORD /etc/fail2ban/jail.d/zz-test.local
+expect leftovers accounts.temp_sudo WARN
+msg_has leftovers accounts.temp_sudo 'no expiry timer' "a grant without a deadline says so"
+mkdir -p /etc/systemd/system
+printf '[Timer]\nOnCalendar=2026-10-24 18:00:00\nPersistent=true\n' > /etc/systemd/system/vps-forge-temp-sudo-expiry.timer
+run_audit temp-grant-deadline
+msg_has temp-grant-deadline accounts.temp_sudo 'expires 2026-10-24 18:00:00' "a grant with a deadline shows it"
+rm -f /home/forgeadmin/SUDO-PASSWORD /etc/fail2ban/jail.d/zz-test.local /etc/sudoers.d/90-vps-forge-temp /etc/systemd/system/vps-forge-temp-sudo-expiry.timer
 run_audit no-leftovers
 expect no-leftovers accounts.sudo_password_file absent
 expect no-leftovers intrusion.agent_ip absent
+expect no-leftovers accounts.temp_sudo absent
 
 step "compromise indicators"
 # Never leave a second UID-0 account, a preload or a root cron behind, even on abort.

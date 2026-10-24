@@ -18,7 +18,7 @@ jobs:
     name: lint, manifests, deadman
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - name: Install tools
         run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck python3-yaml
       - name: Run checks
@@ -28,7 +28,7 @@ jobs:
     name: external-check on macOS bash 3.2
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - name: Run the stub tests with the system bash
         run: VPS_FORGE_EXTERNAL_ONLY=1 /bin/bash tests/run.sh
 
@@ -38,12 +38,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: ["debian:12", "debian:13", "ubuntu:22.04", "ubuntu:24.04"]
+        image: ["debian:12", "debian:13", "ubuntu:22.04", "ubuntu:24.04", "ubuntu:26.04"]
     container: ${{ matrix.image }}
     env:
       VPS_FORGE_DISPOSABLE: "1"  # opt-in for the suites that rewrite /etc (tests/lib.sh)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - name: Validate templates with sshd, fail2ban, caddy, cloud-init, apt, systemd, dockerd
         run: bash tests/templates.sh
 
@@ -53,11 +53,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        image: ["debian:12", "debian:13", "ubuntu:22.04", "ubuntu:24.04"]
+        image: ["debian:12", "debian:13", "ubuntu:22.04", "ubuntu:24.04", "ubuntu:26.04"]
     container: ${{ matrix.image }}
     env:
       VPS_FORGE_DISPOSABLE: "1"  # opt-in for the suites that rewrite /etc (tests/lib.sh)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       - name: Audit scenarios (known good and bad states, read-only proof)
         run: bash tests/audit-scenarios.sh

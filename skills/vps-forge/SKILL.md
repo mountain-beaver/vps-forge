@@ -59,19 +59,16 @@ You need four answers before starting. Infer whatever you can from the conversat
 
 ## 4. Workflow
 
-**A short checklist from the user is not the whole job.** "Create a user, move SSH, fail2ban, updates" still gets the non-disruptive part of the `hardened` baseline:
-- the SSH crypto drop-in;
-- a default-deny firewall that keeps every port in use today open;
-- the admin's IP in fail2ban's `ignoreip` and in the firewall;
-- moving off root (references/ssh.md).
-
-Say so in one line before you start ("Besides what you asked, I'll also apply the standard baseline: …"), and list it in the final report. Skip only what the user explicitly ruled out.
+**Match the work to the request.**
+- **The whole server** ("set up / secure / harden my server", "make it production-ready", a fresh box with no narrower ask): the full workflow below at the chosen level, `hardened` by default.
+- **A narrow request** (move SSH, add fail2ban, create a sudo user, a short checklist of such items): do exactly that, under every safety rule. Making the request safe is part of it, not extra: the admin's IP goes on fail2ban's ignore list before fail2ban starts, and every SSH or firewall change runs inside the deadman. Then offer the rest in one line, naming the concrete gaps the audit found ("SSH crypto fails ssh-audit and there is no firewall: want the hardened baseline too?"). Don't apply it unasked.
+- **"I'm offline, decide yourself"** settles questions inside the request. It doesn't widen a narrow request: put the offer in the final report instead.
 
 Create a task list from the phases below, trimmed to the chosen profile and level. Show the user a short plan, then go. After each phase, append a line to `/var/lib/vps-forge/progress.log` (`date phase=ssh status=done`) and commit with etckeeper, so an interrupted run can resume where it stopped.
 
 | # | Phase | Read | Key outcome |
 |---|---|---|---|
-| 0 | Recon | `scripts/audit.sh` | Facts, a baseline score, and red flags spotted before any change |
+| 0 | Recon | `scripts/audit.sh` | Facts, a baseline score, and red flags spotted before any change. Stop on a Kubernetes node, a hypervisor host or a non-Debian/Ubuntu system (distro-notes.md) |
 | 1 | Safety net | `references/base.md` §Safety net | Provider snapshot, console known, etckeeper on, deadman installed |
 | 2 | Base system | `references/base.md` | Non-interactive full upgrade, unattended security updates, time sync, swap, journald limits, hostname that survives reboots |
 | 3 | Admin user & SSH | `references/ssh.md` | Admin user with a key, sudo policy chosen, root login and passwords off, modern crypto, verified from a new session |

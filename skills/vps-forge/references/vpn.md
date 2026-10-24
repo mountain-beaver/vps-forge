@@ -14,7 +14,10 @@
 ## Tailscale
 
 ```bash
-curl -fsSL https://tailscale.com/install.sh | sh     # official script; show it to the user first
+. /etc/os-release                                     # $ID is debian or ubuntu, $VERSION_CODENAME e.g. trixie or noble
+curl -fsSL "https://pkgs.tailscale.com/stable/$ID/$VERSION_CODENAME.noarmor.gpg" -o /usr/share/keyrings/tailscale-archive-keyring.gpg
+curl -fsSL "https://pkgs.tailscale.com/stable/$ID/$VERSION_CODENAME.tailscale-keyring.list" -o /etc/apt/sources.list.d/tailscale.list
+apt-get update && apt-get install -y tailscale       # their signed apt repository, set up explicitly
 tailscale up --timeout=60s                            # prints a login URL; the USER opens it. A timeout means "not logged in yet", not success.
 tailscale status --json | jq -r .BackendState         # must print Running before any rule depends on the tailnet; if NeedsLogin, hand over the URL and wait
 tailscale ip -4

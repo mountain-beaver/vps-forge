@@ -56,7 +56,7 @@ Headers to set on HTML responses: `X-Content-Type-Options: nosniff`, `Referrer-P
 2. `max-age=31536000` (1 year).
 3. Add `includeSubDomains` only if **every** subdomain is HTTPS; add `preload` only if the user explicitly wants list submission.
 
-The Caddyfile template ships at stage 2 (1 year) without `includeSubDomains`, on purpose. On a brand-new domain, start at stage 1 by editing the header before the first reload, and raise it after you've seen the site work over HTTPS. Tell the user what stage 2 means.
+The Caddyfile template ships at stage 1 (5 minutes) without `includeSubDomains`. Raise it to stage 2 once you've seen the site work over HTTPS, and tell the user what stage 2 means: for a year, browsers that visited will refuse plain HTTP.
 
 ## Behind Cloudflare
 

@@ -20,7 +20,7 @@
 3. **etckeeper** (section below) before the first config change.
 4. **deadman:** install the helper once, then use it around every risky change:
    ```bash
-   scp scripts/deadman.sh host:/tmp/ && ssh host 'sudo install -m 755 /tmp/deadman.sh /usr/local/sbin/vps-forge-deadman && rm /tmp/deadman.sh'
+   ssh host 'sudo install -m 755 /dev/stdin /usr/local/sbin/vps-forge-deadman' < scripts/deadman.sh
    ```
 
 ## Non-interactive apt

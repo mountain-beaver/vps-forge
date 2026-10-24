@@ -1,0 +1,58 @@
+{
+ "image": "localhost/u24sd",
+ "minutes": 1,
+ "events": [
+  {
+   "t": 4.929999704472721e-06,
+   "where": "server",
+   "cmd": "sudo vps-forge-deadman arm 1",
+   "out": "deadman: ARMED: rollback at 14:08:31 unless you run 'vps-forge-deadman disarm' (snapshot 20261024-140731-9zwl; a reboot while armed also rolls back; fail2ban unban on rollback: 127.0.0.1)",
+   "rc": 0,
+   "note": "one minute for the demo; the default is 5"
+  },
+  {
+   "t": 0.22956858599354746,
+   "where": "server",
+   "cmd": "echo 'AllowUsers deploy' | sudo tee /etc/ssh/sshd_config.d/50-users.conf",
+   "out": "AllowUsers deploy",
+   "rc": 0,
+   "note": "the mistake: admin isn't on the list"
+  },
+  {
+   "t": 0.302503232996969,
+   "where": "server",
+   "cmd": "sudo sshd -t && sudo systemctl reload ssh && echo 'sshd -t: OK'",
+   "out": "sshd -t: OK",
+   "rc": 0,
+   "note": "valid config, so validation alone can't catch it"
+  },
+  {
+   "t": 0.40047531799791614,
+   "where": "laptop",
+   "cmd": "ssh -o ControlPath=none admin@vps true",
+   "out": "admin@vps: Permission denied (publickey,password).",
+   "rc": 255,
+   "note": "a NEW connection is refused, so nobody disarms"
+  },
+  {
+   "t": 62.658614214997215,
+   "wait": 62
+  },
+  {
+   "t": 62.65862278199347,
+   "where": "server",
+   "cmd": "sudo vps-forge-deadman status",
+   "out": "not armed\nROLLED BACK since the last arm (at 2026-10-24T14:08:31Z): changes were NOT kept\nsnapshots:\n  20261024-140731-9zwl",
+   "rc": 0,
+   "note": ""
+  },
+  {
+   "t": 62.73550659299508,
+   "where": "laptop",
+   "cmd": "ssh -o ControlPath=none admin@vps 'echo logged in as $USER'",
+   "out": "logged in as admin",
+   "rc": 0,
+   "note": "the bad change is gone, and so is the lockout"
+  }
+ ]
+}

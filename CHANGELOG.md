@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.1.0 (2026-10-24)
+
+Behaviour changes. The benchmark in the README ran before them; see its caveats.
+
+### Skill
+- **Narrow requests get only what was asked.** "Move SSH and add fail2ban" no longer brings a firewall, new SSH crypto and a move off root with it. The skill does the request safely: the dead-man switch, and the admin's IP on fail2ban's ignore list before fail2ban starts. Then it offers the rest in one line, naming the gaps it found. The full hardened baseline still applies when the user asks for the whole server: set up, secure, harden or make production-ready. "I'm offline, decide yourself" no longer widens a narrow request.
+- **The temporary passwordless sudo grant has a deadline.** A persistent systemd timer deletes `/etc/sudoers.d/90-vps-forge-temp` after 4 hours, even if the session drops or the server reboots. `audit.sh` shows the deadline, or says that a leftover grant has none.
+- **The restore drill restores the app's data and the newest database dump** and compares them with the live files. Restoring `/etc/hostname` only proved that restic runs.
+- **Recon stops on Kubernetes nodes** (k3s, kubeadm, rke2) **and hypervisor hosts** (Proxmox, libvirt, LXD/Incus). On RHEL-family systems it stops too, instead of following the same phases with different tools.
+- **The Caddyfile template starts HSTS at `max-age=300`.** `references/web.md` describes raising it to a year once HTTPS works everywhere.
+- **Tailscale and CrowdSec come from their signed apt repositories,** set up explicitly instead of through `curl | sh`.
+- **`deadman.sh` is installed through stdin,** not through a file in a shared `/tmp`.
+- **New behaviour evals:** a narrow request, a k3s node and a local `nginx.conf` question that must not trigger the skill.
+
+### Tests and tooling
+- CI and `make ci` cover Ubuntu 26.04.
+- GitHub Actions are pinned to commit SHAs.
+- `bench/demo.py` records the dead-man switch demo in a systemd container and renders it as an animated SVG, and as frames for video.
+
 ## 1.0.1 (2026-10-24)
 
 Text and documentation only. The scripts behave exactly as in 1.0.0.
@@ -77,7 +96,7 @@ First public release.
 
 ### Tests and tooling
 - `make test`: ShellCheck, manifest and eval schema checks, version agreement, and the `audit.sh` and `deadman.sh` round trips without root. It also runs `alerts`, `backup` and `cloudflare-sync` against stubs.
-- `make ci`, in podman or docker on Debian 12/13 and Ubuntu 22.04/24.04:
+- `make ci`, in podman or docker on Debian 12/13 and Ubuntu 22.04/24.04/26.04:
   - every config template is checked by the tool that consumes it (`sshd -t/-T`, `fail2ban-client -t`, `caddy validate`, `cloud-init schema`, `apt-config`, `systemd-analyze verify`, `dockerd --validate`);
   - `audit.sh` runs against known good and bad states, with a filesystem checksum proving it is read-only;
   - the dead-man rollback runs on a real systemd.

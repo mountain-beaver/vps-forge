@@ -70,13 +70,19 @@ Monitoring: `vps-forge-health` (alerts-monitoring.md) alerts when the last backu
 ## Restore drill
 
 Do this before calling the phase done:
+Restore what the user would actually miss: a file of the app's data and the newest database dump, not a config file.
 ```bash
 set -a; . /etc/restic/env; set +a
 restic snapshots --latest 1
-rm -rf /tmp/restore-test && restic restore latest --target /tmp/restore-test --include /etc/hostname --include /etc/restic/include
-diff /etc/hostname /tmp/restore-test/etc/hostname && echo "restore OK"
-rm -rf /tmp/restore-test
+APP=/opt/<app>/data                     # the app's data directory or bind mount; ask if unsure
+F=$(find "$APP" -type f -size +0 -mmin +10 2>/dev/null | head -n 1)   # unchanged since the backup ran
+DUMP=$(ls -t /var/backups/db/* 2>/dev/null | head -n 1)
+[ -n "$F" ] || echo "no stable data file under $APP: pick one by hand"
+rm -rf /root/restore-test && restic restore latest --target /root/restore-test --include "$F" ${DUMP:+--include "$DUMP"}
+cmp "$F" "/root/restore-test$F" && echo "app data restored: $F"
+[ -z "$DUMP" ] || { cmp "$DUMP" "/root/restore-test$DUMP" && echo "dump restored: $DUMP"; }
+rm -rf /root/restore-test
 ```
-For databases: restore the latest dump into a scratch database (databases.md).
+Then load that dump into a scratch database and count a few rows (databases.md). A restore of `/etc` alone proves that restic works, not that the app's data comes back.
 
 Write the full recovery procedure into SERVER.md: where the repo is, where the password is, how to install restic on a fresh box, and the exact restore command.

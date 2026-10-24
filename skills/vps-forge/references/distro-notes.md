@@ -61,4 +61,12 @@ Everything here works. Use `dpkg --print-architecture` in apt repo lines (alread
 
 ## RHEL family (Rocky, Alma, CentOS Stream, Fedora)
 
-Out of scope for this version. The principles carry over, but the tools differ: `firewalld`, `dnf-automatic`, SELinux (`semanage port` for SSH port changes), the service is named `sshd`, and system crypto-policies apply. Tell the user, follow the same phases and safety rules, and verify every command against the distro's docs.
+Out of scope: stop and tell the user. The tools differ (`firewalld`, `dnf-automatic`, SELinux with `semanage port` for SSH port changes, the `sshd` service name, system crypto-policies), and none of the templates, scripts or checks here were written or tested for them.
+
+## Kubernetes nodes and hypervisor hosts
+
+Out of scope, even on Debian or Ubuntu: stop and tell the user. The firewall defaults here (`ufw default deny routed`, strict `rp_filter`) break pod and VM networking. Detect them in recon:
+```bash
+systemctl list-unit-files --no-legend 2>/dev/null | grep -Eo '^(kubelet|k3s|k3s-agent|rke2-server|rke2-agent|pve-cluster|pvedaemon|libvirtd|incus|lxd)\.service' | sort -u
+```
+Any output means stop. A plain Docker host is fine: that is the `docker` profile.

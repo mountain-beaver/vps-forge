@@ -145,8 +145,11 @@ Useful commands: `fail2ban-client get sshd banip --with-time` and `fail2ban-clie
 
 CrowdSec parses logs like fail2ban, but it also shares and receives community blocklists and ships scenarios for nginx, Caddy, WordPress and others. Use it **instead of** fail2ban, not alongside it, on the same logs.
 ```bash
-curl -s https://install.crowdsec.net | sh        # adds their apt repo; show the user first
-apt-get install -y crowdsec crowdsec-firewall-bouncer-nftables
+# their signed apt repository (the same one their install script adds), set up explicitly
+install -d -m 755 /etc/apt/keyrings
+curl -fsSL https://packagecloud.io/crowdsec/crowdsec/gpgkey | gpg --dearmor -o /etc/apt/keyrings/crowdsec_crowdsec-archive-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/crowdsec_crowdsec-archive-keyring.gpg] https://packagecloud.io/crowdsec/crowdsec/any any main' > /etc/apt/sources.list.d/crowdsec_crowdsec.list
+apt-get update && apt-get install -y crowdsec crowdsec-firewall-bouncer-nftables
 cscli collections install crowdsecurity/linux crowdsecurity/sshd   # + crowdsecurity/caddy or nginx
 cscli metrics; cscli decisions list
 ```

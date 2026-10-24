@@ -15,10 +15,10 @@
 (hardening) {
 	encode zstd gzip
 	header {
-		# HSTS stage 2 (1 year), shipped on purpose. On a brand-new domain start with max-age=300
-		# and raise it in stages; add includeSubDomains only when EVERY subdomain serves HTTPS.
-		# The staged rollout is in references/web.md ("Security headers and HSTS rollout").
-		Strict-Transport-Security "max-age=31536000"
+		# HSTS stage 1 (5 minutes). Browsers cache it for max-age, so a mistake can't be undone sooner.
+		# Once HTTPS works everywhere, raise it to max-age=31536000 (1 year); add includeSubDomains only
+		# when EVERY subdomain serves HTTPS. See references/web.md ("Security headers and HSTS rollout").
+		Strict-Transport-Security "max-age=300"
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		X-Frame-Options "SAMEORIGIN"

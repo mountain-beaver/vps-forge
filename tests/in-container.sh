@@ -9,7 +9,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-IMAGES=(debian:12 debian:13 ubuntu:22.04 ubuntu:24.04)
+IMAGES=(debian:12 debian:13 ubuntu:22.04 ubuntu:24.04 ubuntu:26.04)
 SUITES=(checks templates audit)
 [[ $# -ge 1 && -n "$1" && "$1" != all ]] && IMAGES=("$1")
 [[ $# -ge 2 ]] && SUITES=("$2")

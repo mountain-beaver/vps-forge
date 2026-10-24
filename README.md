@@ -136,7 +136,7 @@ If your agent doesn't support skills at all, tell it to read `skills/vps-forge/S
 |---|---|
 | "Put my Docker app on this new VPS, with HTTPS." | Admin user with your key, root and passwords off, firewall with 22/80/443 only, Caddy with TLS, tested backups, alerts. |
 | "Audit my server. Change nothing." | A read-only report ranked by severity, and a plan. |
-| "Move SSH to 2222, add a sudo user and fail2ban." | Exactly that, plus the hardened baseline, announced up front. |
+| "Move SSH to 2222 and add fail2ban. Nothing else." | Exactly that, done safely, and a one-line offer of the rest. |
 | "Send alerts to my phone." | ntfy, Telegram or webhook alerts for logins, failures, full disks and backups. |
 | "SSH only through Tailscale." | Public SSH closes only after a VPN login works. |
 | "Is my server hacked?" | A compromise check. If it finds signs, it stops and guides a rebuild. |
@@ -179,6 +179,15 @@ One wrong `sshd` or firewall change can make a server unreachable. So every SSH,
 4. Only if that login works does it disarm the timer.
 
 If the new login fails, nothing else happens: the timer restores the snapshot, unbans you in fail2ban and puts the services back as they were. It does the same at boot if the server restarts while the switch is armed.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/deadman-dark.svg">
+    <img alt="A recorded run of the dead-man switch. The admin arms it for one minute, adds an sshd rule that locks themselves out, and sshd -t still passes. A new SSH login is refused, so nobody disarms. After the timer runs out, the status shows ROLLED BACK and the next login works again." src="docs/assets/deadman.svg" width="880">
+  </picture>
+</p>
+
+The switch is a plain bash script, so you can use it without any agent: install `deadman.sh` as `/usr/local/sbin/vps-forge-deadman`, run `sudo vps-forge-deadman arm` before a risky change, and `disarm` once a new login works.
 
 This is a design guarantee, and the benchmark can't prove it: nobody was locked out in either arm, because Opus is careful on its own. What the benchmark did measure is the near miss. Without the skill, the agent got its own admin IP banned by fail2ban in 7 of 60 runs while it worked. With the skill, that happened in none of 60.
 
@@ -238,13 +247,13 @@ A lockout scores 0.
 - **Root login is a judgement call.** The judge fails a server where root can still log in with a key. In the two scenarios where baseline runs failed this check, the prompt says the user logs in as root today, so keeping key-only root is defensible. Without that one check, the scores are 85–93 without the skill and 100 with it.
 - **Questions and approvals were never tested.** Every prompt says the user is offline and the agent should decide on its own, so the skill's intake questions and approval steps never ran. That is the normal mode for a real user.
 - **It takes longer and costs more.** The median run took 5–8 minutes instead of 3–6, because the skill snapshots, arms the dead-man switch and tests every change from a new connection. At API list prices a run cost a median $1.87 with the skill and $0.62 without, about 3×, and the skill's instructions add to the agent's context.
-- **It does more than a checklist asks.** One scenario asks only to move SSH to 2222, add a sudo user, turn off password and root logins, install fail2ban and enable auto-updates. Without the skill it scores 88: Opus does all five, but the server fails `ssh-audit` and has no host firewall, which the prompt never mentioned. The skill applies its hardened baseline anyway and scores 100. Whether you want that is up to you.
+- **The benchmarked skill did more than a checklist asked.** One scenario asks only to move SSH to 2222, add a sudo user, turn off password and root logins, install fail2ban and enable auto-updates. Without the skill it scores 88: Opus does all five, but the server fails `ssh-audit` and has no host firewall, which the prompt never mentioned. The benchmarked skill applied its hardened baseline anyway and scored 100. Since 1.1.0 it no longer does that: a narrow request gets what was asked plus an offer, so that 100 describes the old behaviour, and the new one hasn't been benchmarked.
 - **The scenarios are not unseen.** An earlier version of the skill scored 92, 100 and 89 on the first three scenarios. In 12 of those 45 runs, the agent's own test logins tripped the fail2ban it had just set up. The skill was revised against exactly those failures, so those three scenarios no longer test it blind. The fourth, a fresh VPS with only a sudo user, was added after the revision and scores 100 as well.
 - **The skill targets what the judge checks.** It aims for a clean `ssh-audit`, and the judge runs `ssh-audit`. That is why the general Lynis index above is shown next to it.
 - **Small samples, one judge.** Each distro and scenario ran three times per arm, and the judge was written by the same author as the skill. The harness is published so anyone can check it.
 - **Only one model was measured.** That model is Claude Opus 5.5. The skill is plain instructions and scripts, with nothing model-specific in it, but other agents and models have not been benchmarked yet.
 
-The benchmark ran on the pre-release skill. Since then only its text has changed, never the scripts' behaviour: metadata, clearer wording of the safety rules, scope limits in the description, and a few notes. [CHANGELOG.md](CHANGELOG.md) lists every change. The scenarios, the harness, and everything you need to reproduce the runs are in [`bench/`](bench/README.md). Per-run results are in [`docs/bench/results.md`](docs/bench/results.md) and [`results.json`](docs/bench/results.json).
+The benchmark ran on the pre-release skill. Version 1.0.1 changed only text. Version 1.1.0 changed behaviour where the benchmark says little or nothing: narrow requests, a deadline on the temporary sudo grant, a restore drill that checks the app's data, and a stop on Kubernetes nodes and hypervisor hosts. [CHANGELOG.md](CHANGELOG.md) lists every change. The scenarios, the harness, and everything you need to reproduce the runs are in [`bench/`](bench/README.md). Per-run results are in [`docs/bench/results.md`](docs/bench/results.md) and [`results.json`](docs/bench/results.json).
 
 ## FAQ
 
@@ -296,7 +305,7 @@ No. The skill and its scripts have no telemetry. Alerts go only to the ntfy topi
 Yes. `audit.sh` is a standalone, read-only audit:
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.0.1/skills/vps-forge/scripts/audit.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.0/skills/vps-forge/scripts/audit.sh
 less audit.sh          # read it before running anything as root
 sudo bash audit.sh     # read-only; --json for machine output
 ```
@@ -320,7 +329,7 @@ skills/vps-forge/
 └── evals/                behaviour test cases
 ```
 
-Every template is checked in CI by the tool that reads it (`sshd -t`, `fail2ban-client -t`, `caddy validate`, `cloud-init schema`, `systemd-analyze verify`, `dockerd --validate`), on Debian 12/13 and Ubuntu 22.04/24.04. `audit.sh` is tested against known good and bad servers, with a checksum that proves it changes nothing. The dead-man rollback is tested on a real systemd.
+Every template is checked in CI by the tool that reads it (`sshd -t`, `fail2ban-client -t`, `caddy validate`, `cloud-init schema`, `systemd-analyze verify`, `dockerd --validate`), on Debian 12/13 and Ubuntu 22.04/24.04/26.04. `audit.sh` is tested against known good and bad servers, with a checksum that proves it changes nothing. The dead-man rollback is tested on a real systemd.
 
 ## Contributing
 

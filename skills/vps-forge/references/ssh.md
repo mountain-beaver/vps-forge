@@ -65,10 +65,16 @@ Ask about every other key (see "Cleaning up what the provider left").
   install -m 600 -o "$U" -g "$U" /dev/null "/home/$U/SUDO-PASSWORD"
   PW=$(head -c 18 /dev/urandom | base64) && printf '%s:%s\n' "$U" "$PW" | chpasswd && printf '%s\n' "$PW" > "/home/$U/SUDO-PASSWORD"; unset PW
   ```
-  The user reads it with `ssh <admin>@<host> cat ~/SUDO-PASSWORD` (never read it yourself), saves it in their password manager, and deletes the file. For the rest of the run (phases 4–12), add the temporary grant `/etc/sudoers.d/90-vps-forge-temp` (`<admin> ALL=(ALL) NOPASSWD:ALL`) in the same deadman window. Remove it in phase 12. If the user declines the grant, do all remaining root work in the root session **before** disabling root login. For later agent sessions, the user can recreate the grant with a deadline: `systemd-run --on-active=2h rm -f /etc/sudoers.d/90-vps-forge-temp`.
+  The user reads it with `ssh <admin>@<host> cat ~/SUDO-PASSWORD` (never read it yourself), saves it in their password manager, and deletes the file. For the rest of the run (phases 4–12), add the temporary grant `/etc/sudoers.d/90-vps-forge-temp` (`<admin> ALL=(ALL) NOPASSWD:ALL`) in the same deadman window, together with its deadline. If the session drops and nobody comes back, the grant still goes away, even across reboots:
+  ```bash
+  printf '[Unit]\nDescription=Remove the temporary vps-forge sudo grant\n[Service]\nType=oneshot\nExecStart=/bin/rm -f /etc/sudoers.d/90-vps-forge-temp\n' > /etc/systemd/system/vps-forge-temp-sudo-expiry.service
+  printf '[Unit]\nDescription=Deadline for the temporary vps-forge sudo grant\n[Timer]\nOnCalendar=%s\nPersistent=true\n[Install]\nWantedBy=timers.target\n' "$(date -d '+4 hours' '+%Y-%m-%d %H:%M:%S')" > /etc/systemd/system/vps-forge-temp-sudo-expiry.timer
+  systemctl daemon-reload && systemctl enable --now vps-forge-temp-sudo-expiry.timer
+  ```
+  `Persistent=true` makes a deadline missed while the server was off fire at the next boot. If the run needs longer, push the `OnCalendar` line forward before it expires. Remove the grant and the timer in phase 12. If the user declines the grant, do all remaining root work in the root session **before** disabling root login. For a later agent session, recreate both the same way.
 - **NOPASSWD sudo (convenient).** `/etc/sudoers.d/10-<admin>` with `<admin> ALL=(ALL) NOPASSWD:ALL`. This is reasonable when the key is the only factor anyway (hardware or passphrase-protected key) and the box is agent-managed.
 
-Always write sudoers files with `visudo -cf <file>` before moving them into place, using mode 440, inside a deadman window (step 2 above): `printf '%s ALL=(ALL) NOPASSWD:ALL\n' "$U" > /root/sudo.new && visudo -cf /root/sudo.new && install -m 440 /root/sudo.new /etc/sudoers.d/<name>; rm -f /root/sudo.new`. A broken sudoers file plus disabled root login means a trip to the console. A file *created* after `arm` can survive a rollback, so the `visudo -cf` check is what protects you here.
+Always write sudoers files with `visudo -cf <file>` before moving them into place, using mode 440, inside a deadman window (step 2 above): `printf '%s ALL=(ALL) NOPASSWD:ALL\n' "$U" > /root/sudo.new && visudo -cf /root/sudo.new && install -m 440 /root/sudo.new /etc/sudoers.d/<name>; rm -f /root/sudo.new`. A broken sudoers file plus disabled root login means a trip to the console. The rollback would delete a broken file created after `arm`, but `visudo -cf` keeps you from needing it.
 
 ## The sshd drop-in trap (read this)
 
@@ -182,7 +188,7 @@ Run these in this order. Under password sudo, removing the temporary grant takes
 1. Agent-session entries (SKILL.md rule 1), in one deadman window: `ufw delete allow from <agent-ip> to any port <port> proto tcp`; the `ignoreip` entry and its `# agent session` comment, then `systemctl reload fail2ban`; the agent IP in `PerSourcePenaltyExemptList` (`01-vps-forge-crypto.conf`), then `sshd -t && systemctl reload ssh`. The user's real IP belongs in all three places instead. Test and disarm.
 2. Password sudo: `test ! -e /home/<admin>/SUDO-PASSWORD` (if it's still there, tell the user; don't read it) and `passwd -S <admin>` shows `P`. While the file exists, a stolen key is enough for root again.
 3. `passwd -l root` only under the conditions in "Cleaning up what the provider left". Then write SERVER.md and make the final etckeeper commit.
-4. Last step, in one call, because afterwards you have no root: `sudo sh -c 'rm -f /etc/sudoers.d/90-vps-forge-temp && etckeeper commit "vps-forge: remove temporary sudo grant"'`. Check that it is gone even after a rollback: the rollback deletes it only if it was created while the switch was armed. Then `ssh -o ControlPath=none -o BatchMode=yes -p <port> <admin>@<host> 'sudo -n -v'` must fail with `a password is required`. `audit.sh` flags a leftover grant.
+4. Last step, in one call, because afterwards you have no root: `sudo sh -c 'systemctl disable --now vps-forge-temp-sudo-expiry.timer; rm -f /etc/systemd/system/vps-forge-temp-sudo-expiry.* /etc/sudoers.d/90-vps-forge-temp && systemctl daemon-reload && etckeeper commit "vps-forge: remove temporary sudo grant"'`. Check that it is gone even after a rollback: the rollback deletes it only if it was created while the switch was armed. Then `ssh -o ControlPath=none -o BatchMode=yes -p <port> <admin>@<host> 'sudo -n -v'` must fail with `a password is required`. `audit.sh` flags a leftover grant.
 
 ## Verification and client config
 
