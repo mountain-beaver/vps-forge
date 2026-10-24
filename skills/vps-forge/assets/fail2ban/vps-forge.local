@@ -1,0 +1,43 @@
+# /etc/fail2ban/jail.d/vps-forge.local: managed by vps-forge
+# Requires: python3-systemd (systemd backend) and nftables (ban actions).
+# Fill:     <ssh-port> = the port sshd really listens on (ss -tlnp | grep sshd), <admin-ip> below.
+# Order:    on a fresh box `systemctl mask fail2ban` and write this file BEFORE apt-get install
+#           (Debian 13 / Ubuntu 24.04 start fail2ban on install); unmask + enable --now in phase 5.
+# Check:    fail2ban-client -t && systemctl restart fail2ban && fail2ban-client status sshd
+#           If /var/log/fail2ban.log was removed (log cleanup, logrotate glitch), run
+#           `touch /var/log/fail2ban.log` first: it is recidive's logpath and -t fails without it.
+
+[DEFAULT]
+backend = systemd
+banaction = nftables-multiport
+banaction_allports = nftables-allports
+bantime = 1h
+bantime.increment = true
+bantime.maxtime = 1w
+findtime = 10m
+maxretry = 5
+# The admin's IP (`sudo vps-forge-deadman client-ip`; $SSH_CLIENT is empty under sudo), written
+# BEFORE fail2ban first starts: on start fail2ban re-reads the last findtime of the journal,
+# including the admin's own test logins, and would ban them at once. Never leave it empty.
+# With key-only SSH, exempting one address costs nothing.
+ignoreip = 127.0.0.1/8 ::1 <admin-ip>
+
+[sshd]
+enabled = true
+# Must match sshd's real port, or the jail bans the wrong one. Update it when SSH moves.
+port = <ssh-port>
+# normal still counts scanners on a key-only box (invalid users, root refused by AllowGroups);
+# aggressive also counts the extra keys a real user's agent offers.
+mode = normal
+
+[recidive]
+enabled = true
+backend = auto
+logpath = /var/log/fail2ban.log
+# Repeat offenders lose SSH for a day. All ports (banaction = %(banaction_allports)s) suits only
+# boxes without a public website: on a web server it cuts off everyone behind the same CGNAT.
+banaction = nftables-multiport
+port = <ssh-port>
+bantime = 1d
+findtime = 1d
+maxretry = 5

@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: audit-production-shop
+expected_outcome: |
+  Audit mode: a findings report sorted by severity with evidence and fixes, leading with the exposed Postgres and Adminer ports as critical, noting the unknown old-freelancer key, password auth via cloud-init, no unattended upgrades, no backups and the disk at 88%. Proposes an ordered plan with downtime and risk notes and asks for approval before changing anything.
+context:
+  scaffold_script: place-files.sh

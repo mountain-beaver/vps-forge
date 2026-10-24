@@ -1,0 +1,18 @@
+{"tool":"vps-forge-audit","version":"1.0.0","host":"shop-prod-1","os":"Debian GNU/Linux 12 (bookworm)","date":"2026-10-20T09:12:00Z","root":true,"score":48,"counts":{"pass":11,"warn":9,"fail":4,"info":10,"skip":0},"checks":[
+{"section":"system","id":"os.supported","status":"PASS","message":"Debian GNU/Linux 12 (bookworm)"},
+{"section":"updates","id":"updates.pending","status":"WARN","message":"14 security update(s) pending, 31 total"},
+{"section":"updates","id":"updates.unattended","status":"FAIL","message":"unattended-upgrades is not installed: security fixes depend on someone remembering"},
+{"section":"ssh","id":"ssh.root_login","status":"WARN","message":"root login allowed with keys (PermitRootLogin prohibit-password); use an admin user + sudo"},
+{"section":"ssh","id":"ssh.password_auth","status":"FAIL","message":"password authentication enabled (set in: /etc/ssh/sshd_config.d/50-cloud-init.conf; the first value read wins)"},
+{"section":"ssh","id":"ssh.allowlist","status":"WARN","message":"no AllowUsers/AllowGroups: any account with a key can log in"},
+{"section":"accounts","id":"accounts.keys","status":"INFO","message":"root: 3 key(s) in /root/.ssh/authorized_keys → ED25519 SHA256:aa… you@laptop; ED25519 SHA256:bb… deploy@github-actions; RSA SHA256:cc… old-freelancer"},
+{"section":"firewall","id":"firewall.host","status":"PASS","message":"ufw active, default deny incoming"},
+{"section":"firewall","id":"firewall.rules","status":"INFO","message":"22/tcp ALLOW Anywhere; 80,443/tcp ALLOW Anywhere"},
+{"section":"exposure","id":"exposure.docker","status":"FAIL","message":"container 'shop-db' publishes 0.0.0.0:5432->5432/tcp on all interfaces; Docker bypasses ufw. Bind to 127.0.0.1 or filter in DOCKER-USER"},
+{"section":"exposure","id":"exposure.docker","status":"FAIL","message":"container 'adminer' publishes 0.0.0.0:8081->8080/tcp on all interfaces; Docker bypasses ufw. Bind to 127.0.0.1 or filter in DOCKER-USER"},
+{"section":"intrusion","id":"intrusion.ips","status":"WARN","message":"no fail2ban or CrowdSec running"},
+{"section":"kernel","id":"kernel.sysctl","status":"WARN","message":"net.ipv4.conf.all.accept_redirects=1 (want 0); kernel.kptr_restrict=0 (want 1 or 2)"},
+{"section":"resources","id":"resources.disk","status":"WARN","message":"/ is 88% full (/dev/sda1)"},
+{"section":"backups","id":"backups.job","status":"WARN","message":"no backup job found (provider snapshots can't be detected from inside the VM)"},
+{"section":"compromise","id":"compromise.preload","status":"PASS","message":"no ld.so.preload"}
+]}

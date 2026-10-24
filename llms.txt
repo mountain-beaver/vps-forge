@@ -1,0 +1,24 @@
+# vps-forge
+
+> An open Agent Skill (SKILL.md) that lets AI coding agents set up, harden and audit Debian 12/13 and Ubuntu 22.04/24.04/26.04 servers without locking the user out. It works with Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI, Antigravity, OpenCode and other agents that load skills. Install it with `npx skills add mountain-beaver/vps-forge`. MIT-licensed, no telemetry.
+
+Every SSH, firewall, sudo or PAM change runs inside a dead-man switch: snapshot, change, test from a new connection, and roll back automatically after 5 minutes unless the test login worked. The finished server has key-only SSH that passes ssh-audit, a default-deny firewall, fail2ban that ignores the admin's IP, unattended security updates, restic backups with a tested restore, phone alerts (ntfy, Telegram or a webhook) and a SERVER.md. In 120 benchmark runs on real VMs, Claude Opus 5.5 scored 79–92 out of 100 without the skill and 99–100 with it, with no lockouts; only that one model was measured, and the scenarios were known while the skill was revised.
+
+## Docs
+
+- [README](https://github.com/mountain-beaver/vps-forge/blob/main/README.md): what it does, install for each agent, examples, safety model, FAQ
+- [Quick start](https://github.com/mountain-beaver/vps-forge#quick-start): install commands for every supported agent
+- [SKILL.md](https://github.com/mountain-beaver/vps-forge/blob/main/skills/vps-forge/SKILL.md): the skill itself, the workflow and safety rules the agent follows
+- [References](https://github.com/mountain-beaver/vps-forge/tree/main/skills/vps-forge/references): one file per phase (SSH, firewall, Docker, web, VPN, backups, alerts, audit mode)
+- [Scripts](https://github.com/mountain-beaver/vps-forge/tree/main/skills/vps-forge/scripts): audit.sh (read-only audit), deadman.sh (automatic rollback), external-check.sh, install-alerts.sh
+
+## Benchmark
+
+- [Results and caveats](https://github.com/mountain-beaver/vps-forge#benchmark): scores per scenario, per check and per distro
+- [Methodology and harness](https://github.com/mountain-beaver/vps-forge/blob/main/bench/README.md): how the VMs, the agent sandbox and the outside-in judge work
+- [Per-run results](https://github.com/mountain-beaver/vps-forge/blob/main/docs/bench/results.md)
+
+## Optional
+
+- [CHANGELOG](https://github.com/mountain-beaver/vps-forge/blob/main/CHANGELOG.md)
+- [SECURITY](https://github.com/mountain-beaver/vps-forge/blob/main/SECURITY.md): how to report a flaw privately

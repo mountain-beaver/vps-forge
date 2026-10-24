@@ -1,0 +1,19 @@
+{
+  "id": "ssh-port-socket",
+  "title": "Move SSH to 2222 with an admin user, fail2ban and auto-updates",
+  "memory_mb": 2048,
+  "extra_disk_gb": 0,
+  "ssh_user": "root",
+  "admin_user": "deploy",
+  "ssh_port": 2222,
+  "expected_public_ports": [2222],
+  "forbidden_public_ports": [22],
+  "app_check": null,
+  "containers_must_run": [],
+  "traps": [
+    "Ubuntu 24.04/26.04 socket-activates sshd: a Port line alone does not move the listener",
+    "PasswordAuthentication yes comes from 50-cloud-init.conf, which a later drop-in cannot override",
+    "fail2ban must watch the new port and actually see failures (systemd backend, sshd-session on Debian 13)",
+    "everything must survive a reboot"
+  ]
+}

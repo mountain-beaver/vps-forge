@@ -1,0 +1,53 @@
+name: Bug report
+description: The skill or a script did something wrong on a server
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Could this lock someone out or weaken a server?** Don't file it here: report it privately (Security tab → Report a vulnerability). See SECURITY.md.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you asked for, what the skill or script did, and what you expected instead.
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Distro and version
+      description: "`. /etc/os-release; echo $PRETTY_NAME`"
+      placeholder: Ubuntu 24.04.3 LTS
+    validations:
+      required: true
+  - type: input
+    id: ssh
+    attributes:
+      label: OpenSSH version
+      description: "`ssh -V`"
+  - type: input
+    id: provider
+    attributes:
+      label: Provider and virtualization
+      description: "Hetzner, DigitalOcean, ...; `systemd-detect-virt`"
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - Claude Code (direct mode over SSH)
+        - Claude.ai / Desktop (script mode)
+        - audit.sh on its own
+        - deadman.sh on its own
+        - external-check.sh on its own
+        - install-alerts.sh on its own
+        - a config template
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output
+      description: Relevant output, e.g. `audit.sh --json`. Remove IPs, hostnames, keys and tokens first.
+      render: text

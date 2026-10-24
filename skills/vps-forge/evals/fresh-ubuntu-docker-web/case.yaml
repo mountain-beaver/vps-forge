@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: fresh-ubuntu-docker-web
+expected_outcome: |
+  Script mode: a setup script and step-by-step instructions that harden the box without risking lockout (key set up and verified from a new session before passwords and root login are disabled, rollback timer around SSH/firewall changes), run everything non-interactively, put the sshd drop-in where cloud-init can't override it, bind the container to localhost behind Caddy (Docker bypasses ufw), set up fail2ban with the systemd backend, unattended upgrades, Telegram alerts without leaking the bot token into chat, and a final verification.

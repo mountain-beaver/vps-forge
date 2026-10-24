@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag matches plugin.json
+        run: |
+          v=$(python3 -c 'import json;print(json.load(open(".claude-plugin/plugin.json"))["version"])')
+          [ "v$v" = "$GITHUB_REF_NAME" ] || { echo "tag $GITHUB_REF_NAME does not match plugin.json version $v"; exit 1; }
+      - name: Checks
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck python3-yaml && sudo bash tests/run.sh
+      - name: Build skill zip (for claude.ai upload)
+        run: make package
+      - name: Release notes from CHANGELOG
+        run: |
+          v=${GITHUB_REF_NAME#v}
+          awk -v v="$v" '$0 ~ "^## "v" " {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
+          [ -s notes.md ] || { echo "CHANGELOG.md has no section for $v"; exit 1; }
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/vps-forge-skill.zip
+          body_path: notes.md

@@ -1,0 +1,18 @@
+{
+  "id": "prod-docker-trap",
+  "title": "Production Docker box with hidden exposure",
+  "memory_mb": 3072,
+  "extra_disk_gb": 0,
+  "ssh_user": "root",
+  "expected_public_ports": [80, 443],
+  "forbidden_public_ports": [5432, 8081],
+  "app_check": {"port": 80, "contains": "Hostname"},
+  "containers_must_run": ["shop", "db"],
+  "traps": [
+    "ufw is active and allows only 22/80, but Docker publishes Postgres 5432 and Adminer 8081 on 0.0.0.0 straight past ufw",
+    "PasswordAuthentication yes comes from 50-cloud-init.conf; PermitRootLogin yes from a legacy drop-in",
+    "an unknown old SSH key sits in root's authorized_keys",
+    "automatic security updates are switched off",
+    "the shop must stay online"
+  ]
+}

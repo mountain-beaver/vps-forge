@@ -1,0 +1,13 @@
+vps-forge audit 1.0.0 · web-01 · Ubuntu 22.04.4 LTS · 2026-10-21T18:02Z
+
+ACCOUNTS
+  FAIL  accounts.uid0                UID 0 accounts besides root: sysadm
+  INFO  accounts.keys                root: 2 key(s) in /root/.ssh/authorized_keys → ED25519 SHA256:x1… anna@mbp; RSA SHA256:q9… root@localhost
+EXPOSURE
+  WARN  exposure.listen              tcp/31337 kworkerd listens on all interfaces: bind it to 127.0.0.1, or confirm the firewall blocks it and it's intended
+COMPROMISE
+  FAIL  compromise.preload           /etc/ld.so.preload is not empty: classic rootkit technique, investigate: /usr/lib/libprocesshider.so
+  WARN  compromise.cron              cron entries download-and-execute or decode base64: /var/spool/cron/crontabs/root
+  INFO  compromise.cpu               processes above 80% CPU right now: kworkerd(4121) 398%;
+
+Score: 41/100   pass 12 · warn 9 · fail 6 · info 11 · skip 0

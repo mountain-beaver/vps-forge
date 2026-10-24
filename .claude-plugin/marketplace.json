@@ -1,0 +1,14 @@
+{
+  "name": "vps-forge",
+  "description": "Production-grade VPS setup, hardening and auditing for AI coding agents",
+  "owner": {
+    "name": "Hung Up"
+  },
+  "plugins": [
+    {
+      "name": "vps-forge",
+      "source": "./",
+      "description": "Set up, harden, audit and polish a Debian/Ubuntu VPS without ever losing access"
+    }
+  ]
+}

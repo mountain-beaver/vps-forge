@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: compromised-box
+expected_outcome: |
+  Recognizes strong compromise indicators (ld.so.preload rootkit library, extra UID-0 account, unknown key, miner-like process on a high port, download-and-execute cron) and stops hardening. Explains calmly, recommends a snapshot for evidence, containment, rotating all credentials from a clean machine, rebuilding from a fresh image and restoring only data from a pre-compromise backup.
+context:
+  scaffold_script: place-files.sh

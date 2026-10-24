@@ -1,0 +1,23 @@
+name: Distro or provider note
+description: A release or hosting provider behaves differently than the skill assumes
+labels: [distro-notes]
+body:
+  - type: input
+    id: target
+    attributes:
+      label: Distro / provider
+      placeholder: Debian 13 on Contabo, Oracle Cloud ARM, ...
+    validations:
+      required: true
+  - type: textarea
+    id: difference
+    attributes:
+      label: What differs
+      description: The default, quirk or trap, and how you confirmed it (commands and output).
+    validations:
+      required: true
+  - type: textarea
+    id: fix
+    attributes:
+      label: Suggested handling
+      description: What the skill should do instead, or what references/distro-notes.md should say.

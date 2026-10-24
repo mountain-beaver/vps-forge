@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+# deadman.sh with real systemd: timer rollback, enable states, files created after arm, nft
+# tables, the boot-time rollback after a reboot, locking, and client-ip under sudo over SSH.
+# Runs in a throwaway podman container (localhost/u24sd: Ubuntu 24.04 booting systemd) and takes
+# about three minutes. Needs network access for apt.
+set -uo pipefail
+cd "$(dirname "$0")/.." || exit 2
+# shellcheck source=tests/lib.sh
+. tests/lib.sh
+IMAGE=${VPS_FORGE_SYSTEMD_IMAGE:-localhost/u24sd}
+
+if ! command -v podman >/dev/null 2>&1 || ! podman image exists "$IMAGE" 2>/dev/null; then
+  note "deadman-systemd needs podman and the $IMAGE image (Ubuntu 24.04 with systemd as PID 1)"
+  exit 0
+fi
+
+C=vf-deadman-$$
+trap 'podman rm -f -t 0 "$C" >/dev/null 2>&1' EXIT
+x() { podman exec "$C" bash -c "$1"; }
+q() { podman exec "$C" bash -c "$1" >/dev/null 2>&1; }
+booted() { # wait until systemd accepts commands
+  local i
+  for ((i = 0; i < 60; i++)); do
+    [[ "$(podman exec "$C" systemctl is-system-running 2>/dev/null)" =~ ^(running|degraded|starting)$ ]] && return 0
+    sleep 1
+  done
+  return 1
+}
+wait_rolled_back() { # seconds
+  local i
+  for ((i = 0; i < $1; i += 3)); do
+    # ROLLED BACK shows as soon as the restore starts; wait for the unit to finish, too
+    [[ "$(x 'vps-forge-deadman status' 2>/dev/null)" == *$'\nROLLED BACK'* ]] \
+      && ! q 'systemctl is-active --quiet vps-forge-deadman.service vps-forge-deadman-boot.service' && return 0
+    sleep 3
+  done
+  return 1
+}
+
+step "start $IMAGE"
+# SYS_PTRACE: root on a real server has it, and client-ip needs it to read sudo's environment.
+podman run -d --name "$C" --systemd=always --cap-add NET_ADMIN --cap-add SYS_PTRACE -v "$PWD:/src:ro" "$IMAGE" >/dev/null || { bad "podman run"; finish; }
+booted || { bad "systemd did not come up"; finish; }
+x 'apt-get update -qq >/dev/null && apt-get install -y -qq --no-install-recommends sudo nftables openssh-client >/dev/null 2>&1' \
+  || { bad "apt-get install sudo nftables openssh-client"; finish; }
+x 'install -m 755 /src/skills/vps-forge/scripts/deadman.sh /usr/local/sbin/vps-forge-deadman' || bad "install deadman"
+# The reproduced case: no /etc/nftables.conf at arm, nftables.service disabled and inactive.
+# "keepme" stands in for the tables that ufw/fail2ban/docker own: it must survive every rollback.
+x 'rm -f /etc/nftables.conf; systemctl disable --now nftables >/dev/null 2>&1; nft add table inet keepme' || bad "nft setup"
+x 'useradd -m -s /bin/bash tester && usermod -p "*" tester && echo "tester ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/tester \
+   && chmod 440 /etc/sudoers.d/tester && ssh-keygen -q -t ed25519 -N "" -f /root/k \
+   && install -d -m 700 -o tester -g tester ~tester/.ssh && install -m 600 -o tester -g tester /root/k.pub ~tester/.ssh/authorized_keys' \
+  || bad "test user setup"
+SSH='ssh -i /root/k -o BatchMode=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR -o ConnectTimeout=5 tester@127.0.0.1'
+
+step "client-ip under sudo in an SSH session"
+out=$(x "$SSH 'sudo -n vps-forge-deadman client-ip'" 2>&1)
+[[ "$out" == 127.0.0.1 ]] && ok "sudo vps-forge-deadman client-ip over SSH prints 127.0.0.1" || bad "client-ip over SSH: $out"
+out=$(x "$SSH -tt 'sudo -n vps-forge-deadman client-ip'" 2>&1 | tr -d '\r')
+[[ "$out" == 127.0.0.1 ]] && ok "the same with a tty (sudo's use_pty monitor in the chain)" || bad "client-ip over SSH with a tty: $out"
+out=$(x 'vps-forge-deadman client-ip' 2>&1); rc=$?
+[[ $rc == 1 && "$out" == *"no SSH client"* ]] && ok "client-ip outside SSH: exit 1" || bad "client-ip outside SSH: rc=$rc out=$out"
+
+step "timer rollback: broken sshd, disabled ssh units, files created after arm"
+x 'vps-forge-deadman arm 1' >/dev/null || bad "arm 1"
+x 'echo "BogusDirective yes" > /etc/ssh/sshd_config.d/99-broken.conf
+   systemctl disable ssh.service ssh.socket >/dev/null 2>&1
+   echo "intruder ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/x && chmod 440 /etc/sudoers.d/x
+   mkdir -p /etc/iptables && echo "*filter" > /etc/iptables/rules.v4
+   printf "table inet vfdrop {\n  chain input { type filter hook input priority 0; policy drop; }\n}\n" > /etc/nftables.conf
+   systemctl enable --now nftables >/dev/null 2>&1
+   nft add table inet f2b-table' || bad "the risky change"
+q "$SSH true" && bad "the drop policy did not take effect (test is not meaningful)" || ok "the change locked SSH out"
+wait_rolled_back 150 && ok "the timer rolled back" || bad "no rollback within 150 s: $(x 'vps-forge-deadman status; journalctl -t vps-forge-deadman --no-pager | tail -n 20' 2>&1)"
+q '! test -e /etc/ssh/sshd_config.d/99-broken.conf && sshd -t' && ok "sshd config restored" || bad "sshd config not restored"
+for u in ssh.service ssh.socket; do
+  st=$(x "systemctl is-enabled $u" 2>&1)
+  [[ "$st" == enabled ]] && ok "$u enabled again" || bad "$u is $st after the rollback"
+done
+st=$(x 'systemctl is-enabled nftables; systemctl is-active nftables' 2>&1 | paste -sd' ')
+[[ "$st" == "disabled inactive" ]] && ok "nftables.service disabled and stopped again" || bad "nftables.service is $st after the rollback"
+q 'test ! -e /run/systemd/system/nftables.service.d/zz-vps-forge-deadman.conf' || bad "the no-flush drop-in was left behind"
+q 'test ! -e /etc/nftables.conf && test ! -e /etc/sudoers.d/x && test ! -e /etc/iptables' \
+  && ok "files created after arm are gone" || bad "files created after arm survived: $(x 'ls -d /etc/nftables.conf /etc/sudoers.d/x /etc/iptables 2>/dev/null')"
+tables=$(x 'nft list tables' 2>&1)
+[[ "$tables" != *vfdrop* ]] && ok "the table from the rolled-back nftables.conf is deleted" || bad "vfdrop survived: $tables"
+[[ "$tables" == *"inet keepme"* && "$tables" == *"inet f2b-table"* ]] \
+  && ok "tables not declared in rolled-back config are kept" || bad "a foreign table was deleted: $tables"
+q "$SSH true" && ok "a new SSH login works after the rollback" || bad "SSH login fails after the rollback"
+x 'vps-forge-deadman disarm' >/dev/null 2>&1; rc=$?
+[[ $rc == 3 ]] && ok "disarm after the rollback exits 3" || bad "disarm after the rollback: rc=$rc"
+
+step "two concurrent arms"
+podman exec "$C" vps-forge-deadman arm 5 >/dev/null 2>&1 & p1=$!
+podman exec "$C" vps-forge-deadman arm 5 >/dev/null 2>&1 & p2=$!
+wait "$p1"; r1=$?; wait "$p2"; r2=$?
+[[ $(( (r1 == 0) + (r2 == 0) )) == 1 ]] \
+  && ok "exactly one of two concurrent arms succeeds ($r1, $r2)" || bad "concurrent arms: rc $r1 and $r2"
+q 'test $(ls -d /var/lib/vps-forge/deadman/20* | wc -l) -ge 1 && systemctl is-active --quiet vps-forge-deadman.timer' \
+  || bad "no timer after the concurrent arms"
+x 'vps-forge-deadman disarm' >/dev/null 2>&1 && ok "disarm" || bad "disarm after the concurrent arms"
+
+step "reboot while armed: the boot-time rollback"
+x 'vps-forge-deadman arm 5' >/dev/null 2>&1 || bad "arm 5"
+x 'echo "MaxAuthTries 4" > /etc/ssh/sshd_config.d/50-change.conf' || bad "change"
+# Hold the boot rollback for a while so the arm below provably races a pending rollback.
+x 'mkdir -p /etc/systemd/system/vps-forge-deadman-boot.service.d &&
+   printf "[Service]\nExecStartPre=/bin/sleep 15\n" > /etc/systemd/system/vps-forge-deadman-boot.service.d/test-delay.conf' || bad "delay drop-in"
+podman restart -t 10 "$C" >/dev/null || bad "podman restart"
+out=$(podman exec "$C" vps-forge-deadman arm 5 2>&1); rc=$?
+[[ $rc != 0 && ( "$out" == *"has not run yet"* || "$out" == *"rollback is running"* ) ]] \
+  && ok "arm refused while the boot-time rollback is pending" || bad "arm during a pending boot rollback: rc=$rc out=$out"
+booted || bad "systemd did not come back after the restart"
+wait_rolled_back 90 && ok "the boot unit rolled back" || bad "no boot rollback within 90 s: $(x 'systemctl status vps-forge-deadman-boot.service --no-pager' 2>&1 | tail -n 15)"
+q 'test ! -e /etc/ssh/sshd_config.d/50-change.conf' && ok "the change from before the reboot is reverted" || bad "50-change.conf survived the boot rollback"
+x 'rm -rf /etc/systemd/system/vps-forge-deadman-boot.service.d && systemctl daemon-reload'
+q 'vps-forge-deadman arm 5 && vps-forge-deadman disarm' && ok "arm and disarm work after the boot rollback" || bad "arm/disarm after the boot rollback"
+q '! test -e /var/lib/vps-forge/deadman/armed && ! test -e /etc/systemd/system/vps-forge-deadman-boot.service' \
+  && ok "no reboot protection left behind" || bad "boot unit or marker left behind"
+
+finish

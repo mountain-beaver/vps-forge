@@ -1,0 +1,178 @@
+#cloud-config
+# vps-forge first-boot template. Fill the <placeholders> from the server you hardened.
+# NO SECRETS in here: user-data is stored by the provider and readable via the metadata service.
+# Validate: cloud-init schema --config-file cloud-init.yaml
+
+preserve_hostname: false
+hostname: <hostname>
+timezone: Etc/UTC
+
+users:
+  - name: <admin>
+    groups: [sudo, sshusers]
+    shell: /bin/bash
+    lock_passwd: true
+    # sudo: "ALL=(ALL) NOPASSWD:ALL"   # only if the owner chose NOPASSWD sudo
+    ssh_authorized_keys:
+      - <ssh-ed25519 AAAA... owner@laptop>
+
+groups: [sshusers]
+disable_root: true
+ssh_pwauth: false
+
+package_update: true
+package_upgrade: true
+packages:
+  - ufw
+  - nftables
+  - fail2ban
+  - python3-systemd
+  - unattended-upgrades
+  - needrestart
+  - etckeeper
+  - curl
+  - git
+  - htop
+  - ncdu
+  - tmux
+  - jq
+
+write_files:
+  - path: /etc/ssh/sshd_config.d/00-vps-forge.conf
+    permissions: "0644"
+    content: |
+      PermitRootLogin no
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      PermitEmptyPasswords no
+      PubkeyAuthentication yes
+      AuthenticationMethods publickey
+      AllowGroups sshusers
+      MaxAuthTries 5
+      MaxSessions 10
+      LoginGraceTime 30
+      ClientAliveInterval 300
+      ClientAliveCountMax 2
+      X11Forwarding no
+      AllowAgentForwarding no
+      PermitUserEnvironment no
+  # <ssh-port>: 22. This file leaves sshd and the ufw rule below on 22; move SSH later with
+  # the dead-man flow and update the jail's port at the same time.
+  - path: /etc/fail2ban/jail.d/vps-forge.local
+    permissions: "0644"
+    content: |
+      [DEFAULT]
+      backend = systemd
+      banaction = nftables-multiport
+      banaction_allports = nftables-allports
+      bantime = 1h
+      bantime.increment = true
+      bantime.maxtime = 1w
+      findtime = 10m
+      maxretry = 5
+      ignoreip = 127.0.0.1/8 ::1 <admin-ip>
+      [sshd]
+      enabled = true
+      port = <ssh-port>
+      mode = normal
+      [recidive]
+      enabled = true
+      backend = auto
+      logpath = /var/log/fail2ban.log
+      banaction = nftables-multiport
+      port = <ssh-port>
+      bantime = 1d
+      findtime = 1d
+      maxretry = 5
+  - path: /etc/apt/apt.conf.d/20auto-upgrades
+    permissions: "0644"
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+      APT::Periodic::AutocleanInterval "7";
+  - path: /etc/apt/apt.conf.d/52vps-forge-unattended
+    permissions: "0644"
+    content: |
+      Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+      Unattended-Upgrade::Remove-New-Unused-Dependencies "true";
+      Unattended-Upgrade::Remove-Unused-Dependencies "true";
+      Unattended-Upgrade::SyslogEnable "true";
+      Unattended-Upgrade::Automatic-Reboot "false";
+  - path: /etc/needrestart/conf.d/50-vps-forge.conf
+    permissions: "0644"
+    content: |
+      $nrconf{restart} = 'a';
+  - path: /etc/systemd/journald.conf.d/10-vps-forge.conf
+    permissions: "0644"
+    content: |
+      [Journal]
+      Storage=persistent
+      Compress=yes
+      SystemMaxUse=500M
+      SystemKeepFree=1G
+      MaxRetentionSec=1month
+  # Comments (rp_filter=2 on VPN gateways, BBR) live in assets/sysctl/99-vps-forge.conf.
+  - path: /etc/sysctl.d/99-vps-forge.conf
+    permissions: "0644"
+    content: |
+      net.ipv4.tcp_syncookies = 1
+      net.ipv4.conf.all.rp_filter = 1
+      net.ipv4.conf.default.rp_filter = 1
+      net.ipv4.conf.all.accept_redirects = 0
+      net.ipv4.conf.default.accept_redirects = 0
+      net.ipv4.conf.all.secure_redirects = 0
+      net.ipv4.conf.default.secure_redirects = 0
+      net.ipv6.conf.all.accept_redirects = 0
+      net.ipv6.conf.default.accept_redirects = 0
+      # IPv6 ignores conf.all here: set every interface (systemd-sysctl expands the glob at boot and
+      # for interfaces that appear later)
+      net.ipv6.conf.*.accept_redirects = 0
+      net.ipv4.conf.all.send_redirects = 0
+      net.ipv4.conf.default.send_redirects = 0
+      net.ipv4.conf.all.accept_source_route = 0
+      net.ipv4.conf.default.accept_source_route = 0
+      net.ipv6.conf.all.accept_source_route = 0
+      net.ipv6.conf.default.accept_source_route = 0
+      net.ipv4.icmp_echo_ignore_broadcasts = 1
+      net.ipv4.icmp_ignore_bogus_error_responses = 1
+      kernel.kptr_restrict = 2
+      kernel.dmesg_restrict = 1
+      kernel.randomize_va_space = 2
+      kernel.yama.ptrace_scope = 1
+      fs.protected_hardlinks = 1
+      fs.protected_symlinks = 1
+      fs.protected_fifos = 2
+      fs.protected_regular = 2
+      fs.suid_dumpable = 0
+      vm.swappiness = 10
+      net.core.default_qdisc = fq
+      net.ipv4.tcp_congestion_control = bbr
+
+runcmd:
+  # Hardened crypto, generated from this target's own OpenSSH (names differ between versions;
+  # a copied list can stop sshd). Same picker as references/ssh.md. Dropped if sshd rejects it.
+  - - bash
+    - -c
+    - |
+      pick() { local have; have=$(ssh -Q "$1"); shift; local out=""; for a in "$@"; do grep -qx "$a" <<<"$have" && out+="${out:+,}$a"; done; echo "$out"; }
+      f=/etc/ssh/sshd_config.d/01-vps-forge-crypto.conf
+      {
+        echo "# Generated by vps-forge for $(ssh -V 2>&1)"
+        echo "HostKey /etc/ssh/ssh_host_ed25519_key"
+        echo "KexAlgorithms $(pick kex mlkem768x25519-sha256 sntrup761x25519-sha512 sntrup761x25519-sha512@openssh.com curve25519-sha256 curve25519-sha256@libssh.org)"
+        echo "Ciphers $(pick cipher chacha20-poly1305@openssh.com aes256-gcm@openssh.com aes128-gcm@openssh.com aes256-ctr aes192-ctr aes128-ctr)"
+        echo "MACs $(pick mac hmac-sha2-512-etm@openssh.com hmac-sha2-256-etm@openssh.com umac-128-etm@openssh.com)"
+      } > "$f"
+      sshd -t || rm -f "$f"
+  - [sh, -c, "sshd -t && systemctl reload ssh || true"]
+  - [ufw, default, deny, incoming]
+  - [ufw, default, allow, outgoing]
+  # The admin rule goes before `limit`: ufw matches in order, and limit ignores fail2ban's ignoreip.
+  - [ufw, allow, from, "<admin-ip>", to, any, port, "22", proto, tcp, comment, admin]
+  - [ufw, limit, "22/tcp", comment, ssh]
+  # - [ufw, allow, "80,443/tcp", comment, web]
+  - [ufw, --force, enable]
+  - [systemctl, enable, --now, fail2ban]
+  - [sysctl, --system]
+  - [systemctl, restart, systemd-journald]
+  - [sh, -c, "etckeeper commit 'vps-forge: first boot baseline' || true"]

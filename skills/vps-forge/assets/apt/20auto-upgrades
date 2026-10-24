@@ -1,0 +1,4 @@
+// /etc/apt/apt.conf.d/20auto-upgrades: managed by vps-forge
+APT::Periodic::Update-Package-Lists "1";
+APT::Periodic::Unattended-Upgrade "1";
+APT::Periodic::AutocleanInterval "7";

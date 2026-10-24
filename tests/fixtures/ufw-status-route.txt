@@ -1,0 +1,7 @@
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 80,443/tcp                 ALLOW FWD   173.245.48.0/20            # cf-sync-route
+[ 2] 80,443/tcp                 ALLOW IN    10.0.0.0/8                 # cf-sync
+[ 3] 80,443/tcp                 ALLOW FWD   2400:cb00::/32             # cf-sync-route

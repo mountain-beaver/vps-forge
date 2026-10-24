@@ -1,0 +1,50 @@
+#!/bin/bash
+# /etc/update-motd.d/60-vps-forge: login status summary (vps-forge). Must stay fast and offline.
+export LC_ALL=C
+b=$'\e[1m'; d=$'\e[2m'; g=$'\e[32m'; y=$'\e[33m'; r=$'\e[31m'; n=$'\e[0m'
+t() { timeout 1 "$@" 2>/dev/null; }
+
+host=$(hostname)
+os=$( . /etc/os-release 2>/dev/null; echo "${PRETTY_NAME:-Linux}")
+up=$(uptime -p 2>/dev/null | sed 's/^up //')
+load=$(cut -d' ' -f1-3 /proc/loadavg)
+mem=$(free -m | awk '/^Mem:/{printf "%d/%d MiB (%d%%)", $3, $2, ($2?$3*100/$2:0)}')
+disk=$(df -h / | awk 'NR==2{print $3"/"$2" ("$5")"}')
+
+case "$host" in *prod*) hc=$r ;; *) hc=$g ;; esac
+printf '\n %s%s%s  %s%s · up %s · load %s%s\n' "$b$hc" "$host" "$n" "$d" "$os" "$up" "$load" "$n"
+printf ' mem %s · disk / %s\n' "$mem" "$disk"
+
+warns=()
+[[ -f /var/run/reboot-required ]] && warns+=("${y}reboot required${n}")
+if [[ -r /var/lib/update-notifier/updates-available ]]; then
+  sec=$(grep -oE '^[0-9]+ (update|updates) (is|are) security' /var/lib/update-notifier/updates-available | grep -oE '^[0-9]+')
+  [[ -n "$sec" && "$sec" != 0 ]] && warns+=("${y}${sec} security updates${n}")
+fi
+failed=$(t systemctl --failed --no-legend --plain | awk '{print $1}' | paste -sd' ' -)
+[[ -n "$failed" ]] && warns+=("${r}failed: $failed${n}")
+systemctl is-active --quiet vps-forge-deadman.timer 2>/dev/null && \
+  [[ "$(systemctl show -p SubState --value vps-forge-deadman.timer 2>/dev/null)" == waiting ]] && warns+=("${r}deadman ARMED${n}")
+
+info=()
+if command -v fail2ban-client >/dev/null && [[ $EUID -eq 0 ]]; then
+  bans=$(t fail2ban-client status sshd | awk -F: '/Currently banned/{gsub(/ /,"",$2); print $2}')
+  [[ -n "$bans" ]] && info+=("fail2ban: $bans banned")
+fi
+if systemctl cat vps-forge-backup.service >/dev/null 2>&1; then
+  last=$(systemctl show -p ExecMainExitTimestamp --value vps-forge-backup.service 2>/dev/null)
+  res=$(systemctl show -p Result --value vps-forge-backup.service 2>/dev/null)
+  if [[ -n "$last" ]]; then
+    [[ "$res" == success ]] && info+=("backup: $last") || warns+=("${r}backup $res ($last)${n}")
+  else
+    info+=("backup: not run yet")
+  fi
+fi
+if systemctl is-active --quiet docker 2>/dev/null; then
+  c=$(t docker ps -q | wc -l); info+=("docker: $c running")
+fi
+
+join() { local out="" x; for x in "$@"; do out+="${out:+ · }$x"; done; printf '%s' "$out"; }
+((${#info[@]})) && printf ' %s\n' "$(join "${info[@]}")"
+((${#warns[@]})) && printf ' ⚠ %s\n' "$(join "${warns[@]}")"
+printf '\n'

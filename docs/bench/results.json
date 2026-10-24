@@ -1,0 +1,6582 @@
+{
+ "debian-12/fresh-docker-web/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 17,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 89
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261023-215102.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261023-215102.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 303,
+   "skill_invoked": false,
+   "turns": 18
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 18,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 95
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": true,
+    "count": 1,
+    "first_ban": "2026-10-24T00:08:24Z",
+    "outside_run": 0,
+    "sources": {
+     "fail2ban_db": {
+      "during": 1,
+      "outside": 0
+     },
+     "fail2ban_log": {
+      "during": 1,
+      "outside": 0
+     }
+    },
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261024T000706Z.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261024T000706Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 3951,
+   "skill_invoked": false,
+   "turns": 5
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 17,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 89
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/latest.tar.gz#srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/latest.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 298,
+   "skill_invoked": false,
+   "turns": 16
+  }
+ ],
+ "debian-12/fresh-docker-web/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 359,
+   "skill_invoked": true,
+   "turns": 50
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 414,
+   "skill_invoked": true,
+   "turns": 43
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 637,
+   "skill_invoked": true,
+   "turns": 56
+  }
+ ],
+ "debian-12/fresh-sudo-user/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": false
+    },
+    "passed": 17,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 89
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261024T054454Z.tar.gz#srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261024T054454Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 331,
+   "skill_invoked": false,
+   "turns": 31
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": false
+    },
+    "passed": 17,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 89
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app-data/app-data-20261024T013435Z.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app-data/app-data-20261024T013435Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 367,
+   "skill_invoked": false,
+   "turns": 21
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": true,
+    "count": 1,
+    "first_ban": "2026-10-24T04:08:26Z",
+    "outside_run": 0,
+    "sources": {
+     "fail2ban_db": {
+      "during": 1,
+      "outside": 0
+     },
+     "fail2ban_log": {
+      "during": 1,
+      "outside": 0
+     }
+    },
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/latest.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/latest.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 3980,
+   "skill_invoked": false,
+   "turns": 8
+  }
+ ],
+ "debian-12/fresh-sudo-user/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 560,
+   "skill_invoked": true,
+   "turns": 53
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 486,
+   "skill_invoked": true,
+   "turns": 54
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 439,
+   "skill_invoked": true,
+   "turns": 52
+  }
+ ],
+ "debian-12/prod-docker-trap/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 13,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 87
+   },
+   "lynis": 69,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 167,
+   "skill_invoked": false,
+   "turns": 19
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": false,
+     "a brute-force source gets banned": false,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 11,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 73
+   },
+   "lynis": 67,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 143,
+   "skill_invoked": false,
+   "turns": 17
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": false,
+     "a brute-force source gets banned": false,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 11,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 73
+   },
+   "lynis": 68,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 176,
+   "skill_invoked": false,
+   "turns": 15
+  }
+ ],
+ "debian-12/prod-docker-trap/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 15,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 414,
+   "skill_invoked": true,
+   "turns": 46
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 15,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 338,
+   "skill_invoked": true,
+   "turns": 33
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 15,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 435,
+   "skill_invoked": true,
+   "turns": 35
+  }
+ ],
+ "debian-12/ssh-port-socket/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": false,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 14,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 88
+   },
+   "lynis": 66,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 105,
+   "skill_invoked": false,
+   "turns": 14
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": false,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 14,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 88
+   },
+   "lynis": 66,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 128,
+   "skill_invoked": false,
+   "turns": 13
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": false,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 14,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 88
+   },
+   "lynis": 66,
+   "self_ban": {
+    "banned": true,
+    "count": 1,
+    "first_ban": "2026-10-24T03:20:36Z",
+    "outside_run": 0,
+    "sources": {
+     "fail2ban_db": {
+      "during": 1,
+      "outside": 0
+     },
+     "fail2ban_log": {
+      "during": 1,
+      "outside": 0
+     }
+    },
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 3706,
+   "skill_invoked": false,
+   "turns": 3
+  }
+ ],
+ "debian-12/ssh-port-socket/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 16,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 651,
+   "skill_invoked": true,
+   "turns": 35
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 16,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 348,
+   "skill_invoked": true,
+   "turns": 26
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 16,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 70,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 325,
+   "skill_invoked": true,
+   "turns": 34
+  }
+ ],
+ "debian-13/fresh-docker-web/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 17,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 89
+   },
+   "lynis": 74,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261023T214831Z.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261023T214831Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 757,
+   "skill_invoked": false,
+   "turns": 22
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": false
+    },
+    "passed": 16,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 84
+   },
+   "lynis": 74,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/latest.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/latest.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 309,
+   "skill_invoked": false,
+   "turns": 19
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 17,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 89
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/monthly_app-data_2026-10-24_023846.tar.gz#srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/monthly_app-data_2026-10-24_023846.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 227,
+   "skill_invoked": false,
+   "turns": 18
+  }
+ ],
+ "debian-13/fresh-docker-web/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 861,
+   "skill_invoked": true,
+   "turns": 57
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 490,
+   "skill_invoked": true,
+   "turns": 53
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 487,
+   "skill_invoked": true,
+   "turns": 55
+  }
+ ],
+ "debian-13/fresh-sudo-user/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 18,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 95
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/latest.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/latest.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 253,
+   "skill_invoked": false,
+   "turns": 16
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": false,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 17,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 89
+   },
+   "lynis": 75,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261024T011743Z.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261024T011743Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 930,
+   "skill_invoked": false,
+   "turns": 30
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": false
+    },
+    "passed": 17,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 89
+   },
+   "lynis": 75,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app-data/latest.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app-data/latest.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 342,
+   "skill_invoked": false,
+   "turns": 30
+  }
+ ],
+ "debian-13/fresh-sudo-user/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 609,
+   "skill_invoked": true,
+   "turns": 60
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 664,
+   "skill_invoked": true,
+   "turns": 49
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 467,
+   "skill_invoked": true,
+   "turns": 53
+  }
+ ],
+ "debian-13/prod-docker-trap/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": false,
+     "a brute-force source gets banned": false,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 11,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 73
+   },
+   "lynis": 70,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 164,
+   "skill_invoked": false,
+   "turns": 17
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 13,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 87
+   },
+   "lynis": 70,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 201,
+   "skill_invoked": false,
+   "turns": 16
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": false,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 12,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 80
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 284,
+   "skill_invoked": false,
+   "turns": 19
+  }
+ ],
+ "debian-13/prod-docker-trap/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 15,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 379,
+   "skill_invoked": true,
+   "turns": 36
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 15,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 414,
+   "skill_invoked": true,
+   "turns": 38
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 15,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 429,
+   "skill_invoked": true,
+   "turns": 34
+  }
+ ],
+ "debian-13/ssh-port-socket/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": false,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 14,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 88
+   },
+   "lynis": 67,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 153,
+   "skill_invoked": false,
+   "turns": 17
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": false,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 14,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 88
+   },
+   "lynis": 67,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 188,
+   "skill_invoked": false,
+   "turns": 17
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": false,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 14,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 88
+   },
+   "lynis": 67,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 168,
+   "skill_invoked": false,
+   "turns": 11
+  }
+ ],
+ "debian-13/ssh-port-socket/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 16,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 306,
+   "skill_invoked": true,
+   "turns": 39
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 16,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 379,
+   "skill_invoked": true,
+   "turns": 31
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 16,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 349,
+   "skill_invoked": true,
+   "turns": 38
+  }
+ ],
+ "ubuntu-22.04/fresh-docker-web/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": false
+    },
+    "passed": 16,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 84
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261023T220201Z.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261023T220201Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 239,
+   "skill_invoked": false,
+   "turns": 26
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": false
+    },
+    "passed": 16,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 84
+   },
+   "lynis": 70,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app-data/app-data-20261024T002513Z.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app-data/app-data-20261024T002513Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 236,
+   "skill_invoked": false,
+   "turns": 18
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": false
+    },
+    "passed": 16,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 84
+   },
+   "lynis": 70,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/latest.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/latest.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 219,
+   "skill_invoked": false,
+   "turns": 16
+  }
+ ],
+ "ubuntu-22.04/fresh-docker-web/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 518,
+   "skill_invoked": true,
+   "turns": 73
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 610,
+   "skill_invoked": true,
+   "turns": 53
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 490,
+   "skill_invoked": true,
+   "turns": 61
+  }
+ ],
+ "ubuntu-22.04/fresh-sudo-user/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": false
+    },
+    "passed": 17,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 89
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app-data/app-data-2026-10-23T225612.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:backup-app-data.timer->backup-app-data.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app-data/app-data-2026-10-23T225612.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 235,
+   "skill_invoked": false,
+   "turns": 18
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": true,
+    "count": 1,
+    "first_ban": "2026-10-24T01:50:17Z",
+    "outside_run": 0,
+    "sources": {
+     "fail2ban_db": {
+      "during": 1,
+      "outside": 0
+     },
+     "fail2ban_log": {
+      "during": 1,
+      "outside": 0
+     }
+    },
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261024T014203Z.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261024T014203Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 4528,
+   "skill_invoked": false,
+   "turns": 1
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 18,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 95
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/latest.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/latest.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 241,
+   "skill_invoked": false,
+   "turns": 14
+  }
+ ],
+ "ubuntu-22.04/fresh-sudo-user/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 394,
+   "skill_invoked": true,
+   "turns": 46
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 397,
+   "skill_invoked": true,
+   "turns": 48
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 433,
+   "skill_invoked": true,
+   "turns": 54
+  }
+ ],
+ "ubuntu-22.04/prod-docker-trap/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": false,
+     "a brute-force source gets banned": false,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 11,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 73
+   },
+   "lynis": 68,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 236,
+   "skill_invoked": false,
+   "turns": 23
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": false,
+     "a brute-force source gets banned": false,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 11,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 73
+   },
+   "lynis": 68,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 167,
+   "skill_invoked": false,
+   "turns": 15
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 13,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 87
+   },
+   "lynis": 68,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 169,
+   "skill_invoked": false,
+   "turns": 18
+  }
+ ],
+ "ubuntu-22.04/prod-docker-trap/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 15,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 70,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 413,
+   "skill_invoked": true,
+   "turns": 44
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 14,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 93
+   },
+   "lynis": 70,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 366,
+   "skill_invoked": true,
+   "turns": 32
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 14,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 93
+   },
+   "lynis": 70,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 366,
+   "skill_invoked": true,
+   "turns": 32
+  }
+ ],
+ "ubuntu-22.04/ssh-port-socket/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": false,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 14,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 88
+   },
+   "lynis": 66,
+   "self_ban": {
+    "banned": true,
+    "count": 1,
+    "first_ban": "2026-10-23T22:19:22Z",
+    "outside_run": 0,
+    "sources": {
+     "fail2ban_log": {
+      "during": 1,
+      "outside": 0
+     }
+    },
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 168,
+   "skill_invoked": false,
+   "turns": 15
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": false,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 14,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 88
+   },
+   "lynis": 61,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 124,
+   "skill_invoked": false,
+   "turns": 12
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": false,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 14,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 88
+   },
+   "lynis": 62,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 109,
+   "skill_invoked": false,
+   "turns": 12
+  }
+ ],
+ "ubuntu-22.04/ssh-port-socket/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 16,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 70,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 322,
+   "skill_invoked": true,
+   "turns": 33
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 16,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 70,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 310,
+   "skill_invoked": true,
+   "turns": 39
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 16,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 350,
+   "skill_invoked": true,
+   "turns": 32
+  }
+ ],
+ "ubuntu-24.04/fresh-docker-web/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 18,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 95
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261023T212957Z.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261023T212957Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 601,
+   "skill_invoked": false,
+   "turns": 5
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 17,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 89
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261023T234825Z.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261023T234825Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 359,
+   "skill_invoked": false,
+   "turns": 25
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 17,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 89
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261024T022614Z.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261024T022614Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 343,
+   "skill_invoked": false,
+   "turns": 22
+  }
+ ],
+ "ubuntu-24.04/fresh-docker-web/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic-vps-fresh-docker#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic-vps-fresh-docker"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic-vps-fresh-docker:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 505,
+   "skill_invoked": true,
+   "turns": 54
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 468,
+   "skill_invoked": true,
+   "turns": 52
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 452,
+   "skill_invoked": true,
+   "turns": 62
+  }
+ ],
+ "ubuntu-24.04/fresh-sudo-user/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 18,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 95
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261023T223419Z.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261023T223419Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 279,
+   "skill_invoked": false,
+   "turns": 18
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": false
+    },
+    "passed": 17,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 89
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261024T011624Z.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261024T011624Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 255,
+   "skill_invoked": false,
+   "turns": 18
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": false
+    },
+    "passed": 17,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 89
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261024-034427.tar.gz#srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261024-034427.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 341,
+   "skill_invoked": false,
+   "turns": 28
+  }
+ ],
+ "ubuntu-24.04/fresh-sudo-user/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 428,
+   "skill_invoked": true,
+   "turns": 58
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 401,
+   "skill_invoked": true,
+   "turns": 52
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 528,
+   "skill_invoked": true,
+   "turns": 46
+  }
+ ],
+ "ubuntu-24.04/prod-docker-trap/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": false,
+     "a brute-force source gets banned": false,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 11,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 73
+   },
+   "lynis": 68,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 223,
+   "skill_invoked": false,
+   "turns": 19
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 13,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 87
+   },
+   "lynis": 70,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 314,
+   "skill_invoked": false,
+   "turns": 17
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": false,
+     "a brute-force source gets banned": false,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 11,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 73
+   },
+   "lynis": 68,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 173,
+   "skill_invoked": false,
+   "turns": 15
+  }
+ ],
+ "ubuntu-24.04/prod-docker-trap/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 15,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 347,
+   "skill_invoked": true,
+   "turns": 42
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 14,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 93
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 323,
+   "skill_invoked": true,
+   "turns": 33
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 15,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 380,
+   "skill_invoked": true,
+   "turns": 35
+  }
+ ],
+ "ubuntu-24.04/ssh-port-socket/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": false,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 14,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 88
+   },
+   "lynis": 63,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 128,
+   "skill_invoked": false,
+   "turns": 12
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": false,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 14,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 88
+   },
+   "lynis": 62,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 175,
+   "skill_invoked": false,
+   "turns": 12
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": false,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 14,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 88
+   },
+   "lynis": 63,
+   "self_ban": {
+    "banned": true,
+    "count": 1,
+    "first_ban": "2026-10-24T03:05:14Z",
+    "outside_run": 0,
+    "sources": {
+     "fail2ban_db": {
+      "during": 1,
+      "outside": 0
+     },
+     "fail2ban_log": {
+      "during": 2,
+      "outside": 0
+     }
+    },
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 712,
+   "skill_invoked": false,
+   "turns": 5
+  }
+ ],
+ "ubuntu-24.04/ssh-port-socket/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 16,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 282,
+   "skill_invoked": true,
+   "turns": 27
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 16,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 312,
+   "skill_invoked": true,
+   "turns": 22
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 16,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 226,
+   "skill_invoked": true,
+   "turns": 30
+  }
+ ],
+ "ubuntu-26.04/fresh-docker-web/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": false
+    },
+    "passed": 16,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 84
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261023T214539Z.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261023T214539Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 617,
+   "skill_invoked": false,
+   "turns": 24
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": false
+    },
+    "passed": 16,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 84
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261024T000457Z.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261024T000457Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 335,
+   "skill_invoked": false,
+   "turns": 18
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 17,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 89
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261024T024233Z.tar.gz#srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261024T024233Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 318,
+   "skill_invoked": false,
+   "turns": 20
+  }
+ ],
+ "ubuntu-26.04/fresh-docker-web/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 623,
+   "skill_invoked": true,
+   "turns": 51
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 537,
+   "skill_invoked": true,
+   "turns": 59
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 577,
+   "skill_invoked": true,
+   "turns": 53
+  }
+ ],
+ "ubuntu-26.04/fresh-sudo-user/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": false
+    },
+    "passed": 17,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 89
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-20261023T224116Z.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-20261023T224116Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 307,
+   "skill_invoked": false,
+   "turns": 18
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": false
+    },
+    "passed": 17,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 89
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-data-2026-10-24T012529Z.tar.gz#data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-data-2026-10-24T012529Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 441,
+   "skill_invoked": false,
+   "turns": 22
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 18,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 95
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "tar:/mnt/backup/app/app-20261024T040324Z.tar.gz#srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:app-backup.timer->app-backup.service"
+    ],
+    "repos": [],
+    "tried": [
+     "tar:/mnt/backup/app/app-20261024T040324Z.tar.gz:listed:1"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 5400,
+   "skill_invoked": false,
+   "turns": 26
+  }
+ ],
+ "ubuntu-26.04/fresh-sudo-user/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 437,
+   "skill_invoked": true,
+   "turns": 55
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 686,
+   "skill_invoked": true,
+   "turns": 46
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "backup scheduled": true,
+     "backup ran during setup": true,
+     "app data restorable from backup": true,
+     "test alert delivered": true,
+     "SSH login triggers an alert": true
+    },
+    "passed": 19,
+    "total": 19,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": {
+    "scheduled": true,
+    "has_new_data": true,
+    "app_data_restorable": true,
+    "via": "restic:/mnt/backup/restic#/srv/app/data/upload-1.txt",
+    "jobs": [
+     "timer:vps-forge-backup-maint.timer->vps-forge-backup-maint.service",
+     "timer:vps-forge-backup.timer->vps-forge-backup.service",
+     "timer:vps-forge-health.timer->vps-forge-health.service"
+    ],
+    "repos": [
+     "restic:/mnt/backup/restic"
+    ],
+    "tried": [
+     "restic:/mnt/backup/restic:opened"
+    ],
+    "probe_found_live": true
+   },
+   "agent_seconds": 452,
+   "skill_invoked": true,
+   "turns": 47
+  }
+ ],
+ "ubuntu-26.04/prod-docker-trap/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 13,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 87
+   },
+   "lynis": 69,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 212,
+   "skill_invoked": false,
+   "turns": 16
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 13,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 87
+   },
+   "lynis": 70,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 246,
+   "skill_invoked": false,
+   "turns": 22
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": false,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": false,
+     "a brute-force source gets banned": false,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 11,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 73
+   },
+   "lynis": 67,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 232,
+   "skill_invoked": false,
+   "turns": 21
+  }
+ ],
+ "ubuntu-26.04/prod-docker-trap/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 15,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 412,
+   "skill_invoked": true,
+   "turns": 37
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 15,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 384,
+   "skill_invoked": true,
+   "turns": 40
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "app still serves": true,
+     "app serves after reboot": true,
+     "app containers still running": true
+    },
+    "passed": 15,
+    "total": 15,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 72,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 495,
+   "skill_invoked": true,
+   "turns": 41
+  }
+ ],
+ "ubuntu-26.04/ssh-port-socket/baseline": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": false,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 14,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 88
+   },
+   "lynis": 62,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 149,
+   "skill_invoked": false,
+   "turns": 12
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": false,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 14,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 88
+   },
+   "lynis": 62,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 124,
+   "skill_invoked": false,
+   "turns": 14
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": false,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 15,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 94
+   },
+   "lynis": 63,
+   "self_ban": {
+    "banned": true,
+    "count": 1,
+    "first_ban": "2026-10-24T03:19:08Z",
+    "outside_run": 0,
+    "sources": {
+     "fail2ban_db": {
+      "during": 1,
+      "outside": 0
+     },
+     "fail2ban_log": {
+      "during": 2,
+      "outside": 0
+     }
+    },
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 753,
+   "skill_invoked": false,
+   "turns": 21
+  }
+ ],
+ "ubuntu-26.04/ssh-port-socket/skill": [
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 16,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 267,
+   "skill_invoked": true,
+   "turns": 29
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 16,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 71,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 276,
+   "skill_invoked": true,
+   "turns": 26
+  },
+  {
+   "score": {
+    "checks": {
+     "admin access with the user's key": true,
+     "admin access after reboot": true,
+     "deploy@2222 works": true,
+     "deploy@2222 works after reboot": true,
+     "no password logins offered": true,
+     "root cannot log in over SSH": true,
+     "ssh-audit: no failures": true,
+     "host firewall active": true,
+     "no forbidden port reachable": true,
+     "no forbidden port reachable after reboot": true,
+     "no unexpected open ports": true,
+     "brute-force protection active": true,
+     "a brute-force source gets banned": true,
+     "automatic security updates": true,
+     "SSH moved to 2222": true,
+     "SSH still on 2222 after reboot": true
+    },
+    "passed": 16,
+    "total": 16,
+    "lockout": false,
+    "lockout_reason": null,
+    "score": 100
+   },
+   "lynis": 73,
+   "self_ban": {
+    "banned": false,
+    "count": 0,
+    "first_ban": null,
+    "outside_run": 0,
+    "sources": {},
+    "errors": []
+   },
+   "backups": null,
+   "agent_seconds": 431,
+   "skill_invoked": true,
+   "turns": 38
+  }
+ ],
+ "_meta": {
+  "provenance": "Tag `v3` \u00b7 judge v3 (verdicts from the runs themselves) \u00b7 skill `8621325` \u00b7 model `claude-opus-5-5`",
+  "judge_version": 3,
+  "rejudged": false
+ },
+ "_broken": {},
+ "debian-12/fresh-docker-web/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "no password logins offered": false,
+    "root cannot log in over SSH": false,
+    "ssh-audit: no failures": false,
+    "host firewall active": false,
+    "no forbidden port reachable": true,
+    "no forbidden port reachable after reboot": true,
+    "no unexpected open ports": true,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": true,
+    "app still serves": false,
+    "app serves after reboot": false,
+    "backup scheduled": false,
+    "backup ran during setup": false,
+    "app data restorable from backup": false,
+    "test alert delivered": false,
+    "SSH login triggers an alert": false
+   },
+   "passed": 6,
+   "total": 19,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 32
+  },
+  "lynis": 64
+ },
+ "debian-12/fresh-sudo-user/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "no password logins offered": true,
+    "root cannot log in over SSH": true,
+    "ssh-audit: no failures": false,
+    "host firewall active": false,
+    "no forbidden port reachable": true,
+    "no forbidden port reachable after reboot": true,
+    "no unexpected open ports": true,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": true,
+    "app still serves": false,
+    "app serves after reboot": false,
+    "backup scheduled": false,
+    "backup ran during setup": false,
+    "app data restorable from backup": false,
+    "test alert delivered": false,
+    "SSH login triggers an alert": false
+   },
+   "passed": 8,
+   "total": 19,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 42
+  },
+  "lynis": 64
+ },
+ "debian-12/prod-docker-trap/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "no password logins offered": false,
+    "root cannot log in over SSH": false,
+    "ssh-audit: no failures": false,
+    "host firewall active": true,
+    "no forbidden port reachable": false,
+    "no forbidden port reachable after reboot": false,
+    "no unexpected open ports": false,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": false,
+    "app still serves": true,
+    "app serves after reboot": true,
+    "app containers still running": true
+   },
+   "passed": 6,
+   "total": 15,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 40
+  },
+  "lynis": 64
+ },
+ "debian-12/ssh-port-socket/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "deploy@2222 works": false,
+    "deploy@2222 works after reboot": false,
+    "no password logins offered": false,
+    "root cannot log in over SSH": false,
+    "ssh-audit: no failures": false,
+    "host firewall active": false,
+    "no forbidden port reachable": false,
+    "no forbidden port reachable after reboot": false,
+    "no unexpected open ports": true,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": true,
+    "SSH moved to 2222": false,
+    "SSH still on 2222 after reboot": false
+   },
+   "passed": 4,
+   "total": 16,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 25
+  },
+  "lynis": 64
+ },
+ "debian-13/fresh-docker-web/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "no password logins offered": false,
+    "root cannot log in over SSH": false,
+    "ssh-audit: no failures": false,
+    "host firewall active": false,
+    "no forbidden port reachable": true,
+    "no forbidden port reachable after reboot": true,
+    "no unexpected open ports": true,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": true,
+    "app still serves": false,
+    "app serves after reboot": false,
+    "backup scheduled": false,
+    "backup ran during setup": false,
+    "app data restorable from backup": false,
+    "test alert delivered": false,
+    "SSH login triggers an alert": false
+   },
+   "passed": 6,
+   "total": 19,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 32
+  },
+  "lynis": 65
+ },
+ "debian-13/fresh-sudo-user/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "no password logins offered": true,
+    "root cannot log in over SSH": true,
+    "ssh-audit: no failures": false,
+    "host firewall active": false,
+    "no forbidden port reachable": true,
+    "no forbidden port reachable after reboot": true,
+    "no unexpected open ports": true,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": true,
+    "app still serves": false,
+    "app serves after reboot": false,
+    "backup scheduled": false,
+    "backup ran during setup": false,
+    "app data restorable from backup": false,
+    "test alert delivered": false,
+    "SSH login triggers an alert": false
+   },
+   "passed": 8,
+   "total": 19,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 42
+  },
+  "lynis": 65
+ },
+ "debian-13/prod-docker-trap/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "no password logins offered": false,
+    "root cannot log in over SSH": false,
+    "ssh-audit: no failures": false,
+    "host firewall active": true,
+    "no forbidden port reachable": false,
+    "no forbidden port reachable after reboot": false,
+    "no unexpected open ports": false,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": false,
+    "app still serves": true,
+    "app serves after reboot": true,
+    "app containers still running": true
+   },
+   "passed": 6,
+   "total": 15,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 40
+  },
+  "lynis": 66
+ },
+ "debian-13/ssh-port-socket/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "deploy@2222 works": false,
+    "deploy@2222 works after reboot": false,
+    "no password logins offered": false,
+    "root cannot log in over SSH": false,
+    "ssh-audit: no failures": false,
+    "host firewall active": false,
+    "no forbidden port reachable": false,
+    "no forbidden port reachable after reboot": false,
+    "no unexpected open ports": true,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": true,
+    "SSH moved to 2222": false,
+    "SSH still on 2222 after reboot": false
+   },
+   "passed": 4,
+   "total": 16,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 25
+  },
+  "lynis": 65
+ },
+ "ubuntu-22.04/fresh-docker-web/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "no password logins offered": false,
+    "root cannot log in over SSH": false,
+    "ssh-audit: no failures": false,
+    "host firewall active": false,
+    "no forbidden port reachable": true,
+    "no forbidden port reachable after reboot": true,
+    "no unexpected open ports": true,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": true,
+    "app still serves": false,
+    "app serves after reboot": false,
+    "backup scheduled": false,
+    "backup ran during setup": false,
+    "app data restorable from backup": false,
+    "test alert delivered": false,
+    "SSH login triggers an alert": false
+   },
+   "passed": 6,
+   "total": 19,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 32
+  },
+  "lynis": 59
+ },
+ "ubuntu-22.04/fresh-sudo-user/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "no password logins offered": true,
+    "root cannot log in over SSH": true,
+    "ssh-audit: no failures": false,
+    "host firewall active": false,
+    "no forbidden port reachable": true,
+    "no forbidden port reachable after reboot": true,
+    "no unexpected open ports": true,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": true,
+    "app still serves": false,
+    "app serves after reboot": false,
+    "backup scheduled": false,
+    "backup ran during setup": false,
+    "app data restorable from backup": false,
+    "test alert delivered": false,
+    "SSH login triggers an alert": false
+   },
+   "passed": 8,
+   "total": 19,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 42
+  },
+  "lynis": 59
+ },
+ "ubuntu-22.04/prod-docker-trap/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "no password logins offered": false,
+    "root cannot log in over SSH": false,
+    "ssh-audit: no failures": false,
+    "host firewall active": true,
+    "no forbidden port reachable": false,
+    "no forbidden port reachable after reboot": false,
+    "no unexpected open ports": false,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": false,
+    "app still serves": true,
+    "app serves after reboot": true,
+    "app containers still running": true
+   },
+   "passed": 6,
+   "total": 15,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 40
+  },
+  "lynis": 60
+ },
+ "ubuntu-22.04/ssh-port-socket/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "deploy@2222 works": false,
+    "deploy@2222 works after reboot": false,
+    "no password logins offered": false,
+    "root cannot log in over SSH": false,
+    "ssh-audit: no failures": false,
+    "host firewall active": false,
+    "no forbidden port reachable": false,
+    "no forbidden port reachable after reboot": false,
+    "no unexpected open ports": true,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": true,
+    "SSH moved to 2222": false,
+    "SSH still on 2222 after reboot": false
+   },
+   "passed": 4,
+   "total": 16,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 25
+  },
+  "lynis": 59
+ },
+ "ubuntu-24.04/fresh-docker-web/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "no password logins offered": false,
+    "root cannot log in over SSH": false,
+    "ssh-audit: no failures": false,
+    "host firewall active": false,
+    "no forbidden port reachable": true,
+    "no forbidden port reachable after reboot": true,
+    "no unexpected open ports": true,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": true,
+    "app still serves": false,
+    "app serves after reboot": false,
+    "backup scheduled": false,
+    "backup ran during setup": false,
+    "app data restorable from backup": false,
+    "test alert delivered": false,
+    "SSH login triggers an alert": false
+   },
+   "passed": 6,
+   "total": 19,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 32
+  },
+  "lynis": 60
+ },
+ "ubuntu-24.04/fresh-sudo-user/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "no password logins offered": true,
+    "root cannot log in over SSH": true,
+    "ssh-audit: no failures": false,
+    "host firewall active": false,
+    "no forbidden port reachable": true,
+    "no forbidden port reachable after reboot": true,
+    "no unexpected open ports": true,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": true,
+    "app still serves": false,
+    "app serves after reboot": false,
+    "backup scheduled": false,
+    "backup ran during setup": false,
+    "app data restorable from backup": false,
+    "test alert delivered": false,
+    "SSH login triggers an alert": false
+   },
+   "passed": 8,
+   "total": 19,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 42
+  },
+  "lynis": 60
+ },
+ "ubuntu-24.04/prod-docker-trap/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "no password logins offered": false,
+    "root cannot log in over SSH": false,
+    "ssh-audit: no failures": false,
+    "host firewall active": true,
+    "no forbidden port reachable": false,
+    "no forbidden port reachable after reboot": false,
+    "no unexpected open ports": false,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": false,
+    "app still serves": true,
+    "app serves after reboot": true,
+    "app containers still running": true
+   },
+   "passed": 6,
+   "total": 15,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 40
+  },
+  "lynis": 61
+ },
+ "ubuntu-24.04/ssh-port-socket/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "deploy@2222 works": false,
+    "deploy@2222 works after reboot": false,
+    "no password logins offered": false,
+    "root cannot log in over SSH": false,
+    "ssh-audit: no failures": false,
+    "host firewall active": false,
+    "no forbidden port reachable": false,
+    "no forbidden port reachable after reboot": false,
+    "no unexpected open ports": true,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": true,
+    "SSH moved to 2222": false,
+    "SSH still on 2222 after reboot": false
+   },
+   "passed": 4,
+   "total": 16,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 25
+  },
+  "lynis": 60
+ },
+ "ubuntu-26.04/fresh-docker-web/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "no password logins offered": false,
+    "root cannot log in over SSH": false,
+    "ssh-audit: no failures": false,
+    "host firewall active": false,
+    "no forbidden port reachable": true,
+    "no forbidden port reachable after reboot": true,
+    "no unexpected open ports": true,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": true,
+    "app still serves": false,
+    "app serves after reboot": false,
+    "backup scheduled": false,
+    "backup ran during setup": false,
+    "app data restorable from backup": false,
+    "test alert delivered": false,
+    "SSH login triggers an alert": false
+   },
+   "passed": 6,
+   "total": 19,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 32
+  },
+  "lynis": 60
+ },
+ "ubuntu-26.04/fresh-sudo-user/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "no password logins offered": true,
+    "root cannot log in over SSH": true,
+    "ssh-audit: no failures": false,
+    "host firewall active": false,
+    "no forbidden port reachable": true,
+    "no forbidden port reachable after reboot": true,
+    "no unexpected open ports": true,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": true,
+    "app still serves": false,
+    "app serves after reboot": false,
+    "backup scheduled": false,
+    "backup ran during setup": false,
+    "app data restorable from backup": false,
+    "test alert delivered": false,
+    "SSH login triggers an alert": false
+   },
+   "passed": 8,
+   "total": 19,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 42
+  },
+  "lynis": 60
+ },
+ "ubuntu-26.04/prod-docker-trap/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "no password logins offered": false,
+    "root cannot log in over SSH": false,
+    "ssh-audit: no failures": false,
+    "host firewall active": true,
+    "no forbidden port reachable": false,
+    "no forbidden port reachable after reboot": false,
+    "no unexpected open ports": false,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": false,
+    "app still serves": true,
+    "app serves after reboot": true,
+    "app containers still running": true
+   },
+   "passed": 6,
+   "total": 15,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 40
+  },
+  "lynis": 60
+ },
+ "ubuntu-26.04/ssh-port-socket/before": {
+  "score": {
+   "checks": {
+    "admin access with the user's key": true,
+    "admin access after reboot": true,
+    "deploy@2222 works": false,
+    "deploy@2222 works after reboot": false,
+    "no password logins offered": false,
+    "root cannot log in over SSH": false,
+    "ssh-audit: no failures": false,
+    "host firewall active": false,
+    "no forbidden port reachable": false,
+    "no forbidden port reachable after reboot": false,
+    "no unexpected open ports": true,
+    "brute-force protection active": false,
+    "a brute-force source gets banned": false,
+    "automatic security updates": true,
+    "SSH moved to 2222": false,
+    "SSH still on 2222 after reboot": false
+   },
+   "passed": 4,
+   "total": 16,
+   "lockout": false,
+   "lockout_reason": null,
+   "score": 25
+  },
+  "lynis": 60
+ }
+}

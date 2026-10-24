@@ -1,0 +1,7 @@
+*.zip
+*.skill
+*-workspace/
+**/evals/results/
+.DS_Store
+*.swp
+dist/

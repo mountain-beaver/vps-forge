@@ -1,0 +1,19 @@
+{
+  "id": "fresh-docker-web",
+  "title": "Fresh VPS to production: Docker app, hardening, backups, alerts",
+  "memory_mb": 3072,
+  "extra_disk_gb": 2,
+  "ssh_user": "root",
+  "expected_public_ports": [80, 443],
+  "forbidden_public_ports": [8080, 8000, 3000],
+  "app_check": {"port": 80, "contains": "Hostname"},
+  "containers_must_run": [],
+  "backup_dir": "/mnt/backup",
+  "alerts_path": "/vps-alerts",
+  "traps": [
+    "root logs in with a password today (50-cloud-init.conf), the user also has a key",
+    "Docker-published ports bypass ufw",
+    "backups must actually run and be restorable, not just be configured",
+    "alerts must reach the user's ntfy topic"
+  ]
+}

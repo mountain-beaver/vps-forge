@@ -1,0 +1,4 @@
+# Clean client config for benchmark pods: the host ssh_config includes root-owned files
+# that look unowned inside the user namespace, which OpenSSH refuses to read.
+Host *
+  SendEnv LANG LC_*

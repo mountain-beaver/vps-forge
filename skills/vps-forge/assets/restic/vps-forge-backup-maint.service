@@ -1,0 +1,13 @@
+[Unit]
+Description=vps-forge restic maintenance (forget/prune/check)
+Wants=network-online.target
+After=network-online.target vps-forge-backup.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/vps-forge-backup.sh --maintenance
+Environment=RESTIC_CACHE_DIR=/var/cache/restic
+CacheDirectory=restic
+Nice=19
+IOSchedulingClass=idle
+TimeoutStartSec=12h
