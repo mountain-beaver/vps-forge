@@ -18,7 +18,7 @@ jobs:
     name: lint, manifests, deadman
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install tools
         run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck python3-yaml
       - name: Run checks
@@ -28,7 +28,7 @@ jobs:
     name: external-check on macOS bash 3.2
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Run the stub tests with the system bash
         run: VPS_FORGE_EXTERNAL_ONLY=1 /bin/bash tests/run.sh
 
@@ -43,7 +43,7 @@ jobs:
     env:
       VPS_FORGE_DISPOSABLE: "1"  # opt-in for the suites that rewrite /etc (tests/lib.sh)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Validate templates with sshd, fail2ban, caddy, cloud-init, apt, systemd, dockerd
         run: bash tests/templates.sh
 
@@ -58,6 +58,6 @@ jobs:
     env:
       VPS_FORGE_DISPOSABLE: "1"  # opt-in for the suites that rewrite /etc (tests/lib.sh)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Audit scenarios (known good and bad states, read-only proof)
         run: bash tests/audit-scenarios.sh
