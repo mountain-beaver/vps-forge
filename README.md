@@ -22,14 +22,14 @@
 <p align="center">
   <a href="#quick-start">Quick start</a>&nbsp;&nbsp;&nbsp;
   <a href="#what-you-say-what-you-get">Examples</a>&nbsp;&nbsp;&nbsp;
-  <a href="#it-never-locks-you-out">Safety</a>&nbsp;&nbsp;&nbsp;
+  <a href="#every-risky-change-has-an-automatic-undo">Safety</a>&nbsp;&nbsp;&nbsp;
   <a href="#benchmark">Benchmark</a>&nbsp;&nbsp;&nbsp;
   <a href="#faq">FAQ</a>
 </p>
 
 You rented a VPS, and your agent can already SSH into it and get your app running. What it usually skips is the part you'd only notice later: SSH crypto that fails a scan, a firewall that was never turned on, fail2ban that bans nobody, no alert when someone logs in. Or it tests its own login too eagerly and gets your IP banned.
 
-vps-forge teaches the agent to do the whole job, in the right order, with a safety net under every risky step. The server ends up locked down, backed up, monitored and documented, and you never lose access to it.
+vps-forge teaches the agent to do the whole job, in the right order, with a safety net under every risky step. The server ends up locked down, backed up, monitored and documented, and every change that could cut you off rolls itself back unless you can still log in.
 
 <p align="center">
   <picture>
@@ -38,7 +38,16 @@ vps-forge teaches the agent to do the whole job, in the right order, with a safe
   </picture>
 </p>
 
-<p align="center"><sub>120 runs of Claude Opus 5.5 on real VMs, the same prompts with and without the skill, scored from outside the server by a separate judge. Nobody was locked out. <a href="#benchmark">How it was measured, and its limits</a>.</sub></p>
+<p align="center"><sub>120 runs of Claude Opus 5.5 on real VMs, the same prompts with and without the skill, scored from outside the server by a separate judge written by the same author. This is a checklist score, not a general security index, and about 70% of the gap comes from three checks that match the skill's own defaults. A run with the skill costs about 3× as much. <a href="#benchmark">How it was measured, and its limits</a>.</sub></p>
+
+## See it work
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/replay-dark.svg">
+    <img alt="Replay of a real benchmark run on a fresh Debian 13 VPS. The user asks for a production server for a Docker app with daily backups and phone alerts, and says they are offline. The agent's own progress messages follow: recon with a baseline audit of 78 out of 100, safety net, SSH hardening tested from a new connection, firewall, fail2ban, a Docker port check, a backup with a verified restore, phone alerts, and a final audit of 100 out of 100." src="docs/assets/replay.svg" width="767">
+  </picture>
+</p>
 
 ## Quick start
 
@@ -121,25 +130,16 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 If your agent doesn't support skills at all, tell it to read `skills/vps-forge/SKILL.md` and follow it. The skill is plain Markdown and bash.
 </details>
 
-### See it work
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/replay-dark.svg">
-    <img alt="Replay of a real benchmark run on a fresh Debian 13 VPS. The user asks for a production server for a Docker app with daily backups and phone alerts, and says they are offline. The agent's own progress messages follow: recon with a baseline audit of 78 out of 100, safety net, SSH hardening tested from a new connection, firewall, fail2ban, a Docker port check, a backup with a verified restore, phone alerts, and a final audit of 100 out of 100." src="docs/assets/replay.svg" width="767">
-  </picture>
-</p>
-
 ## What you say, what you get
 
 | You say | The agent does |
 |---|---|
-| "I just bought a VPS, put my Docker app on it with HTTPS." | Creates an admin user with your key, then turns off root and password logins once your key login is proven from a new connection. Sets up a default-deny firewall with only 22, 80 and 443 open, keeps Docker from punching holes in it, and puts Caddy in front with automatic TLS. Adds daily backups with a tested restore, and alerts. |
-| "Audit my production server. Change nothing." | Runs a read-only audit with 40+ checks and a score, plus a scan from outside. You get the findings ranked by severity and a plan. Nothing changes until you approve. |
-| "Move SSH to 2222, add a sudo user and fail2ban." | Does exactly that, and also applies the non-disruptive hardened baseline your checklist didn't mention. It says so up front. |
-| "Send alerts to my phone." | Installs `vps-notify` for ntfy, Telegram or a webhook. It alerts on SSH logins, failed services, full disks, OOM kills, overdue backups and pending reboots. |
-| "Make SSH reachable only through Tailscale." | Sets up the VPN profile (WireGuard or Tailscale), then closes public SSH only after a login over the VPN works. |
-| "Something's off. Is my server hacked?" | Checks for compromise: unknown UID-0 accounts and keys, `ld.so.preload`, miners, `curl \| sh` cron jobs. If it finds them, it stops and walks you through a rebuild, because you can't harden your way out of a breach. |
+| "Put my Docker app on this new VPS, with HTTPS." | Admin user with your key, root and passwords off, firewall with 22/80/443 only, Caddy with TLS, tested backups, alerts. |
+| "Audit my server. Change nothing." | A read-only report ranked by severity, and a plan. |
+| "Move SSH to 2222, add a sudo user and fail2ban." | Exactly that, plus the hardened baseline, announced up front. |
+| "Send alerts to my phone." | ntfy, Telegram or webhook alerts for logins, failures, full disks and backups. |
+| "SSH only through Tailscale." | Public SSH closes only after a VPN login works. |
+| "Is my server hacked?" | A compromise check. If it finds signs, it stops and guides a rebuild. |
 
 ## What you end up with
 
@@ -169,7 +169,7 @@ If your agent doesn't support skills at all, tell it to read `skills/vps-forge/S
 Profiles combine with any level: `web`, `docker`, `vpn`, `db`, `worker`, `game`.
 </details>
 
-## It never locks you out
+## Every risky change has an automatic undo
 
 One wrong `sshd` or firewall change can make a server unreachable. So every SSH, firewall, sudo or PAM change runs inside a **dead-man switch**:
 
@@ -180,7 +180,7 @@ One wrong `sshd` or firewall change can make a server unreachable. So every SSH,
 
 If the new login fails, nothing else happens: the timer restores the snapshot, unbans you in fail2ban and puts the services back as they were. It does the same at boot if the server restarts while the switch is armed.
 
-Across the 120 benchmark runs, nobody was locked out. Without the skill, the agent got its own admin IP banned by fail2ban in 7 of 60 runs while it worked. With the skill, that happened in none of 60.
+This is a design guarantee, and the benchmark can't prove it: nobody was locked out in either arm, because Opus is careful on its own. What the benchmark did measure is the near miss. Without the skill, the agent got its own admin IP banned by fail2ban in 7 of 60 runs while it worked. With the skill, that happened in none of 60.
 
 More rules the skill follows:
 - **Read before write.** On a running server it audits first, and nothing changes until you approve.
@@ -233,13 +233,18 @@ A lockout scores 0.
 - **Opus is already good on its own.** It scores 79–92 without the skill, up from 25–42 on the untouched servers. The skill closes the last 8–20 points, and those are the ones that bite later: SSH crypto that passes `ssh-audit`, an alert when someone logs in, a firewall that is really on, and fail2ban that really bans.
 - **A general audit barely moves.** Lynis scores are almost the same with and without the skill: 69 vs 71, 72 vs 72, 64 vs 72, and 73 vs 72. The difference is in the checks above, not in a generic hardening index.
 - **Backups.** Opus alone already writes a working backup when asked: every run in both arms restored the app's data.
-- **Root login is a judgement call.** The judge fails a server where root can still log in with a key. In the two scenarios where baseline runs failed this check, the prompt says the user logs in as root today, so keeping key-only root is defensible. Without that check, the scores are 85–93 without the skill and 100 with it.
-- **It takes longer.** The median run took 5–8 minutes instead of 3–6, because the skill snapshots, arms the dead-man switch and tests every change from a new connection.
+- **Most of the gap is the skill's own defaults.** Three checks encode choices the skill makes anyway: a clean `ssh-audit`, no root login, and an alert on every SSH login. Leave them out and the fresh-VPS scenarios score 100 vs 100 and 100 vs 100, the production box 91 vs 100, and the SSH port move 93 vs 100. That is about 70% of the gap.
+- **What remains beyond those defaults:** fail2ban that actually bans an attacker on the existing production box (6 of 15 runs without the skill, 15 of 15 with it), a host firewall the user didn't ask for, and no self-bans (7 of 60 runs without the skill, 0 of 60 with it).
+- **Root login is a judgement call.** The judge fails a server where root can still log in with a key. In the two scenarios where baseline runs failed this check, the prompt says the user logs in as root today, so keeping key-only root is defensible. Without that one check, the scores are 85–93 without the skill and 100 with it.
+- **Questions and approvals were never tested.** Every prompt says the user is offline and the agent should decide on its own, so the skill's intake questions and approval steps never ran. That is the normal mode for a real user.
+- **It takes longer and costs more.** The median run took 5–8 minutes instead of 3–6, because the skill snapshots, arms the dead-man switch and tests every change from a new connection. At API list prices a run cost a median $1.87 with the skill and $0.62 without, about 3×, and the skill's instructions add to the agent's context.
 - **It does more than a checklist asks.** One scenario asks only to move SSH to 2222, add a sudo user, turn off password and root logins, install fail2ban and enable auto-updates. Without the skill it scores 88: Opus does all five, but the server fails `ssh-audit` and has no host firewall, which the prompt never mentioned. The skill applies its hardened baseline anyway and scores 100. Whether you want that is up to you.
 - **The scenarios are not unseen.** An earlier version of the skill scored 92, 100 and 89 on the first three scenarios. In 12 of those 45 runs, the agent's own test logins tripped the fail2ban it had just set up. The skill was revised against exactly those failures, so those three scenarios no longer test it blind. The fourth, a fresh VPS with only a sudo user, was added after the revision and scores 100 as well.
+- **The skill targets what the judge checks.** It aims for a clean `ssh-audit`, and the judge runs `ssh-audit`. That is why the general Lynis index above is shown next to it.
+- **Small samples, one judge.** Each distro and scenario ran three times per arm, and the judge was written by the same author as the skill. The harness is published so anyone can check it.
 - **Only one model was measured.** That model is Claude Opus 5.5. The skill is plain instructions and scripts, with nothing model-specific in it, but other agents and models have not been benchmarked yet.
 
-The skill shipped in this release is the one that was benchmarked, with wording-only changes: a `compatibility` line in the `SKILL.md` header, an explicit `bash` in front of three script calls (for installers that drop the executable bit), and neutral names in three examples. The scenarios, the harness, and everything you need to reproduce the runs are in [`bench/`](bench/README.md). Per-run results are in [`docs/bench/results.md`](docs/bench/results.md) and [`results.json`](docs/bench/results.json).
+The benchmark ran on the pre-release skill. Since then only its text has changed, never the scripts' behaviour: metadata, clearer wording of the safety rules, scope limits in the description, and a few notes. [CHANGELOG.md](CHANGELOG.md) lists every change. The scenarios, the harness, and everything you need to reproduce the runs are in [`bench/`](bench/README.md). Per-run results are in [`docs/bench/results.md`](docs/bench/results.md) and [`results.json`](docs/bench/results.json).
 
 ## FAQ
 
@@ -270,7 +275,7 @@ Debian 12 and 13, and Ubuntu 22.04, 24.04 and 26.04, on any provider: Hetzner, D
 <details>
 <summary><b>Does it cost anything?</b></summary>
 
-No. It is MIT-licensed, with no account and no paid tier. You pay only for your VPS and your agent's usage.
+The skill is free: MIT-licensed, with no account and no paid tier. Your agent's usage goes up, though. In the benchmark, a run with the skill cost a median $1.87 at API list prices, against $0.62 without it, because the agent does more and verifies every step. On a subscription plan, that shows up as more of your usage limit.
 </details>
 
 <details>
@@ -291,7 +296,7 @@ No. The skill and its scripts have no telemetry. Alerts go only to the ntfy topi
 Yes. `audit.sh` is a standalone, read-only audit:
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/main/skills/vps-forge/scripts/audit.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.0.1/skills/vps-forge/scripts/audit.sh
 less audit.sh          # read it before running anything as root
 sudo bash audit.sh     # read-only; --json for machine output
 ```
@@ -306,7 +311,7 @@ skills/vps-forge/
 ├── SKILL.md              workflow, safety rules, levels, definition of done
 ├── references/           one file per phase, loaded only when needed
 ├── scripts/
-│   ├── audit.sh          read-only audit: 40+ checks, score, JSON
+│   ├── audit.sh          read-only audit: 70+ checks, score, JSON
 │   ├── deadman.sh        snapshot and automatic rollback for SSH, firewall, sudo and PAM
 │   ├── external-check.sh outside-in check from your machine: ports, SSH auth, TLS, ssh-audit
 │   └── install-alerts.sh vps-notify: ntfy, Telegram or webhook alerts

@@ -60,7 +60,7 @@ AllowedIPs = 10.8.0.2/32
 
 ## SSH only over the VPN (paranoid)
 
-This removes SSH from the internet entirely. Do it only after the VPN path has been proven, and always with the deadman:
+This removes SSH from the internet entirely. Do it only after the VPN path has been proven, and always with the deadman. The deadman restores the firewall rules below, but it doesn't snapshot WireGuard, Tailscale or netplan config, so never point the server's own default route into a tunnel (`AllowedIPs = 0.0.0.0/0` on the server, `tailscale up --exit-node=…`):
 1. From the user's machine: `ssh <admin>@<vpn-ip>` works (`100.x.y.z` on Tailscale, `10.8.0.1` on WireGuard).
 2. `vps-forge-deadman arm 10`
 3. Delete both public SSH rules: `ufw delete limit <port>/tcp` and `ufw delete allow from <admin-ip> to any port <port> proto tcp` (plus any other admin or agent-session allow for that port; check `ufw status`). Keep `ufw allow in on tailscale0` or `ufw allow in on wg0 to any port <port> proto tcp`.

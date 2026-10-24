@@ -1,7 +1,7 @@
 {
   "name": "vps-forge",
   "description": "Set up, harden, audit and polish a Debian/Ubuntu VPS without ever losing access: SSH, firewall, fail2ban, updates, Docker, Caddy/TLS, VPN, restic backups, phone alerts and a verified score.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Hung Up"
   },

@@ -29,7 +29,7 @@
 # Part of vps-forge (MIT).
 
 set -uo pipefail
-# ufw status is translated on localized systems ("Состояние: активен"); the checks below
+# ufw status is translated on localized systems ("Status: aktiv"); the checks below
 # grep for the English "Status: active".
 export LC_ALL=C
 umask 077

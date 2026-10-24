@@ -90,9 +90,8 @@ Routine tasks that Claude solves anyway were left out on purpose.
 ## Published runs
 
 - **v3** (24 Oct 2026, the charts in the main README): 4 scenarios × 5 distros × 2 arms × 3 repeats =
-  120 runs, judge v3. The skill is the one released as 1.0.0; the benchmarked copy (`8621325` in
-  `results.md`, a pre-release commit) differs only by the `compatibility` line in the `SKILL.md`
-  header, a `bash` prefix on three `external-check.sh` calls and neutral names in three examples.
+  120 runs, judge v3. The benchmarked skill is a pre-release commit (`8621325` in
+  `results.md`); every later change is text only and listed in the CHANGELOG.
   Every run has a verdict. One baseline run (`debian-12/fresh-sudo-user` r1) failed to start because
   its Claude login was revoked mid-matrix. Its agent never touched the server, so it was run again
   five hours later on its own, apart from its pair.

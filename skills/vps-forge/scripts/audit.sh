@@ -11,7 +11,7 @@
 set -uo pipefail
 export LC_ALL=C
 
-VERSION="1.0.0"
+VERSION="1.0.1"
 JSON=0
 QUIET=0
 COLOR=1

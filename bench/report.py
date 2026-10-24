@@ -29,6 +29,8 @@ SCEN_LABEL = {"prod-docker-trap": "Production Docker box", "fresh-docker-web": "
               "ssh-port-socket": "SSH port move + fail2ban", "fresh-sudo-user": "Fresh VPS, sudo user"}
 ARMS = ("baseline", "skill")
 POLICY_CHECK = "root cannot log in over SSH"
+# checks that encode the skill's own defaults; the second sensitivity column leaves them all out
+SKILL_DEFAULTS = (POLICY_CHECK, "ssh-audit: no failures", "SSH login triggers an alert")
 DISTRO_LABEL = {"debian-12": "Debian 12", "debian-13": "Debian 13", "ubuntu-22.04": "Ubuntu 22.04",
                 "ubuntu-24.04": "Ubuntu 24.04", "ubuntu-26.04": "Ubuntu 26.04"}
 FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
@@ -104,10 +106,10 @@ def self_bans(runs, s, arm, d=None):
     return sum(1 for x in known if x), len(known)
 
 
-def score_without(r, check):
-    """The run's score with one check left out (a lockout still scores 0)."""
+def score_without(r, *checks):
+    """The run's score with some checks left out (a lockout still scores 0)."""
     sc = r["judge"]["score"]
-    c = {k: v for k, v in sc["checks"].items() if k != check}
+    c = {k: v for k, v in sc["checks"].items() if k not in checks}
     return 0 if sc["lockout"] else round(100 * sum(1 for v in c.values() if v) / len(c))
 
 
@@ -170,7 +172,7 @@ def hero(runs, before, theme):
     svg = Svg(W, H, t)
     left, right, top, bottom = 48, 20, 70, 88
     ph = H - top - bottom
-    svg.text(left, 28, "Security score of the finished server (independent judge, 0–100)", 16, weight=600)
+    svg.text(left, 28, "Checklist score of the finished server: share of outside-in checks passed (0–100)", 16, weight=600)
     n = max([len(scores(runs, s, a)) for s in SCENARIOS for a in ("baseline", "skill")] + [0])
     svg.text(left, 50, f"Mean of up to {n} runs per bar: Debian 12/13 and Ubuntu 22.04/24.04/26.04, repeated · whisker: worst to best run · a lockout scores 0",
              12.5, "ink2")
@@ -221,7 +223,7 @@ def hero(runs, before, theme):
         svg.rect(lx, H - 22, 12, 12, fill, 2, stroke)
         svg.text(lx + 18, H - 12, label, 12.5, "ink2")
         lx += 18 + len(label) * 7 + 26
-    return svg.render("Security score with and without the vps-forge skill")
+    return svg.render("Checklist score with and without the vps-forge skill")
 
 
 def check_rates(runs):
@@ -251,7 +253,7 @@ def checks_chart(runs, theme):
     H = top + row * len(rows) + 52
     svg = Svg(W, H, t)
     svg.text(24, 28, "Which checks pass, without vs with the skill", 16, weight=600)
-    svg.text(24, 50, "Share of runs passing each independent check, all scenarios and distros", 12.5, "ink2")
+    svg.text(24, 50, "Share of runs passing each outside-in check, all scenarios and distros", 12.5, "ink2")
     if perfect:
         svg.text(24, 68, f"Not shown: {perfect} checks that every run passed, with and without the skill", 12.5, "ink2")
     pw = W - left - right
@@ -319,7 +321,8 @@ def table(runs, before, broken):
     lines = ["| Scenario | Before | Without skill | With vps-forge | n (without / with) | Broken or missing (without / with) "
              "| Lockouts (without / with) | Self-bans (without / with) | Lynis (without / with) | Median time (without / with) |",
              "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
-    sens = ["| Scenario | Without skill | With vps-forge |", "|---|---:|---:|"]
+    sens = ["| Scenario | Without the root check: without skill | with vps-forge | Without all three: without skill | with vps-forge |",
+            "|---|---:|---:|---:|---:|"]
     for s in SCENARIOS:
         def col(arm, key):
             return [key(r) for d in DISTROS for r in runs.get((d, s, arm), []) if key(r) is not None]
@@ -338,8 +341,9 @@ def table(runs, before, broken):
                      f"{len(b)} / {len(k)} | {nbroken(broken, s, 'baseline')} / {nbroken(broken, s, 'skill')} | "
                      f"{sum(col('baseline', lk))} / {sum(col('skill', lk))} | {sb('baseline')} / {sb('skill')} | "
                      f"{mean(col('baseline', ly)) or '–'} / {mean(col('skill', ly)) or '–'} | {med(col('baseline', tm))} / {med(col('skill', tm))} |")
-        wo = lambda arm: mean(col(arm, lambda r: score_without(r, POLICY_CHECK))) if col(arm, sc) else "–"
-        sens.append(f"| {SCEN_LABEL[s]} | {wo('baseline')} | {wo('skill')} |")
+        wo = lambda arm, *ch: mean(col(arm, lambda r: score_without(r, *ch))) if col(arm, sc) else "–"
+        sens.append(f"| {SCEN_LABEL[s]} | {wo('baseline', POLICY_CHECK)} | {wo('skill', POLICY_CHECK)} | "
+                    f"{wo('baseline', *SKILL_DEFAULTS)} | {wo('skill', *SKILL_DEFAULTS)} |")
     return "\n".join(lines), "\n".join(sens)
 
 
@@ -388,8 +392,9 @@ def main():
     md = (f"{provenance(runs, a.tag, a.rejudged)}\n\n{main_t}\n\n"
           f"Self-bans: runs in which the admin's own IP was banned (fail2ban or CrowdSec) while the agent worked. "
           f"Not part of the score; lockouts are the end state.\n\n"
-          f"Sensitivity: mean score without the check \"{POLICY_CHECK}\" (the prompts say the user logs in as root today, "
-          f"so key-only root is a defensible choice).\n\n{sens_t}\n\nPer distro (mean, number of runs, runs without a verdict):\n\n"
+          f"Sensitivity: mean score without the check \"{POLICY_CHECK}\" (in the two scenarios where it fails, the prompt says "
+          f"the user logs in as root today, so key-only root is defensible), and without all three checks that encode the "
+          f"skill's own defaults ({', '.join(SKILL_DEFAULTS)}).\n\n{sens_t}\n\nPer distro (mean, number of runs, runs without a verdict):\n\n"
           f"{cell_table(runs, broken)}\n")
     (out / "results.md").write_text(md)
     slim = {f"{d}/{s}/{a_}": [{"score": r["judge"]["score"], "lynis": r["judge"].get("lynis"),

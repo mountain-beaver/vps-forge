@@ -134,7 +134,7 @@ sshd -t
 ```
 - `mlkem768x25519-sha256` (post-quantum hybrid) exists from OpenSSH 9.9 onward (Debian 13). Older versions fall back to `sntrup761x25519` (8.5+) and then `curve25519`.
 - `HostKey` lines **add up**: if the image has uncommented `HostKey` lines in the main `sshd_config`, RSA and ECDSA stay active. Comment those out, then check with `sshd -T | grep -i hostkey`.
-- `HostKey` limited to ed25519 means clients that pinned the RSA or ECDSA host key will be asked to accept the ed25519 key once. Give the user the fingerprint to compare: `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub`. The old key files stay on disk unused, so reverting is a one-line change.
+- `HostKey` limited to ed25519 means clients that pinned the RSA or ECDSA host key will be asked to accept the ed25519 key once. Give the user the fingerprint to compare: `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub`. The old key files stay on disk unused, so reverting is a one-line change. Deadman snapshots in `/var/lib/vps-forge/deadman/` hold root-only copies of `/etc/ssh`, host keys included: if you ever rotate or delete host keys, delete the older snapshots too.
 - Leave `PubkeyAcceptedAlgorithms` at its default unless you know every client uses ed25519. Default OpenSSH already rejects `ssh-rsa` (SHA-1) signatures while accepting RSA keys with `rsa-sha2-*`.
 - `DiffieHellman group-exchange` isn't in the list, so `/etc/ssh/moduli` doesn't matter.
 - Check from the user's machine: `ssh-audit <host>` (`pipx run ssh-audit <host>`), or `external-check.sh --ssh-audit`. ssh-audit opens dozens of connections, so whitelist the user's IP in fail2ban first (firewall.md).
@@ -182,7 +182,7 @@ Run these in this order. Under password sudo, removing the temporary grant takes
 1. Agent-session entries (SKILL.md rule 1), in one deadman window: `ufw delete allow from <agent-ip> to any port <port> proto tcp`; the `ignoreip` entry and its `# agent session` comment, then `systemctl reload fail2ban`; the agent IP in `PerSourcePenaltyExemptList` (`01-vps-forge-crypto.conf`), then `sshd -t && systemctl reload ssh`. The user's real IP belongs in all three places instead. Test and disarm.
 2. Password sudo: `test ! -e /home/<admin>/SUDO-PASSWORD` (if it's still there, tell the user; don't read it) and `passwd -S <admin>` shows `P`. While the file exists, a stolen key is enough for root again.
 3. `passwd -l root` only under the conditions in "Cleaning up what the provider left". Then write SERVER.md and make the final etckeeper commit.
-4. Last step, in one call, because afterwards you have no root: `sudo sh -c 'rm -f /etc/sudoers.d/90-vps-forge-temp && etckeeper commit "vps-forge: remove temporary sudo grant"'`. Remove it even after a rollback, because a file created after `arm` can survive one. Then `ssh -o ControlPath=none -o BatchMode=yes -p <port> <admin>@<host> 'sudo -n -v'` must fail with `a password is required`. `audit.sh` flags a leftover grant.
+4. Last step, in one call, because afterwards you have no root: `sudo sh -c 'rm -f /etc/sudoers.d/90-vps-forge-temp && etckeeper commit "vps-forge: remove temporary sudo grant"'`. Check that it is gone even after a rollback: the rollback deletes it only if it was created while the switch was armed. Then `ssh -o ControlPath=none -o BatchMode=yes -p <port> <admin>@<host> 'sudo -n -v'` must fail with `a password is required`. `audit.sh` flags a leftover grant.
 
 ## Verification and client config
 

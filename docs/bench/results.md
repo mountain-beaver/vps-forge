@@ -9,14 +9,14 @@ Tag `v3` · judge v3 (verdicts from the runs themselves) · skill `8621325` · m
 
 Self-bans: runs in which the admin's own IP was banned (fail2ban or CrowdSec) while the agent worked. Not part of the score; lockouts are the end state.
 
-Sensitivity: mean score without the check "root cannot log in over SSH" (the prompts say the user logs in as root today, so key-only root is a defensible choice).
+Sensitivity: mean score without the check "root cannot log in over SSH" (in the two scenarios where it fails, the prompt says the user logs in as root today, so key-only root is defensible), and without all three checks that encode the skill's own defaults (root cannot log in over SSH, ssh-audit: no failures, SSH login triggers an alert).
 
-| Scenario | Without skill | With vps-forge |
-|---|---:|---:|
-| Production Docker box | 85 | 100 |
-| Fresh VPS to production | 93 | 100 |
-| SSH port move + fail2ban | 87 | 100 |
-| Fresh VPS, sudo user | 92 | 100 |
+| Scenario | Without the root check: without skill | with vps-forge | Without all three: without skill | with vps-forge |
+|---|---:|---:|---:|---:|
+| Production Docker box | 85 | 100 | 91 | 100 |
+| Fresh VPS to production | 93 | 100 | 100 | 100 |
+| SSH port move + fail2ban | 87 | 100 | 93 | 100 |
+| Fresh VPS, sudo user | 92 | 100 | 100 | 100 |
 
 Per distro (mean, number of runs, runs without a verdict):
 
