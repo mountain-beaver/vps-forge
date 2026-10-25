@@ -1,0 +1,13 @@
+// /etc/apt/apt.conf.d/52vps-forge-unattended: managed by vps-forge
+// Sorts after 50unattended-upgrades, so these values take precedence.
+
+Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+Unattended-Upgrade::Remove-New-Unused-Dependencies "true";
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+Unattended-Upgrade::SyslogEnable "true";
+
+// Automatic reboots are OFF unless the user agreed. To enable:
+//   Unattended-Upgrade::Automatic-Reboot "true";
+//   Unattended-Upgrade::Automatic-Reboot-WithUsers "true";
+//   Unattended-Upgrade::Automatic-Reboot-Time "04:30";
+Unattended-Upgrade::Automatic-Reboot "false";

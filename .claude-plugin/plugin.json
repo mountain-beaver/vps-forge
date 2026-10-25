@@ -1,0 +1,36 @@
+{
+  "name": "vps-forge",
+  "description": "Set up, harden, audit and polish a Debian/Ubuntu VPS without ever losing access: SSH, firewall, fail2ban, updates, Docker, Caddy/TLS, VPN, restic backups, phone alerts and a verified score.",
+  "version": "1.1.1",
+  "author": {
+    "name": "Hung Up"
+  },
+  "homepage": "https://github.com/mountain-beaver/vps-forge",
+  "repository": "https://github.com/mountain-beaver/vps-forge",
+  "license": "MIT",
+  "keywords": [
+    "vps",
+    "server",
+    "hardening",
+    "security",
+    "ssh",
+    "ufw",
+    "fail2ban",
+    "docker",
+    "caddy",
+    "backup",
+    "restic",
+    "debian",
+    "ubuntu",
+    "agent-skills",
+    "claude-code",
+    "codex",
+    "cursor",
+    "server-hardening",
+    "ssh-hardening",
+    "devsecops",
+    "self-hosting",
+    "wireguard",
+    "crowdsec"
+  ]
+}

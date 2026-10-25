@@ -1,0 +1,42 @@
+# /etc/caddy/Caddyfile: managed by vps-forge
+# Validate + apply:  caddy fmt --overwrite /etc/caddy/Caddyfile && caddy validate --config /etc/caddy/Caddyfile && systemctl reload caddy
+{
+	# ACME account e-mail: certificate expiry and problem notices
+	email <you@example.com>
+
+	# Behind Cloudflare (proxied): trust its ranges so logs and rate limits see real client IPs.
+	# Ranges: https://www.cloudflare.com/ips-v4 and https://www.cloudflare.com/ips-v6
+	# servers {
+	# 	trusted_proxies static <range> <range> ...
+	# 	client_ip_headers CF-Connecting-IP
+	# }
+}
+
+(hardening) {
+	encode zstd gzip
+	header {
+		# HSTS stage 1 (5 minutes). Browsers cache it for max-age, so a mistake can't be undone sooner.
+		# Once HTTPS works everywhere, raise it to max-age=31536000 (1 year); add includeSubDomains only
+		# when EVERY subdomain serves HTTPS. See references/web.md ("Security headers and HSTS rollout").
+		Strict-Transport-Security "max-age=300"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Frame-Options "SAMEORIGIN"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+		# Write a Content-Security-Policy for the actual app (start with -Report-Only):
+		# Content-Security-Policy-Report-Only "default-src 'self'"
+		-Server
+		-X-Powered-By
+	}
+}
+
+<example.com> {
+	import hardening
+	reverse_proxy 127.0.0.1:<8080>
+}
+
+# Remove this block if www.<example.com> has no DNS record: the certificate order for a name
+# that doesn't resolve fails and is retried with backoff, which only fills the log.
+www.<example.com> {
+	redir https://<example.com>{uri} permanent
+}

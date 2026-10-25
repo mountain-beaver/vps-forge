@@ -1,0 +1,10 @@
+[Unit]
+Description=Weekly vps-forge restic maintenance
+
+[Timer]
+OnCalendar=Sun *-*-* 05:00:00
+RandomizedDelaySec=1h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

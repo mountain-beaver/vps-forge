@@ -1,0 +1,18 @@
+# /etc/restic/exclude: restic exclude patterns
+/root/.cache
+/home/*/.cache
+**/node_modules
+**/.venv
+**/__pycache__
+**/.npm
+**/.cargo/registry
+/var/lib/docker/overlay2
+/var/lib/docker/image
+/var/lib/docker/containers
+# Live database data directories: back up dumps from /var/backups/db instead
+/var/lib/postgresql
+/var/lib/mysql
+/opt/*/data/postgres
+/opt/*/data/mysql
+*.tmp
+*.swp

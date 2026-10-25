@@ -1,0 +1,8 @@
+[Unit]
+Description=Allow web ports only from Cloudflare (ufw rules tagged cf-sync)
+Wants=network-online.target
+After=network-online.target ufw.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/ufw-cloudflare-sync.sh

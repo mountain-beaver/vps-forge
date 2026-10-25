@@ -1,0 +1,13 @@
+[Unit]
+Description=vps-forge restic backup
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/vps-forge-backup.sh
+Environment=RESTIC_CACHE_DIR=/var/cache/restic
+CacheDirectory=restic
+Nice=19
+IOSchedulingClass=idle
+TimeoutStartSec=6h

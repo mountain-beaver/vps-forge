@@ -1,0 +1,11 @@
+# /etc/restic/include: one path per line; missing paths are skipped
+/etc
+/root
+/home
+/opt
+/srv
+/usr/local
+/var/backups
+/var/lib/caddy
+/var/spool/cron
+# /var/lib/docker/volumes   # only if named volumes hold state: stop or dump the container first
