@@ -4,7 +4,7 @@
 
 ### Distribution
 - **Directory listing details in `plugin.json`:** `displayName` (so the listing reads vps-forge, not "Vps Forge"), the icon path, and links to the documentation, the issue tracker and a new `PRIVACY.md`.
-- **`PRIVACY.md`:** the project collects nothing; it lists what the skill sends where, all of it to services you choose.
+- **`PRIVACY.md`:** the project collects nothing; it lists what the skill sends where, all of it to services you choose, including the certificate contact email that goes to Let's Encrypt.
 
 ## 1.1.1 (2026-10-25)
 
