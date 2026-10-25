@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Distribution
+- **Signed releases.** The release workflow attests SLSA build provenance for `vps-forge-skill.zip` and every script, so `gh attestation verify audit.sh -R mountain-beaver/vps-forge` proves a downloaded file came from this repository's release workflow.
 - **Directory listing details in `plugin.json`:** `displayName` (so the listing reads vps-forge, not "Vps Forge"), the icon path, and links to the documentation, the issue tracker and a new `PRIVACY.md`.
 - **`PRIVACY.md`:** the project collects nothing; it lists what the skill sends where, all of it to services you choose, including the certificate contact email that goes to Let's Encrypt.
 

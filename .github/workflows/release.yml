@@ -6,6 +6,9 @@ on:
 
 permissions:
   contents: write
+  id-token: write           # signs the provenance attestation (Sigstore)
+  attestations: write
+  artifact-metadata: write
 
 jobs:
   package:
@@ -20,6 +23,14 @@ jobs:
         run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck python3-yaml && sudo bash tests/run.sh
       - name: Build skill zip (for claude.ai upload)
         run: make package
+      # SLSA build provenance for the zip and every script, so a downloaded file can be checked:
+      # gh attestation verify audit.sh -R mountain-beaver/vps-forge
+      - name: Attest build provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6  # v4.2.2
+        with:
+          subject-path: |
+            dist/vps-forge-skill.zip
+            skills/vps-forge/scripts/*.sh
       - name: Release notes from CHANGELOG
         run: |
           v=${GITHUB_REF_NAME#v}
