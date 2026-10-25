@@ -1,5 +1,6 @@
 {
   "name": "vps-forge",
+  "displayName": "vps-forge",
   "description": "Set up, harden, audit and polish a Debian/Ubuntu VPS without ever losing access: SSH, firewall, fail2ban, updates, Docker, Caddy/TLS, VPN, restic backups, phone alerts and a verified score.",
   "version": "1.1.1",
   "author": {
@@ -7,6 +8,10 @@
   },
   "homepage": "https://github.com/mountain-beaver/vps-forge",
   "repository": "https://github.com/mountain-beaver/vps-forge",
+  "documentationUrl": "https://github.com/mountain-beaver/vps-forge#readme",
+  "supportUrl": "https://github.com/mountain-beaver/vps-forge/issues",
+  "privacyPolicyUrl": "https://github.com/mountain-beaver/vps-forge/blob/main/PRIVACY.md",
+  "icon": "./.claude-plugin/icon.png",
   "license": "MIT",
   "keywords": [
     "vps",
