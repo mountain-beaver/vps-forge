@@ -1,0 +1,49 @@
+name: Directory branch
+
+# The `directory` branch is what Anthropic's plugin directory reads: the plugin only,
+# without the benchmark or tests. Rebuilt on every release tag.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: directory-branch
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Build the plugin folder
+        run: .github/directory/build.sh "$RUNNER_TEMP/plugin"
+      - name: Commit it to the directory branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          v=$(python3 -c 'import json;print(json.load(open(".claude-plugin/plugin.json"))["version"])')
+          src=$(git rev-parse --short HEAD)
+          wt="$RUNNER_TEMP/directory"
+          if git ls-remote --exit-code --heads origin directory >/dev/null; then
+            git fetch origin directory
+            git worktree add "$wt" origin/directory
+            git -C "$wt" checkout -B directory
+          else
+            git worktree add --detach "$wt"
+            git -C "$wt" checkout --orphan directory
+          fi
+          git -C "$wt" rm -rqf --ignore-unmatch .
+          cp -a "$RUNNER_TEMP/plugin/." "$wt/"
+          git -C "$wt" add -A
+          if git -C "$wt" diff --cached --quiet && git -C "$wt" rev-parse -q --verify HEAD >/dev/null; then
+            echo "directory branch already matches $src"; exit 0
+          fi
+          git -C "$wt" commit -q -m "vps-forge $v (from $src)"
+          git -C "$wt" push origin HEAD:directory

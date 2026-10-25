@@ -375,19 +375,23 @@ def provenance(runs, tag, rejudged):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--tag", default="v2")
-    ap.add_argument("--out", default=str(BENCH.parent / "docs" / "bench"))
+    ap.add_argument("--out", default=str(BENCH.parent / "docs" / "bench"), help="results.md and results.json")
+    # README charts are drawn from results.json in the project's own style; these SVGs are plain previews
+    ap.add_argument("--charts", default=str(BENCH / "out" / "charts"), help="preview charts (kept out of docs/)")
     ap.add_argument("--rejudged", action="store_true", help="verdicts from rejudge.json (current judge)")
     ap.add_argument("--reps", type=int, help="expected repeats per cell (default: the highest seen)")
     a = ap.parse_args()
     out = pathlib.Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
+    charts = pathlib.Path(a.charts)
+    charts.mkdir(parents=True, exist_ok=True)
     runs, before, broken = load(a.tag, a.rejudged, a.reps)
     SCENARIOS[:] = [s for s in ALL_SCENARIOS if any(k[1] == s for k in list(runs) + list(broken))]
     for theme in THEMES:
         sfx = "" if theme == "light" else "-dark"
-        (out / f"hero{sfx}.svg").write_text(hero(runs, before, theme))
-        (out / f"checks{sfx}.svg").write_text(checks_chart(runs, theme))
-        (out / f"grid{sfx}.svg").write_text(grid_chart(runs, before, broken, theme))
+        (charts / f"hero{sfx}.svg").write_text(hero(runs, before, theme))
+        (charts / f"checks{sfx}.svg").write_text(checks_chart(runs, theme))
+        (charts / f"grid{sfx}.svg").write_text(grid_chart(runs, before, broken, theme))
     main_t, sens_t = table(runs, before, broken)
     md = (f"{provenance(runs, a.tag, a.rejudged)}\n\n{main_t}\n\n"
           f"Self-bans: runs in which the admin's own IP was banned (fail2ban or CrowdSec) while the agent worked. "

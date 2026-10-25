@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.svg">
-    <img alt="vps-forge: your AI agent hardens the server, you keep the keys. An illustration of ports before and after: ten open to the internet, then only 22, 80 and 443." src="docs/assets/banner.svg" width="100%">
+    <img alt="vps-forge: your AI agent hardens the server. You keep the keys. Every change goes arm, change, new login, commit, or rolls back at 5:00. The finished server: SSH keys only, firewall open on 22, 80 and 443, fail2ban on, backups with a tested restore, alerts to your phone." src="docs/assets/banner-light.svg" width="100%">
   </picture>
 </p>
 
@@ -12,18 +12,18 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/mountain-beaver/vps-forge/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/mountain-beaver/vps-forge?color=1E7F5A"></a>
+  <a href="https://github.com/mountain-beaver/vps-forge/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/mountain-beaver/vps-forge?color=0B7A55&style=flat-square"></a>
   <a href="https://github.com/mountain-beaver/vps-forge/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/mountain-beaver/vps-forge/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-5E6E7E"></a>
-  <a href="https://agentskills.io"><img alt="Agent Skills standard" src="https://img.shields.io/badge/Agent%20Skills-SKILL.md-14202B"></a>
-  <img alt="Debian 12 and 13, Ubuntu 22.04, 24.04 and 26.04" src="https://img.shields.io/badge/Debian%2012%20%7C%2013-Ubuntu%2022.04%20%7C%2024.04%20%7C%2026.04-5E6E7E">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-59616B?style=flat-square"></a>
+  <a href="https://agentskills.io"><img alt="Agent Skills standard" src="https://img.shields.io/badge/Agent%20Skills-SKILL.md-121417?style=flat-square"></a>
+  <img alt="Debian 12 and 13, Ubuntu 22.04, 24.04 and 26.04" src="https://img.shields.io/badge/Debian%2012%20%7C%2013-Ubuntu%2022.04%20%7C%2024.04%20%7C%2026.04-59616B?style=flat-square">
 </p>
 
 <p align="center">
-  <a href="#quick-start">Quick start</a>&nbsp;&nbsp;&nbsp;
-  <a href="#what-you-say-what-you-get">Examples</a>&nbsp;&nbsp;&nbsp;
-  <a href="#every-risky-change-has-an-automatic-undo">Safety</a>&nbsp;&nbsp;&nbsp;
-  <a href="#benchmark">Benchmark</a>&nbsp;&nbsp;&nbsp;
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#what-you-say-what-you-get">Examples</a> ·
+  <a href="#every-risky-change-has-an-automatic-undo">The 5-minute undo</a> ·
+  <a href="#benchmark">Benchmark</a> ·
   <a href="#faq">FAQ</a>
 </p>
 
@@ -33,8 +33,8 @@ vps-forge teaches the agent to do the whole job, in the right order, with a safe
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/bench/hero-dark.svg">
-    <img alt="Security score of the finished server, out of 100. Production Docker box: 79 without the skill, 99 with it. Fresh VPS to production: 88 vs 100. SSH port move: 88 vs 100. Fresh VPS with a sudo user: 92 vs 100." src="docs/bench/hero.svg" width="880">
+    <source media="(prefers-color-scheme: dark)" srcset="docs/bench/chart-hero-dark.svg">
+    <img alt="Checklist score of the finished server, out of 100: the share of outside-in checks passed, mean of 15 runs per scenario. Production Docker box: 79 without the skill, 99 with it. Fresh VPS to production: 88 vs 100. SSH port move: 88 vs 100. Fresh VPS with a sudo user: 92 vs 100." src="docs/bench/chart-hero-light.svg" width="880">
   </picture>
 </p>
 
@@ -45,7 +45,7 @@ vps-forge teaches the agent to do the whole job, in the right order, with a safe
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/replay-dark.svg">
-    <img alt="Replay of a real benchmark run on a fresh Debian 13 VPS. The user asks for a production server for a Docker app with daily backups and phone alerts, and says they are offline. The agent's own progress messages follow: recon with a baseline audit of 78 out of 100, safety net, SSH hardening tested from a new connection, firewall, fail2ban, a Docker port check, a backup with a verified restore, phone alerts, and a final audit of 100 out of 100." src="docs/assets/replay.svg" width="767">
+    <img alt="Replay of a real benchmark run on a fresh Debian 13 VPS. The user asks for a production server for a Docker app with daily backups and phone alerts, and says they are offline. The agent's own progress messages follow: recon with a baseline audit of 78 out of 100, safety net, SSH hardening tested from a new connection, firewall, fail2ban, a Docker port check, a backup with a verified restore, phone alerts, and a final audit of 100 out of 100." src="docs/assets/replay-light.svg" width="880">
   </picture>
 </p>
 
@@ -176,6 +176,13 @@ Profiles combine with any level: `web`, `docker`, `vpn`, `db`, `worker`, `game`.
 
 One wrong `sshd` or firewall change can make a server unreachable. So every SSH, firewall, sudo or PAM change runs inside a **dead-man switch**:
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/deadman-diagram-dark.svg">
+    <img alt="Diagram of the dead-man switch. Arm: snapshot the configs and start a 5-minute timer. Change: edit sshd, the firewall, sudo or PAM. Verify: log in again over a brand-new connection. Disarm: the login works, the timer is off and the change is kept. If the login is refused, nobody can disarm, and at 5:00 every change is rolled back from the snapshot, also after a reboot." src="docs/assets/deadman-diagram-light.svg" width="880">
+  </picture>
+</p>
+
 1. `deadman.sh arm` snapshots the config and starts a 5-minute systemd timer.
 2. The agent makes the change and validates it (`sshd -t`, `visudo -c`, `nft -c`).
 3. It logs in again over a **new** connection that can't reuse the old one.
@@ -221,8 +228,8 @@ Then a separate judge checks each server from the outside, before and after a re
 A lockout scores 0.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/bench/checks-dark.svg">
-  <img alt="Pass rate per check without and with the skill" src="docs/bench/checks.svg" width="880">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/bench/chart-checks-dark.svg">
+  <img alt="Every outside-in check that differs between the arms, one square per run, without vs with the skill. The skill's own defaults: ssh-audit clean 4/60 vs 60/60, alert on a new SSH login 16/30 vs 30/30, root login off 30/60 vs 57/60. Beyond them: host firewall active 46/60 vs 60/60, attacker gets banned 50/60 vs 60/60, brute-force guard on 52/60 vs 60/60. Should never happen: agent banned its own IP 7/60 vs 0/60, lockouts 0/60 in both. 18 more checks passed in every run and are not shown." src="docs/bench/chart-checks-light.svg" width="880">
 </picture>
 
 | | Without the skill | With vps-forge |
@@ -237,8 +244,8 @@ A lockout scores 0.
 | Admin locked out | 0 / 60 | 0 / 60 |
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/bench/grid-dark.svg">
-  <img alt="Score per distro and scenario" src="docs/bench/grid.svg" width="880">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/bench/chart-grid-dark.svg">
+  <img alt="Mean score per distro and scenario, without and with the skill, with each of the three runs listed. Without the skill the cells range from 78 to 95. With it every cell is 100, except the production Docker box on Ubuntu 22.04 (95) and Ubuntu 24.04 (98)." src="docs/bench/chart-grid-light.svg" width="880">
 </picture>
 
 **Where it doesn't help, and what to keep in mind**
@@ -257,11 +264,11 @@ A lockout scores 0.
 - **One model was benchmarked, and one more spot-checked.** The full benchmark is Claude Opus 5.5 only. GLM-5.3 got a spot check: run by hand in the ZCode desktop app, one run per arm on Debian 13, in two scenarios. It scored 79 → 100 on the fresh VPS and 67 → 100 on the production box, with no lockouts and no self-bans. Without the skill it missed the same defaults Opus missed, and on the production box it set up neither fail2ban nor automatic updates. Leave out the three skill-default checks and it is still 94 vs 100 and 77 vs 100. Four runs are an anecdote, not a benchmark: [per-check results](docs/bench/glm-5.3.md). Other agents and models have not been tested.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/bench/spot-glm-5.3-dark.svg">
-  <img alt="GLM-5.3 spot check next to Claude Opus 5.5 on Debian 13. Production Docker box: Opus 80 without the skill and 100 with it, GLM-5.3 67 and 100. Fresh VPS to production: Opus 87 and 100, GLM-5.3 79 and 100." src="docs/bench/spot-glm-5.3.svg" width="880">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/bench/chart-spot-dark.svg">
+  <img alt="GLM-5.3 spot check next to Claude Opus 5.5 on Debian 13. Fresh VPS to production: Opus 84, 89 and 89 without the skill and 100 in all three runs with it, GLM-5.3 79 and 100. Production Docker box: Opus 73, 80 and 87, then 100 three times, GLM-5.3 67 and 100." src="docs/bench/chart-spot-light.svg" width="880">
 </picture>
 
-The benchmark ran on the pre-release skill. Version 1.0.1 changed only text. Version 1.1.0 changed behaviour where the benchmark says little or nothing: narrow requests, a deadline on the temporary sudo grant, a restore drill that checks the app's data, and a stop on Kubernetes nodes and hypervisor hosts. [CHANGELOG.md](CHANGELOG.md) lists every change. The scenarios, the harness, and everything you need to reproduce the runs are in [`bench/`](bench/README.md). Per-run results are in [`docs/bench/results.md`](docs/bench/results.md) and [`results.json`](docs/bench/results.json).
+The benchmark ran on the pre-release skill. Version 1.0.1 changed only text. Version 1.1.0 changed behaviour where the benchmark says little or nothing: narrow requests, a deadline on the temporary sudo grant, a restore drill that checks the app's data, and a stop on Kubernetes nodes and hypervisor hosts. Version 1.1.1 changed only the README, its images and the packaging. [CHANGELOG.md](CHANGELOG.md) lists every change. The scenarios, the harness, and everything you need to reproduce the runs are in [`bench/`](bench/README.md). Per-run results are in [`docs/bench/results.md`](docs/bench/results.md) and [`results.json`](docs/bench/results.json).
 
 ## FAQ
 
@@ -327,7 +334,7 @@ No. The skill and its scripts have no telemetry. Alerts go only to the ntfy topi
 Yes. `audit.sh` is a standalone, read-only audit:
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.0/skills/vps-forge/scripts/audit.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/audit.sh
 less audit.sh          # read it before running anything as root
 sudo bash audit.sh     # read-only; --json for machine output
 ```

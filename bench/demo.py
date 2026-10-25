@@ -90,8 +90,9 @@ def record(out):
 
 
 THEMES = {
-    "light": dict(bg="#F3F5F7", frame="#D3DAE1", ink="#14202B", dim="#5E6E7E", you="#1F5FAD", ok="#1E7F5A", bad="#C2412D", bar="#E6EBF0"),
-    "dark": dict(bg="#0E161E", frame="#26333F", ink="#E4EBF1", dim="#8796A5", you="#6CA8F0", ok="#3FB683", bad="#E5654F", bar="#16212C"),
+    # the README's colour tokens: panel = surface, frame = line, ok = accent, bad = danger
+    "light": dict(bg="#F6F8FA", frame="#D8DDE3", ink="#121417", dim="#59616B", you="#59616B", ok="#0B7A55", bad="#BF3A1C", bar="#D8DDE3"),
+    "dark": dict(bg="#161B22", frame="#2B323B", ink="#E6EAEE", dim="#959DA7", you="#959DA7", ok="#3CC48F", bad="#F27A5E", bar="#2B323B"),
 }
 COLS, FS, LH, PAD, TOP = 96, 13, 19, 24, 50
 CW = FS * 0.6
@@ -187,13 +188,15 @@ def frame_svg(rows, total, th, title, at=None):
             css.append(f"@keyframes r{i}{{0%,{a:.2f}%{{opacity:0}}{a + 0.3:.2f}%,97%{{opacity:1}}100%{{opacity:0}}}}.r{i}{{animation:r{i} {total:.1f}s linear infinite}}")
     style = (f"text{{font-family:{MONO};font-size:{FS}px;white-space:pre}}" + "".join(css) +
              "@media (prefers-reduced-motion: reduce){*{animation:none!important;opacity:1!important;clip-path:none!important}}")
-    dots = "".join(f'<circle cx="{PAD + 8 + 18 * i}" cy="20" r="5.5" fill="{th["frame"]}"/>' for i in range(3))
-    head = f'<text x="{width / 2:.0f}" y="25" fill="{th["dim"]}" text-anchor="middle" style="font-size:12px">{escape(title)}</text>'
+    # the project mark (two brackets and a square, 48-unit box) instead of window dots
+    dots = (f'<g transform="translate({PAD - 4} 13) scale({14 / 48:.4f})"><path fill="{th["ink"]}" d="M0 0H14V6H6V42H14V48H0ZM48 0H34V6H42V42H34V48H48Z"/>'
+            f'<path fill="{th["ok"]}" d="M18 18H30V30H18Z"/></g>')
+    head = f'<text x="{PAD + 20}" y="25" fill="{th["dim"]}" style="font-size:12px">{escape(title)}</text>'
     foot = (f'<text x="{PAD}" y="{height - 16}" fill="{th["dim"]}" style="font-size:11.5px">Real output: Ubuntu 24.04 container with systemd, '
             f'recorded by bench/demo.py. Only the wait is shortened.</text>')
     return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}" role="img" '
             f'aria-label="{escape(title)}"><title>{escape(title)}</title><style>{style if at is None else f"text{{font-family:{MONO};font-size:{FS}px;white-space:pre}}"}</style>'
-            f'<rect x="1" y="1" width="{width - 2}" height="{height - 2}" rx="12" fill="{th["bg"]}" stroke="{th["frame"]}"/>'
+            f'<rect x="1" y="1" width="{width - 2}" height="{height - 2}" rx="10" fill="{th["bg"]}" stroke="{th["frame"]}"/>'
             f'<path d="M1 38 H{width - 1}" stroke="{th["frame"]}"/>{dots}{head}{"".join(body)}{foot}</svg>')
 
 

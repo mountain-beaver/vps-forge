@@ -1,6 +1,18 @@
 # Changelog
 
-## Unreleased
+## 1.1.1 (2026-10-25)
+
+The skill and its scripts behave exactly as in 1.1.0. This release changes the README, its images and the packaging.
+
+### Look
+- **A new visual identity.** The mark is a pair of brackets around a square: every change is held open until a fresh login proves it, then committed or rolled back. The README banner, the replay, the charts and the social preview are redrawn in it, in light and dark versions, with IBM Plex Sans and Mono outlined so nothing depends on web fonts.
+- **A dead-man switch diagram** above the step list: arm, change, verify from a new connection, disarm, and the path where the login is refused and the timer rolls everything back. It animates where the browser allows it and holds still under reduced motion. The recording of a real rollback stays below it, redrawn from the same recording in the new colours.
+- **The benchmark charts show the whole picture.** The checks chart has every check that differs between the arms, one square per run, grouped into the skill's own defaults, the checks beyond them, and incidents. It says how many checks passed in every run. The per-distro grid lists each run under the mean.
+- `bench/report.py` and `bench/spot.py` write their plain preview charts to `bench/out/charts/` instead of `docs/bench/`, so a new report can't overwrite the README charts. `results.md` and `results.json` stay where they were.
+
+### Distribution
+- **A `directory` branch for Anthropic's plugin directory.** It holds only the plugin: the manifest and icon, the skill without its evals, the license and a short README that says what the plugin runs and where data goes. A workflow rebuilds it on every release tag, so the benchmark harness and tests stay out of what people install from the directory. `make directory` builds the same folder locally.
+- **Plugin icon** at `.claude-plugin/icon.png`.
 
 ### Docs
 - **Before you start:** the Quick start now says to take a snapshot and find the provider's web console first, and to try a throwaway box the first time.

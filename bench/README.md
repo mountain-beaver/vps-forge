@@ -111,7 +111,7 @@ root: each cell gets its own network namespace. Then:
 ```bash
 python3 bench/matrix.py bake                       # once: build every starting server
 python3 bench/matrix.py run --skill-dir <frozen skill> --reps 3 --budget 0.15
-python3 bench/report.py --tag v3 --out docs/bench  # charts + results table
+python3 bench/report.py --tag v3 --out docs/bench  # results table; preview charts to bench/out/charts
 python3 bench/matrix.py rejudge --tag v2           # optional: judge saved runs again (no Claude)
 python3 bench/report.py --tag v2 --rejudged --out /tmp/v2  # report from the rejudged verdicts
 ```
@@ -140,3 +140,7 @@ run relies on the person watching the session, not on the harness.
 
 `python3 bench/spot.py --tag zc2 --model GLM-5.3` draws the spot check next to the Opus runs on the
 same distro and scenarios.
+
+The charts in the main README are design assets drawn from `docs/bench/results.json`, in the project's
+visual style. The SVGs that `report.py` and `spot.py` write to `bench/out/charts/` are plain previews of
+the same numbers.

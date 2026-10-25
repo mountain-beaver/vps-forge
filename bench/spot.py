@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Chart for a spot check of another model next to the Opus benchmark on the same distro and scenarios:
-    python3 bench/spot.py --tag zc2 --model GLM-5.3 --out docs/bench
-writes spot-<model>.svg and spot-<model>-dark.svg (lowercased, e.g. spot-glm-5.3.svg)."""
+    python3 bench/spot.py --tag zc2 --model GLM-5.3
+writes the preview charts spot-<model>.svg and spot-<model>-dark.svg (lowercased, e.g. spot-glm-5.3.svg)
+to bench/out/charts. The README chart is drawn separately in the project's own style."""
 import argparse
 import pathlib
 
@@ -61,7 +62,7 @@ def main():
     ap.add_argument("--tag", required=True, help="run tag of the spot check, e.g. zc2")
     ap.add_argument("--model", required=True, help="model name for the labels, e.g. GLM-5.3")
     ap.add_argument("--opus-tag", default="v3")
-    ap.add_argument("--out", default=str(BENCH.parent / "docs" / "bench"))
+    ap.add_argument("--out", default=str(BENCH / "out" / "charts"))
     a = ap.parse_args()
     other, _, _ = load(a.tag)
     opus, _, _ = load(a.opus_tag)
@@ -70,6 +71,7 @@ def main():
     if len(distros) != 1:
         raise SystemExit(f"expected one distro in --tag {a.tag}, found {distros}")
     out = pathlib.Path(a.out)
+    out.mkdir(parents=True, exist_ok=True)
     for theme in THEMES:
         sfx = "" if theme == "light" else "-dark"
         f = out / f"spot-{a.model.lower()}{sfx}.svg"
