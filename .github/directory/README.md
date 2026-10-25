@@ -4,7 +4,7 @@ Set up, harden and audit a Debian or Ubuntu VPS without locking yourself out.
 
 Ask Claude to put your app on a new server, secure an existing one, or check one you already run. The skill takes it through the whole job in the right order: an admin user with your key, root and password logins off, modern SSH crypto, a default-deny firewall that also covers Docker, fail2ban that never bans you, unattended security updates, Caddy or nginx with TLS, restic backups with a restore test, and phone alerts. It ends with a `SERVER.md` on the server that explains every open port.
 
-Every SSH, firewall, sudo or PAM change runs inside a dead-man switch. The config is snapshotted and a 5-minute timer is armed. Claude then has to log in again over a fresh connection before it may disarm the timer. If that login fails, the change rolls back by itself, at boot too if the server restarts.
+Every SSH, firewall, sudo or PAM change runs inside a dead-man switch. The config is snapshotted and a 5-minute timer is armed. Claude then has to log in again over a fresh connection before it may disarm the timer. If that login fails, the change rolls back by itself, at boot too if the server restarts. A firewall in your provider's panel is outside the server, so the switch can't undo it; Claude adds the new rule there first and removes the old one only after a new login works.
 
 On a server that is already in production, Claude audits first, read-only, and changes nothing until you approve.
 

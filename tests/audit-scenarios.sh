@@ -452,6 +452,28 @@ run_audit uu-weekly-lists
 expect uu-weekly-lists updates.unattended WARN
 rm -f /etc/apt/apt.conf.d/99-test-lists
 
+step "updates.third_party: a vendor repository unattended-upgrades doesn't follow"
+run_audit no-vendor-repo
+expect no-vendor-repo updates.third_party absent
+arch=$(dpkg --print-architecture)
+echo "deb [trusted=yes] http://vendor.invalid/repo stable main" > /etc/apt/sources.list.d/zz-test-vendor.list
+printf 'Origin: Tailscale\nLabel: Tailscale\nSuite: stable\nCodename: stable\nArchitectures: %s\nComponents: main\n' "$arch" \
+  > /var/lib/apt/lists/vendor.invalid_repo_dists_stable_Release
+printf 'Package: vendor-tool\nVersion: 1.0\nArchitecture: %s\nFilename: pool/v.deb\nSize: 1\nDescription: test\n\n' "$arch" \
+  > "/var/lib/apt/lists/vendor.invalid_repo_dists_stable_main_binary-${arch}_Packages"
+run_audit vendor-repo
+expect vendor-repo updates.third_party WARN
+msg_has vendor-repo updates.third_party 'Tailscale' "names the vendor's origin"
+printf 'Unattended-Upgrade::Origins-Pattern { "origin=Tailscale,label=Tailscale"; };\n' > /etc/apt/apt.conf.d/99-test-vendor
+run_audit vendor-repo-covered
+expect vendor-repo-covered updates.third_party PASS
+rm -f /etc/apt/apt.conf.d/99-test-vendor
+printf 'Origin: Examplecloud\nLabel: Examplecloud agent\nSuite: stable\nCodename: stable\nArchitectures: %s\nComponents: main\n' "$arch" \
+  > /var/lib/apt/lists/vendor.invalid_repo_dists_stable_Release
+run_audit provider-repo
+expect provider-repo updates.third_party INFO
+rm -f /etc/apt/sources.list.d/zz-test-vendor.list /etc/apt/apt.conf.d/99-test-vendor /var/lib/apt/lists/vendor.invalid_*
+
 step "backups.job: commented cron lines don't count"
 mkdir -p /etc/cron.d
 echo '# 0 3 * * * root restic backup /srv' > /etc/cron.d/zz-test-backup

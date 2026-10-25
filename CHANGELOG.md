@@ -6,6 +6,35 @@
 - **Directory listing details in `plugin.json`:** `displayName` (so the listing reads vps-forge, not "Vps Forge"), the icon path, and links to the documentation, the issue tracker and a new `PRIVACY.md`.
 - **`PRIVACY.md`:** the project collects nothing; it lists what the skill sends where, all of it to services you choose, including the certificate contact email that goes to Let's Encrypt.
 
+### Safety
+- **Provider firewalls are named as outside the dead-man switch.** The switch only snapshots files on the server, so a rule in the provider's panel or API can't roll back. The skill now changes those additively (add the new rule, prove a new login, remove the old rule last) and never replaces a whole rule set in one call. The README no longer says that every change that could cut you off rolls itself back.
+
+### Dead-man switch
+- **`vps-forge-deadman extend MINUTES`** moves a pending rollback to MINUTES from now and keeps the same snapshot, for a change that takes longer than the window. It refuses once the rollback has fired or while it runs, and if it can't schedule the new timer it rolls back at once instead of leaving the change unguarded. The skill arms 10 minutes for multi-step changes and never extends after a failed test login.
+
+### Alerts
+- **SSH login alerts no longer train you to mute them.** The first login from a `user@address` not seen for `SSH_ALERT_KNOWN_DAYS` (30) is still high priority. Later logins from it come at low priority, without sound, and at most one an hour, so your own scp, rsync and deploys stay quiet while a new address still rings. `SSH_ALERT_KNOWN_DAYS=0` alerts every login as before. Re-run `install-alerts.sh --ssh-login` to update the hook.
+
+### Deploy panels
+- **Coolify, Dokploy, CapRover, Kamal and Dokku** (`references/paas.md`). These tools manage the server as root, run their own proxy on 80/443 and their own Docker setup, and the hardened defaults used to break them quietly: the next deploy failed. The skill now looks for them in recon and asks about them in intake. When one is there, root keeps key login, the panel's own SSH from its Docker network is exempt from fail2ban and from the SSH rate limit, no second proxy and no Docker daemon changes go in, the dashboard port closes only once the dashboard works on its domain, and the panel's data (Coolify's `APP_KEY` above all) goes into the backups. It also suggests the best order for a new box: harden first, then install the panel.
+- **Fix: root login kept for a deploy key really works now.** When the skill kept `PermitRootLogin prohibit-password` for a pipeline that logs in as root, `AllowGroups sshusers` still refused root, so the next deploy failed anyway. Root now joins `sshusers` whenever its key login is kept. The deploy-key check also looks for Coolify, Dokploy, CapRover and Kamal keys, and asks about Kamal, which logs in as root by default.
+- New eval: a Coolify host.
+
+### Script mode
+- **A real procedure for chat apps without SSH** (`references/script-mode.md`). The agent asks for a read-only audit first and writes nothing blind. Then it hands over one short script per stage, as a bundle to copy with `scp`, and reads the pasted output before the next one. Before every SSH, firewall, sudo or PAM change the script stops and asks the user to log in from a second terminal, which is what disarms the switch; the script never disarms itself. The final report says what script mode couldn't check.
+
+### Backups and updates
+- **SQLite databases are dumped, not copied live.** PocketBase, n8n, Uptime Kuma and similar apps keep their data in SQLite, and a file copy taken mid-write can restore as corrupt. The skill finds these files during recon, dumps each one with `sqlite3 .backup`, keeps the live file out of restic, and checks the restore with `PRAGMA integrity_check`.
+- **Vendor repositories get automatic updates too.** When the skill adds Caddy, Tailscale or CrowdSec, it adds their origin to unattended-upgrades in the same phase, and asks first for Docker, whose upgrade restarts every container. `audit.sh` has a new check, `updates.third_party`: it warns when Docker, Caddy, Tailscale or CrowdSec isn't followed by unattended-upgrades, and notes any other third-party repository, such as a provider's agent, without a warning.
+
+### Tests
+- **The dead-man rollback and the systemd-only audit checks run in CI**, in a podman container that boots systemd: a broken sshd and a drop-all firewall rolled back by the timer, the rollback at boot after a reboot while armed, and concurrent arms, and `extend`. Both suites build their image when it's missing, and in CI a missing podman is a failure instead of a skip.
+
+### Docs
+- **Quick start:** `npx skills add … -g` is the default, so the agent finds the skill in any folder; the Node.js version it needs; how to check the skill loaded; which key the agent uses, on the first screen.
+- **FAQ:** how to update or remove the skill, and how to undo what it did on a server; Oracle Cloud, AWS EC2 and ARM are listed; the lockout answer starts with the provider firewall.
+- **Benchmark:** the hero chart marks the SSH port move, whose 100 comes from behaviour 1.1.0 removed; the caption under it is one line; `bench/README.md` says how to reproduce the benchmarked pre-release skill from the `v1.0.0` tag.
+
 ## 1.1.1 (2026-10-25)
 
 The skill and its scripts behave exactly as in 1.1.0. This release changes the README, its images and the packaging.

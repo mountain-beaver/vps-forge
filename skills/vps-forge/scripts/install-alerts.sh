@@ -5,7 +5,8 @@
 #   remote:         ssh host 'sudo bash -s -- --all --test' < install-alerts.sh
 #
 # Always installs /usr/local/bin/vps-notify (ntfy / Telegram / webhook sender).
-#   --ssh-login  alert on every SSH login (pam_exec, optional + non-blocking)
+#   --ssh-login  alert on SSH logins: a new user@address loudly, known ones quietly and at most
+#                hourly (pam_exec, optional + non-blocking)
 #   --health     timer every 5 min: failed units, disk, inodes, reboot, OOM kills, overdue backup, heartbeat
 #   --all        both of the above
 #   --test       send a test message after installing
@@ -87,6 +88,9 @@ BACKUP_MAX_AGE_HOURS=36
 
 # Space-separated IPs that do not trigger SSH login alerts
 SSH_ALERT_IGNORE_IPS=''
+# A user@address seen within this many days is known: its logins come at low priority
+# (no sound) and at most once an hour. The first login from a new one is high priority.
+SSH_ALERT_KNOWN_DAYS=30
 EOF
   say "created $CONF template: fill in at least one channel"
 fi
@@ -183,8 +187,26 @@ CONF=/etc/vps-forge/notify.env
 IGN=""
 [ -r "$CONF" ] && IGN=$(sed -n "s/^SSH_ALERT_IGNORE_IPS=//p" "$CONF" | tr -d "\"'")
 for ip in $IGN; do [ "$ip" = "${PAM_RHOST:-}" ] && exit 0; done
+DAYS=""
+[ -r "$CONF" ] && DAYS=$(sed -n "s/^SSH_ALERT_KNOWN_DAYS=//p" "$CONF" | tr -cd '0-9')
 when=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
-( env -i PATH="$PATH" HOME=/root /usr/local/bin/vps-notify "SSH login: ${PAM_USER:-?}" "${PAM_USER:-?} logged in from ${PAM_RHOST:-unknown} at $when (${PAM_SERVICE:-sshd})" high </dev/null >/dev/null 2>&1 & )
+# Everything below runs in the background, so a slow disk or network never delays the login.
+(
+  u=${PAM_USER:-?}; h=${PAM_RHOST:-unknown}
+  prio=high; note="new address"
+  d=/var/lib/vps-forge/alerts/ssh-seen
+  k=$(printf '%s@%s' "$u" "$h" | tr -c 'A-Za-z0-9@._:-' '_' | cut -c1-200)
+  # SSH_ALERT_KNOWN_DAYS=0: every login is new
+  if [ "${DAYS:-30}" -gt 0 ] && mkdir -p "$d" 2>/dev/null; then
+    if [ -n "$(find "$d/$k.seen" -mtime -"${DAYS:-30}" 2>/dev/null)" ]; then
+      prio=low; note="known address"
+      # a known address that already alerted within the hour: count it, don't send again
+      [ -n "$(find "$d/$k.sent" -mmin -60 2>/dev/null)" ] && { touch "$d/$k.seen"; exit 0; }
+    fi
+    touch "$d/$k.seen" "$d/$k.sent" 2>/dev/null
+  fi
+  env -i PATH="$PATH" HOME=/root /usr/local/bin/vps-notify "SSH login: $u" "$u logged in from $h at $when (${PAM_SERVICE:-sshd}, $note)" "$prio"
+) </dev/null >/dev/null 2>&1 &
 exit 0
 EOF
   chmod 755 /usr/local/sbin/vps-forge-ssh-login

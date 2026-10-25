@@ -5,6 +5,9 @@
 #                                     snapshot config now, roll back in MINUTES (default 5). The
 #                                     rollback also unbans ADDR in fail2ban (default: the SSH
 #                                     client address of this session)
+#   vps-forge-deadman extend MINUTES  still armed and need more time before the test: move the
+#                                     rollback to MINUTES from now. Same snapshot; never use it to
+#                                     keep a change whose test login failed
 #   vps-forge-deadman disarm          the change works: cancel the rollback. Exits 3 (and prints
 #                                     ROLLED BACK) if a rollback already ran since arm: then the
 #                                     changes were NOT kept
@@ -472,6 +475,33 @@ case "$cmd" in
       /bin/bash "$STATE/bin/deadman.sh" restore --armed "$dir" || { rm -f "$STATE/armed-at"; remove_boot_unit; die "systemd-run failed"; }
     at=$(date -d "+${min} min" +%H:%M:%S 2>/dev/null || echo "in ${min} min")
     log "ARMED: rollback at $at unless you run 'vps-forge-deadman disarm' (snapshot $(basename "$dir"); $boot_note; $ip_note)"
+    ;;
+  extend)
+    need_root
+    min=${1:-}
+    [[ "$min" =~ ^[0-9]+$ ]] && (( min >= 1 && min <= 120 )) || die "usage: extend MINUTES (1..120)"
+    lock 10 || die "another vps-forge-deadman command is running; NOT extended. Try again"
+    if rolled_back_since_arm; then report_rollback; exit 3; fi
+    if restore_running; then report_running; exit 3; fi
+    is_armed || die "not armed: nothing to extend"
+    dir=$(cat "$STATE/armed-snapshot" 2>/dev/null)
+    [[ -n "$dir" && -d "$dir" ]] || die "no armed snapshot recorded; NOT extended"
+    if [[ "$SKIP_SERVICES" == 1 ]]; then
+      log "EXTENDED (test mode: no timer scheduled, snapshot $(basename "$dir"))"
+      exit 0
+    fi
+    systemctl stop "$UNIT.timer" || die "could not stop $UNIT.timer; the old rollback time still holds"
+    # the timer may have fired between the checks above and the stop
+    if rolled_back_since_arm; then report_rollback; exit 3; fi
+    if restore_running; then report_running; exit 3; fi
+    systemctl reset-failed "$UNIT.service" "$UNIT.timer" 2>/dev/null
+    if ! systemd-run --quiet --collect --unit="$UNIT" --description="vps-forge deadman rollback"         --on-active="${min}m" --timer-property=AccuracySec=1s         /bin/bash "$STATE/bin/deadman.sh" restore --armed "$dir"; then
+      # no timer now means no rollback: an unverified change must not outlive the arm
+      log "systemd-run failed while extending: rolling back now"
+      restore "$dir"; exit 1
+    fi
+    at=$(date -d "+${min} min" +%H:%M:%S 2>/dev/null || echo "in ${min} min")
+    log "EXTENDED: rollback at $at unless you run 'vps-forge-deadman disarm' (snapshot $(basename "$dir"))"
     ;;
   disarm)
     need_root

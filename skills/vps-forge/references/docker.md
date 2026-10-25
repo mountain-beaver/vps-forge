@@ -1,5 +1,7 @@
 # Docker profile
 
+If Coolify, Dokploy, CapRover, Kamal or Dokku manages Docker on this host, read paas.md first: most of the daemon changes below must be skipped there.
+
 ## Contents
 - Existing Docker (check first)
 - Install (official repo, not docker.io)

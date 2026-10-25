@@ -1,6 +1,6 @@
 ---
 name: vps-forge
-description: Set up, harden, audit and polish a Linux VPS (Debian/Ubuntu) to production grade without ever losing access — SSH keys and crypto, firewall, fail2ban/CrowdSec, automatic security updates, kernel hardening, Docker, Caddy/nginx with TLS, WireGuard/Tailscale, restic backups, phone alerts, monitoring and a final verified score. Use this skill whenever the user mentions a VPS, VDS, cloud server, droplet, Hetzner/DigitalOcean/Vultr/Linode/OVH/AWS Lightsail box, a "fresh server", "secure/harden/lock down my server", SSH hardening, ufw, fail2ban, "set up Docker/Caddy/nginx on my server", server backups or monitoring, or asks to audit or check an existing server — even if they don't say "harden". Not for RHEL/Fedora-family servers, Kubernetes nodes (k3s, kubeadm), Proxmox or other hypervisor hosts, managed or shared hosting without root, or the user's own desktop.
+description: Set up, harden, audit and polish a Linux VPS (Debian/Ubuntu) to production grade without ever losing access — SSH keys and crypto, firewall, fail2ban/CrowdSec, automatic security updates, kernel hardening, Docker, Caddy/nginx with TLS, WireGuard/Tailscale, restic backups, phone alerts, monitoring and a final verified score. Use this skill whenever the user mentions a VPS, VDS, cloud server, droplet, Hetzner/DigitalOcean/Vultr/Linode/OVH/AWS Lightsail box, a "fresh server", "secure/harden/lock down my server", SSH hardening, ufw, fail2ban, "set up Docker/Caddy/nginx on my server", preparing a server for Coolify, Dokploy, CapRover or Kamal, server backups or monitoring, or asks to audit or check an existing server — even if they don't say "harden". Not for RHEL/Fedora-family servers, Kubernetes nodes (k3s, kubeadm), Proxmox or other hypervisor hosts, managed or shared hosting without root, or the user's own desktop.
 license: MIT
 compatibility: Debian 12/13 and Ubuntu 22.04/24.04/26.04 servers, reached over SSH from the agent's machine. Server scripts are bash and run with root or sudo.
 ---
@@ -15,11 +15,11 @@ Speak the user's language. Before every change, say in one line what you are cha
 
 These exist because one wrong `sshd` or `ufw` change can make a server unreachable, and the user may have no idea how to use the provider's rescue console.
 
-1. **Never cut off access.** Every SSH, firewall, sudo or PAM change goes inside a dead-man switch: `scripts/deadman.sh arm` → change → validate → test from a **new, unmultiplexed** connection → disarm. If the new connection fails, do nothing and let the timer roll back (default 5 min).
+1. **Never cut off access.** Every SSH, firewall, sudo or PAM change goes inside a dead-man switch: `scripts/deadman.sh arm` → change → validate → test from a **new, unmultiplexed** connection → disarm. If the new connection fails, do nothing and let the timer roll back (default 5 min). Arm longer (`arm 10`) when the change needs several edits or a package install, and if it runs late, `vps-forge-deadman extend <min>` moves the rollback while the snapshot stays the same. Never extend after a failed test login.
    - **Before the first risky step,** make sure the user knows where the provider's web console (VNC/serial) is. Keep the existing session open throughout.
    - **The test must be a new connection.** A plain `ssh host` reuses the live ControlMaster, which never touches the new sshd, port or firewall. Always test with `-o ControlPath=none`.
    - **Disarming.** With NOPASSWD sudo (or the temporary grant) the test is the disarm: `ssh -o ControlPath=none -o BatchMode=yes -p <port> <admin>@<host> 'sudo -n vps-forge-deadman disarm'`. Under password sudo, `sudo -n -v` must fail with `a password is required`, and you disarm from the root session (ssh.md "Test and disarm").
-   - **What it covers:** sshd, ufw/nftables/iptables, sudoers and PAM files. It doesn't snapshot WireGuard, Tailscale or netplan config (vpn.md).
+   - **What it covers:** sshd, ufw/nftables/iptables, sudoers and PAM files. It doesn't snapshot WireGuard, Tailscale or netplan config (vpn.md), and it can't undo anything outside the server, such as a provider firewall. There, add the new rule first, prove a new login, and remove the old rule last (firewall.md).
 2. **Never ban yourself.** Every test login that might fail counts against fail2ban and ufw `limit`, and a ban on the admin's IP looks exactly like a lockout. The admin's IP goes on every exemption list before anything can count it: fail2ban's `ignoreip`, a ufw allow rule ahead of `limit`, and sshd's `PerSourcePenaltyExemptList` (firewall.md, ssh.md).
    - **The admin's IP** is `$(sudo vps-forge-deadman client-ip)`, because `$SSH_CLIENT` is empty under sudo. Stop if it's empty or not an IP. If you aren't on the user's own machine (cloud sandbox, CI), it's *your* IP: mark every entry (ufw, `ignoreip`, sshd's exempt list) `agent session <date>`, ask for the user's real IP or range, and remove your entries in phase 12.
    - It goes into fail2ban's `ignoreip` **before fail2ban can first start**. Debian 13 and Ubuntu 24.04 start it on install, and on start it re-reads recent journal lines, so your earlier test logins ban the user at once. So: `systemctl mask fail2ban` and write the jail before the phase-2 install, then unmask and enable it in phase 5 (base.md). A runtime `addignoreip` is lost on every restart, and the deadman can't undo a ban (firewall.md).
@@ -37,7 +37,7 @@ Pick the mode from what you can actually do in this session:
 | Mode | When | How |
 |---|---|---|
 | **Direct** | You have a shell that can `ssh` to the server | Run commands over SSH with multiplexing (below). This is the best mode. |
-| **Script** | No SSH access from here | Generate `setup.sh` (`set -Eeuo pipefail`, state checks, `read -p` pauses before dangerous steps, deadman calls) plus a short "run it like this, then check these" guide. Bundle the scripts it needs. |
+| **Script** | No SSH access from here (a chat app) | Recon first, then one small script per stage that the user runs and pastes back; every risky step pauses for a test login from the user's second terminal. Follow `references/script-mode.md`. |
 | **Audit** | The user wants a check, not changes, or the server is already in production | Run `scripts/audit.sh` read-only, then produce the findings report. Change nothing until asked. |
 
 **Direct-mode mechanics**
@@ -50,7 +50,7 @@ Pick the mode from what you can actually do in this session:
 
 You need four answers before starting. Infer whatever you can from the conversation and from the server itself.
 
-1. **Purpose → profile(s):** `web`, `docker`, `vpn`, `db`, `worker` (bots, cron jobs, outbound only), `game`. Profiles combine.
+1. **Purpose → profile(s):** `web`, `docker`, `vpn`, `db`, `worker` (bots, cron jobs, outbound only), `game`. Profiles combine. For `docker` or `web`, ask whether a deploy panel or tool (Coolify, Dokploy, CapRover, Kamal, Dokku) runs or will run here: it changes root login, the proxy and the firewall (paas.md).
    - **worker** has no inbound ports besides SSH. Run each bot or job as its own unprivileged user under a systemd unit with `Restart=on-failure`, keep its secrets in a 600 env file, and cap its logs.
    - **game** opens exactly the game's ports, often UDP (`ufw allow <port>/udp comment '<game>'`). Run the server as a dedicated non-root user under systemd, and back up its world directory.
 2. **Level:** `baseline`, `hardened` (recommend this by default), or `paranoid`. Explain the difference in one sentence each (see §5).
@@ -68,7 +68,7 @@ Create a task list from the phases below, trimmed to the chosen profile and leve
 
 | # | Phase | Read | Key outcome |
 |---|---|---|---|
-| 0 | Recon | `scripts/audit.sh` | Facts, a baseline score, and red flags spotted before any change. Stop on a Kubernetes node, a hypervisor host or a non-Debian/Ubuntu system (distro-notes.md) |
+| 0 | Recon | `scripts/audit.sh` | Facts, a baseline score, and red flags spotted before any change. Stop on a Kubernetes node, a hypervisor host or a non-Debian/Ubuntu system (distro-notes.md). Coolify, Dokploy, CapRover, Kamal or Dokku found or planned: read `references/paas.md` before phase 3 |
 | 1 | Safety net | `references/base.md` §Safety net | Provider snapshot, console known, etckeeper on, deadman installed |
 | 2 | Base system | `references/base.md` | Non-interactive full upgrade, unattended security updates, time sync, swap, journald limits, hostname that survives reboots |
 | 3 | Admin user & SSH | `references/ssh.md` | Admin user with a key, sudo policy chosen, root login and passwords off, modern crypto, verified from a new session |
@@ -141,17 +141,19 @@ Read only what the current phase needs.
 - `references/firewall.md`: ufw, IPv6, Cloudflare allowlists, Docker vs ufw, provider firewalls, fail2ban, CrowdSec
 - `references/kernel.md`: sysctl (and when not to), AppArmor, services, BBR, paranoid extras
 - `references/docker.md`, `references/web.md`, `references/vpn.md`, `references/databases.md`: workload profiles
+- `references/paas.md`: Coolify, Dokploy, CapRover, Kamal and Dokku: root key login, the panel's own SSH, its proxy and dashboard ports, what to back up
 - `references/backups.md`: restic, DB dumps, deletion-resistant repos, restore drills
 - `references/alerts-monitoring.md`: phone alerts, heartbeats, uptime checks, metrics
 - `references/comfort.md`: motd, shell, tools
 - `references/audit-mode.md`: read-only audits, severity rubric, findings format, compromise response
 - `references/reproducibility.md`: SERVER.md, cloud-init and Ansible export
 - `references/distro-notes.md`: Ubuntu 22.04/24.04, Debian 12/13 differences, containers (OpenVZ/LXC), ARM
+- `references/script-mode.md`: no SSH from here: recon, stage scripts, the test-and-disarm pause
 - `references/troubleshooting.md`: locked out, cloud-init overrides, fail2ban won't start, Docker ignores ufw, and more
 
 **Scripts** (all idempotent; `--help` on each):
 - `scripts/audit.sh`: read-only audit with PASS/WARN/FAIL, a score and optional `--json`; exits 1 on any FAIL. Used in phase 0 and phase 11.
-- `scripts/deadman.sh`: `arm [minutes] [--ip addr]` / `disarm` / `status` / `restore` / `client-ip` (the calling SSH client's address, also under sudo). Snapshots SSH, firewall and sudoers config and rolls back automatically unless disarmed, also after a reboot. The rollback unbans the arming SSH client (or `--ip`) in fail2ban. `disarm` exits 3 with `ROLLED BACK` when the rollback already ran: the change was not kept.
+- `scripts/deadman.sh`: `arm [minutes] [--ip addr]` / `extend <minutes>` / `disarm` / `status` / `restore` / `client-ip` (the calling SSH client's address, also under sudo). Snapshots SSH, firewall and sudoers config and rolls back automatically unless disarmed, also after a reboot. The rollback unbans the arming SSH client (or `--ip`) in fail2ban. `disarm` exits 3 with `ROLLED BACK` when the rollback already ran: the change was not kept.
 - `scripts/external-check.sh`: runs on the **user's machine**. Checks open ports, offered SSH auth methods, admin login, TLS and headers for a domain; `--root-test` and `--ssh-audit` are opt-in because they add failed logins. They are harmless when the user's IP is in fail2ban's `ignoreip` (firewall.md); if it isn't, add it first.
 - `scripts/install-alerts.sh`: installs `vps-notify` (ntfy/Telegram/webhook), SSH-login alerts, and a 5-minute health timer (failed units, disk, inodes, reboot-required, heartbeat).
 

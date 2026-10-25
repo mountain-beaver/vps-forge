@@ -25,6 +25,24 @@ require_disposable_container() {
   [[ ${EUID:-$(id -u)} -eq 0 ]] || { echo "run as root inside the container" >&2; exit 2; }
 }
 
+# Ubuntu 24.04 with systemd as PID 1 for the podman suites; builds it when it's missing.
+# Returns 1 (the caller skips) when podman is missing, except in CI, where that is a failure.
+systemd_image() { # image
+  if ! command -v podman >/dev/null 2>&1; then
+    [[ -n "${CI:-}" ]] && { echo "need podman (docker can't run systemd as PID 1 here)" >&2; exit 2; }
+    return 1
+  fi
+  podman image exists "$1" && return 0
+  echo "building $1"
+  podman build -q -t "$1" -f - "$(mktemp -d)" <<'EOF' >/dev/null || { echo "could not build $1" >&2; exit 2; }
+FROM docker.io/library/ubuntu:24.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update -qq && apt-get install -y -qq systemd systemd-sysv openssh-server iproute2 procps >/dev/null 2>&1
+RUN systemctl enable ssh.socket ssh.service || true
+CMD ["/sbin/init"]
+EOF
+}
+
 apt_install() { # pkgs... (missing packages are skipped, not fatal)
   local p avail=()
   for p in "$@"; do

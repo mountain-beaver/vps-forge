@@ -200,6 +200,26 @@ if dpkg-query -W -f='${Status}' unattended-upgrades 2>/dev/null | grep -q 'insta
   else
     info updates.last_run "no unattended-upgrades log yet"
   fi
+  # Third-party repositories (Docker, Caddy, Tailscale...) are only updated when their origin is
+  # listed. Origins come from the repositories' own Release files, so they are untrusted text.
+  tp=$(apt-cache -o Dir::Cache::pkgcache= -o Dir::Cache::srcpkgcache= policy 2>/dev/null | sed -n 's/^ *release.*[ ,]o=\([^,]*\).*/\1/p' | sort -u \
+       | grep -vxE 'Debian|Debian Backports|Ubuntu|UbuntuESM|UbuntuESMApps|Canonical')
+  if [[ -n "$tp" ]]; then
+    pats=$(apt-config dump 2>/dev/null | grep -E '^Unattended-Upgrade::(Origins-Pattern|Allowed-Origins)')
+    uncovered=""
+    while IFS= read -r o; do
+      [[ -n "$o" ]] || continue
+      grep -qF -e "origin=$o" -e "o=$o" -e "\"$o:" -e 'origin=*"' <<<"$pats" || uncovered+="${uncovered:+, }$(untrusted "$o" 40)"
+    done <<<"$tp"
+    # WARN for the repositories the skill itself adds; a provider's agent repository is the provider's call.
+    if [[ -n "$uncovered" ]] && grep -qiE 'docker|caddy|tailscale|crowdsec' <<<"$uncovered"; then
+      warn updates.third_party "not updated automatically: $uncovered. Add their origins to Unattended-Upgrade::Origins-Pattern, or update them by hand"
+    elif [[ -n "$uncovered" ]]; then
+      info updates.third_party "not updated automatically: $uncovered (add their origins to Unattended-Upgrade::Origins-Pattern if they should be)"
+    else
+      pass updates.third_party "third-party repositories are in unattended-upgrades"
+    fi
+  fi
   reboot_auto=$(apt-config dump Unattended-Upgrade::Automatic-Reboot 2>/dev/null | sed -n 's/.*"\(.*\)";/\1/p' | tail -n 1)
   info updates.auto_reboot "automatic reboot: ${reboot_auto:-false}"
 else

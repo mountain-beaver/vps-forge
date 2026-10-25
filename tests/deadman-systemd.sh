@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # deadman.sh with real systemd: timer rollback, enable states, files created after arm, nft
-# tables, the boot-time rollback after a reboot, locking, and client-ip under sudo over SSH.
+# tables, extend, the boot-time rollback after a reboot, locking, and client-ip under sudo over SSH.
 # Runs in a throwaway podman container (localhost/u24sd: Ubuntu 24.04 booting systemd) and takes
 # about three minutes. Needs network access for apt.
 set -uo pipefail
@@ -9,8 +9,8 @@ cd "$(dirname "$0")/.." || exit 2
 . tests/lib.sh
 IMAGE=${VPS_FORGE_SYSTEMD_IMAGE:-localhost/u24sd}
 
-if ! command -v podman >/dev/null 2>&1 || ! podman image exists "$IMAGE" 2>/dev/null; then
-  note "deadman-systemd needs podman and the $IMAGE image (Ubuntu 24.04 with systemd as PID 1)"
+if ! systemd_image "$IMAGE"; then
+  note "deadman-systemd needs podman (it runs Ubuntu 24.04 with systemd as PID 1 in a container)"
   exit 0
 fi
 
@@ -99,6 +99,19 @@ wait "$p1"; r1=$?; wait "$p2"; r2=$?
 q 'test $(ls -d /var/lib/vps-forge/deadman/20* | wc -l) -ge 1 && systemctl is-active --quiet vps-forge-deadman.timer' \
   || bad "no timer after the concurrent arms"
 x 'vps-forge-deadman disarm' >/dev/null 2>&1 && ok "disarm" || bad "disarm after the concurrent arms"
+
+step "extend moves the rollback and keeps the snapshot"
+x 'vps-forge-deadman arm 1' >/dev/null 2>&1 || bad "arm 1"
+snap=$(x 'cat /var/lib/vps-forge/deadman/armed-snapshot' 2>&1)
+x 'echo "MaxAuthTries 5" > /etc/ssh/sshd_config.d/40-slow.conf' || bad "change"
+x 'vps-forge-deadman extend 3' >/dev/null 2>&1 && ok "extend 3 while armed" || bad "extend 3: $(x 'vps-forge-deadman extend 3' 2>&1)"
+sleep 75   # past the original 1-minute rollback
+st=$(x 'vps-forge-deadman status' 2>&1)
+[[ "$st" == ARMED* && "$st" != *"ROLLED BACK"* ]] && q 'test -e /etc/ssh/sshd_config.d/40-slow.conf' \
+  && ok "no rollback at the original time" || bad "rolled back despite extend: $st"
+[[ "$(x 'cat /var/lib/vps-forge/deadman/armed-snapshot' 2>&1)" == "$snap" ]] && ok "the same snapshot is armed" || bad "extend changed the armed snapshot"
+x 'vps-forge-deadman disarm' >/dev/null 2>&1 && ok "disarm after extend keeps the change" || bad "disarm after extend"
+x 'rm -f /etc/ssh/sshd_config.d/40-slow.conf'
 
 step "reboot while armed: the boot-time rollback"
 x 'vps-forge-deadman arm 5' >/dev/null 2>&1 || bad "arm 5"

@@ -187,6 +187,43 @@ echo $((NOW+1000)) > "$T/backup/last-success"; run $((NOW+1200))
 expect "backup recovery sends Resolved" 1 '^Resolved: backup-stale'
 if [[ -f "$T/state/.sent/backup-stale" ]] && (( $(cat "$T/state/.sent/backup-stale") > NOW+1200-6*3600 )); then ok "backup-stale cooldown reset to the 15 min anti-flap"; else bad "backup-stale cooldown not reset"; fi
 
+echo "== SSH login hook: new addresses loud, known ones quiet and at most hourly"
+awk '/cat > \/usr\/local\/sbin\/vps-forge-ssh-login <<.EOF./{f=1; next} f&&/^EOF$/{exit} f' "$INSTALLER" \
+  | sed -e "s#/etc/vps-forge/notify.env#$T/notify.env#g" \
+        -e "s#/var/lib/vps-forge/alerts#$T/state#g" \
+        -e "s#/usr/local/bin/vps-notify#$T/bin/vps-notify#g" \
+        -e "s#^PATH=.*#PATH='$PATH'#" > "$T/login.sh"   # the host's tools, wherever they live
+if [[ ! -s "$T/login.sh" ]] || grep -vE '^[[:space:]]*(#|PATH=)' "$T/login.sh" | grep -nE '(^|[^A-Za-z0-9_$])/(etc|var|usr/local)/'; then
+  bad "could not extract the SSH login hook, or it still names a real path"
+else
+  login() { # user host -> runs the hook and waits for its background sender
+    local before; before=$(count '^SSH login')
+    PAM_TYPE=open_session PAM_USER=$1 PAM_RHOST=$2 PAM_SERVICE=sshd sh "$T/login.sh" || bad "the hook exited non-zero"
+    for _ in $(seq 30); do [[ "$(count '^SSH login')" != "$before" ]] && return; sleep 0.1; done
+  }
+  reset; printf "SSH_ALERT_IGNORE_IPS='192.0.2.99'\nSSH_ALERT_KNOWN_DAYS=30\n" > "$T/notify.env"
+  login admin 192.0.2.10
+  expect "the first login from a new address is high priority" 1 '^SSH login: admin|.*new address.*|high$'
+  login admin 192.0.2.10
+  expect "a repeat within the hour sends nothing" 1 '^SSH login: admin|'
+  k="$T/state/ssh-seen/admin@192.0.2.10"
+  touch -d '-2 hours' "$k.sent"
+  login admin 192.0.2.10
+  expect "a known address after an hour is low priority" 1 '^SSH login: admin|.*known address.*|low$'
+  login admin 198.51.100.4
+  expect "another address is new again" 2 '|high$'
+  touch -d '-40 days' "$k.seen" "$k.sent"
+  login admin 192.0.2.10
+  expect "an address unseen for KNOWN_DAYS is new again" 3 '|high$'
+  login deploy 192.0.2.10
+  expect "the same address with another user is new" 4 '|high$'
+  login admin 192.0.2.99
+  expect "SSH_ALERT_IGNORE_IPS sends nothing" 0 '192.0.2.99'
+  reset; printf "SSH_ALERT_KNOWN_DAYS=0\n" > "$T/notify.env"
+  login admin 192.0.2.10; login admin 192.0.2.10
+  expect "SSH_ALERT_KNOWN_DAYS=0 alerts every login at high priority" 2 '|high$'
+fi
+
 echo "== installer text"
 if grep -q 'TimeoutStartSec=2min' "$INSTALLER"; then ok "the health service has TimeoutStartSec=2min"; else bad "TimeoutStartSec missing from the health service"; fi
 if awk '/install -m 600 \/dev\/null "\$CONF"/{a=NR} /cat > "\$CONF" <</{b=NR} END{exit !(a && b && a<b)}' "$INSTALLER"; then ok "notify.env is created mode 600 before it gets content"; else bad "notify.env is written before it is chmod'ed"; fi

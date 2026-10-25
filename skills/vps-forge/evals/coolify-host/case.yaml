@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: coolify-host
+expected_outcome: |
+  Recognises the Coolify host and adapts the hardening instead of applying the defaults: root keeps key login (prohibit-password, not "no") with root allowed through AllowGroups, Coolify's own container-to-host SSH is exempted from fail2ban and from any ufw limit rule, no host Caddy or nginx goes in front of Coolify's proxy, Docker's daemon config is left alone, /data/coolify (with source/.env) goes into the backups, and the dashboard port 8000 is closed only after the dashboard works on its domain. The SSH and firewall changes run inside the dead-man switch.

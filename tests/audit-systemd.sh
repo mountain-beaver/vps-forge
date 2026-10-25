@@ -12,18 +12,8 @@ cd "$(dirname "$0")/.." || exit 2
 . tests/lib.sh
 
 if [[ "${1:-}" != --inside ]]; then
-  command -v podman >/dev/null || { echo "need podman (docker can't run systemd as PID 1 here)" >&2; exit 2; }
   IMAGE=${VPS_FORGE_SYSTEMD_IMAGE:-localhost/u24sd}
-  if ! podman image exists "$IMAGE"; then
-    echo "building $IMAGE"
-    podman build -q -t "$IMAGE" -f - "$(mktemp -d)" <<'EOF' >/dev/null || exit 2
-FROM docker.io/library/ubuntu:24.04
-ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update -qq && apt-get install -y -qq systemd systemd-sysv openssh-server iproute2 procps >/dev/null 2>&1
-RUN systemctl enable ssh.socket ssh.service || true
-CMD ["/sbin/init"]
-EOF
-  fi
+  systemd_image "$IMAGE" || { echo "need podman (docker can't run systemd as PID 1 here)" >&2; exit 2; }
   NAME=vps-forge-audit-sd-$$
   trap 'podman rm -f "$NAME" >/dev/null 2>&1' EXIT
   # all/default redirects off: only the interface value is left to catch

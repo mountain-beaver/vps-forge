@@ -44,6 +44,13 @@ BU="$R/etc/systemd/system/vps-forge-deadman-boot.service"
   && ! grep -q '^Before=' "$BU" \
   && ok "arm installs the boot-time rollback unit" || bad "boot unit or armed marker missing/wrong after arm"
 bash "$DEADMAN" arm 5 >/dev/null 2>&1 && bad "second arm accepted while armed" || ok "second arm refused while armed"
+for m in 0 121 x ""; do
+  bash "$DEADMAN" extend $m >/dev/null 2>&1 && bad "extend accepted '$m'"
+done
+snap=$(cat "$S/armed-snapshot")
+out=$(bash "$DEADMAN" extend 15 2>&1); rc=$?
+[[ $rc == 0 && "$out" == *EXTENDED* && "$(cat "$S/armed-snapshot")" == "$snap" && -f "$S/armed-at" ]] \
+  && ok "extend while armed keeps the same snapshot and arm" || bad "extend while armed: rc=$rc out=$out"
 out=$(bash "$DEADMAN" disarm 2>&1); rc=$?
 [[ $rc == 0 && "$out" == *"changes kept"* ]] && ok "disarm while armed: exit 0, changes kept" || bad "disarm while armed: rc=$rc out=$out"
 [[ ! -f "$S/armed-at" ]] && ok "disarm removes the armed-at marker" || bad "armed-at survived disarm"
@@ -58,6 +65,8 @@ out=$(bash "$DEADMAN" disarm 2>&1); rc=$?
 [[ $rc == 3 && "$out" == *"ROLLED BACK"* ]] && ok "disarm after the rollback fired: exit 3, ROLLED BACK" || bad "disarm after rollback: rc=$rc out=$out"
 out=$(bash "$DEADMAN" disarm 2>&1); rc=$?
 [[ $rc == 3 ]] && ok "disarm keeps reporting the rollback until the next arm" || bad "second disarm after rollback: rc=$rc"
+out=$(bash "$DEADMAN" extend 10 2>&1); rc=$?
+[[ $rc == 3 && "$out" == *"ROLLED BACK"* ]] && ok "extend after the rollback fired: exit 3, ROLLED BACK" || bad "extend after rollback: rc=$rc out=$out"
 out=$(bash "$DEADMAN" status 2>&1)
 [[ "$out" == *"ROLLED BACK since the last arm"* ]] && ok "status shows the rollback" || bad "status does not show the rollback"
 echo 1 > "$S/restored-at"   # boot-time restore with the clock far behind (before NTP sync)
@@ -66,6 +75,7 @@ bash "$DEADMAN" arm 5 >/dev/null 2>&1 || bad "arm after a rollback failed"
 bash "$DEADMAN" disarm >/dev/null 2>&1 && ok "a new arm clears the old rollback" || bad "disarm after a fresh arm failed"
 out=$(bash "$DEADMAN" disarm 2>&1); rc=$?
 [[ $rc == 0 && "$out" == *"not armed"* ]] && ok "disarm when not armed: exit 0" || bad "disarm not armed: rc=$rc out=$out"
+bash "$DEADMAN" extend 10 >/dev/null 2>&1 && bad "extend accepted while not armed" || ok "extend refused while not armed"
 
 # fail2ban: the client address is recorded at arm (validated) and read back by restore.
 bash "$DEADMAN" arm 5 --ip '1.2.3.4;id' >/dev/null 2>&1 && bad "arm accepted a bogus --ip" || ok "arm rejects a bogus --ip"

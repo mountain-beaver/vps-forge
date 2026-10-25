@@ -32,6 +32,17 @@ jobs:
       - name: Run the stub tests with the system bash
         run: VPS_FORGE_EXTERNAL_ONLY=1 /bin/bash tests/run.sh
 
+  systemd:
+    name: deadman rollback and audit.sh with real systemd
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      # Rootful podman: Ubuntu 24.04 restricts unprivileged user namespaces.
+      - name: Dead-man switch (timer rollback, reboot while armed, locking)
+        run: sudo -E bash tests/deadman-systemd.sh
+      - name: audit.sh checks that need systemd
+        run: sudo -E bash tests/audit-systemd.sh
+
   templates:
     name: templates on ${{ matrix.image }}
     runs-on: ubuntu-latest

@@ -1,7 +1,7 @@
 # Spot check: GLM-5.3 in ZCode
 
 One run per arm on Debian 13, two scenarios, judge v3, the same pre-release skill (`8621325`) as the
-Opus benchmark. GLM-5.3 ran in the ZCode desktop app at High effort; a person started each session
+Opus benchmark ([how to reproduce it from `v1.0.0`](../../bench/README.md#published-runs)). GLM-5.3 ran in the ZCode desktop app at High effort; a person started each session
 with the scenario's prompt and approved ZCode's permission prompts. See [`bench/README.md`](../../bench/README.md#manual-runs).
 
 <picture>

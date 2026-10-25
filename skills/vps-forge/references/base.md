@@ -81,14 +81,14 @@ APT::Periodic::AutocleanInterval "7";
 
 The default origins already cover security updates (Ubuntu `-security`, Debian `Debian-Security`). Add `-updates` only if the user wants all stable updates applied automatically.
 
-Third-party repositories are not covered: Docker and Caddy then never update by themselves. Tell the user, and if they agree, add their origins to `52vps-forge-unattended`:
+Third-party repositories are not covered, so Docker, Caddy, Tailscale and CrowdSec never update by themselves, and `audit.sh` warns about each one (`updates.third_party`). When you add one of these repositories, add its origin to `52vps-forge-unattended` in the same phase. Caddy, Tailscale and CrowdSec restart in seconds; for Docker ask first, because an upgrade restarts the daemon and with it every container (below). If the user says no, note in SERVER.md who updates it and how (`apt-get install --only-upgrade docker-ce`).
 ```
 Unattended-Upgrade::Origins-Pattern {
   "origin=Docker,label=Docker CE";
   "origin=cloudsmith/caddy/stable";
 };
 ```
-Check the exact `origin`/`label` values with `apt-cache policy | grep -A1 -E 'docker|caddy'` (the `o=` and `l=` fields). Unattended Docker upgrades restart the daemon, and with it every container that has no restart policy.
+Add a line per repository you installed. Check the exact `origin`/`label` values with `apt-cache policy | grep -A1 -E 'docker|caddy|tailscale|crowdsec'` (the `o=` and `l=` fields), then run `audit.sh` again: `updates.third_party` must pass, or name only the repositories the user chose to update by hand. Unattended Docker upgrades restart the daemon, and with it every container that has no restart policy.
 
 Verify:
 ```bash

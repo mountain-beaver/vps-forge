@@ -29,16 +29,16 @@
 
 You rented a VPS, and your agent can already SSH into it and get your app running. What it usually skips is the part you'd only notice later: SSH crypto that fails a scan, a firewall that was never turned on, fail2ban that bans nobody, no alert when someone logs in. Or it tests its own login too eagerly and gets your IP banned.
 
-vps-forge teaches the agent to do the whole job, in the right order, with a safety net under every risky step. The server ends up locked down, backed up, monitored and documented, and every change that could cut you off rolls itself back unless you can still log in.
+vps-forge teaches the agent to do the whole job, in the right order, with a safety net under every risky step. The server ends up locked down, backed up, monitored and documented, and every change to SSH, the firewall, sudo or PAM rolls itself back unless you can still log in.
 
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/bench/chart-hero-dark.svg">
-    <img alt="Checklist score of the finished server, out of 100: the share of outside-in checks passed, mean of 15 runs per scenario. Production Docker box: 79 without the skill, 99 with it. Fresh VPS to production: 88 vs 100. SSH port move: 88 vs 100. Fresh VPS with a sudo user: 92 vs 100." src="docs/bench/chart-hero-light.svg" width="880">
+    <img alt="Checklist score of the finished server, out of 100: the share of outside-in checks passed, mean of 15 runs per scenario. Production Docker box: 79 without the skill, 99 with it. Fresh VPS to production: 88 vs 100. SSH port move: 88 vs 100, from the benchmarked skill, which applied its full baseline to this narrow request; since 1.1.0 it does only what was asked, and that hasn't been re-run. Fresh VPS with a sudo user: 92 vs 100." src="docs/bench/chart-hero-light.svg" width="880">
   </picture>
 </p>
 
-<p align="center"><sub>120 runs of Claude Opus 5.5 on real VMs, the same prompts with and without the skill, scored from outside the server by a separate judge written by the same author. This is a checklist score, not a general security index, and about 70% of the gap comes from three checks that match the skill's own defaults. A run with the skill costs about 3× as much. A four-run spot check of GLM-5.3 shows the same pattern: 67–79 without the skill, 100 with it. <a href="#benchmark">How it was measured, and its limits</a>.</sub></p>
+<p align="center"><sub>120 runs of Claude Opus 5.5 on real VMs, scored from outside the server by a judge written by the same author. About 70% of the gap is three checks that match the skill's own defaults. <a href="#benchmark">How it was measured, and its limits</a>.</sub></p>
 
 ## See it work
 
@@ -54,19 +54,19 @@ vps-forge teaches the agent to do the whole job, in the right order, with a safe
 **1. Install the skill** for whichever agent you use. One command covers most of them:
 
 ```bash
-npx skills add mountain-beaver/vps-forge
+npx skills add mountain-beaver/vps-forge -g
 ```
 
-It asks which agents to install for. Add `-g` to install for your user rather than the current project. The command comes from the open [`skills`](https://github.com/vercel-labs/skills) installer and needs Node.js.
+It asks which agents to install for. `-g` installs it for your user, so the agent finds it in any folder; leave it out to install into the current project only. The command comes from the open [`skills`](https://github.com/vercel-labs/skills) installer and needs Node.js 22.20 or later; no Node? Use the GitHub CLI or the zip below. To check it worked, ask your agent "which skills do you have?" and look for `vps-forge`.
 
 **2. Talk to your agent about your server.** You don't need special words:
 
 > I just bought a VPS at 203.0.113.10, I log in as root. Make it a proper production server for my Docker app on app.example.com, with backups and alerts to my phone.
 
-The agent picks up the skill, asks up to four short questions, shows a plan and works through it phase by phase.
+The agent picks up the skill, asks up to four short questions, shows a plan and works through it phase by phase. It logs in with your own SSH key and gets none of its own, creates an admin user that holds only that key, and turns root login off only after the new login works.
 
 > [!IMPORTANT]
-> **Before you point it at a server you care about:** take a provider snapshot, and find your provider's web console (VNC or serial). The agent checks that you know where the console is before its first risky step. If a change cuts off SSH, the [dead-man switch](#every-risky-change-has-an-automatic-undo) rolls it back within five minutes, and the console covers everything else. First time? Try it on a throwaway box.
+> **Before you point it at a server you care about:** take a provider snapshot, and find your provider's web console (VNC or serial). The agent checks that you know where the console is before its first risky step. If a change cuts off SSH, the [dead-man switch](#every-risky-change-has-an-automatic-undo) rolls it back on a timer (5 minutes by default, 10 for longer changes), and the console covers everything else. First time? Try it on a throwaway box.
 
 <details>
 <summary><b>Claude Code</b>: install as a plugin</summary>
@@ -76,7 +76,7 @@ claude plugin marketplace add mountain-beaver/vps-forge
 claude plugin install vps-forge@vps-forge
 ```
 
-Inside a session you can do the same with `/plugin marketplace add mountain-beaver/vps-forge`, then pick it in `/plugin`. To update later, run `claude plugin marketplace update vps-forge`.
+Inside a session you can do the same with `/plugin marketplace add mountain-beaver/vps-forge`, then pick it in `/plugin`. To update later, run `claude plugin update vps-forge@vps-forge`.
 </details>
 
 <details>
@@ -119,7 +119,7 @@ gh skill install mountain-beaver/vps-forge vps-forge --agent cursor --scope user
 
 Download `vps-forge-skill.zip` from the [latest release](https://github.com/mountain-beaver/vps-forge/releases/latest) and upload it under Settings → Capabilities → Skills → "Upload skill". Code execution has to be on.
 
-A chat app can't SSH into your server, so there the skill works in **script mode**. It writes a guarded `setup.sh` and tells you exactly how to run it and how to check the result.
+A chat app can't SSH into your server, so there the skill works in **script mode**. It first gives you a read-only audit to run and paste back, then one short script per stage. Before every SSH or firewall change, the script stops and asks you to log in from a second terminal; if that login fails, the server undoes the step by itself. You run everything yourself, so the agent only knows what you paste back, and the outside-in check needs a Mac, Linux or WSL terminal.
 </details>
 
 <details>
@@ -143,6 +143,7 @@ If your agent doesn't support skills at all, tell it to read `skills/vps-forge/S
 | "Send alerts to my phone." | ntfy, Telegram or webhook alerts for logins, failures, full disks and backups. |
 | "SSH only through Tailscale." | Public SSH closes only after a VPN login works. |
 | "Is my server hacked?" | A compromise check. If it finds signs, it stops and guides a rebuild. |
+| "Get this VPS ready for Coolify." | The same hardening, but root keeps key login for the panel, its proxy owns 80/443, and its dashboard port closes once your domain works. Also for Dokploy, CapRover, Kamal and Dokku. |
 
 ## What you end up with
 
@@ -151,9 +152,9 @@ If your agent doesn't support skills at all, tell it to read `skills/vps-forge/S
 | **Access** | An admin user that holds only your key. Root and password logins are off, `AllowGroups` is set, and SSH crypto is modern and version-aware, so it passes `ssh-audit`. |
 | **Firewall** | ufw or nftables, default deny, with IPv4 and IPv6 matched. Docker-published ports are covered too, and your own IP always gets through first. |
 | **Intrusion** | fail2ban with the systemd backend and a recidive jail, with your IP on its ignore list before it ever starts. CrowdSec at the paranoid level. |
-| **Updates** | Unattended security updates, needrestart, and an optional reboot window. |
+| **Updates** | Unattended security updates, also for the vendor repositories it adds (Caddy, Tailscale, CrowdSec, and Docker if you agree), needrestart, and an optional reboot window. |
 | **Web and apps** | Docker bound to localhost, Caddy or nginx with TLS and security headers, and database and worker profiles. |
-| **Backups** | restic to a second volume or object storage, on a timer, with a restore test that has to pass. |
+| **Backups** | restic to a second volume or object storage, on a timer, with a restore test that has to pass. Postgres, MySQL and SQLite are dumped first, never copied live. |
 | **Alerts** | Phone alerts on SSH logins and health problems, with de-duplication and a heartbeat. |
 | **Day to day** | A status motd, `/etc` under git with etckeeper, and a `SERVER.md` that explains every open port. A cloud-init export lets your next server come out identical. |
 
@@ -188,7 +189,9 @@ One wrong `sshd` or firewall change can make a server unreachable. So every SSH,
 3. It logs in again over a **new** connection that can't reuse the old one.
 4. Only if that login works does it disarm the timer.
 
-If the new login fails, nothing else happens: the timer restores the snapshot, unbans you in fail2ban and puts the services back as they were. It does the same at boot if the server restarts while the switch is armed. Every rollback is logged to the journal as `vps-forge-deadman`, and once phone alerts are set up, it also sends a high-priority "Deadman fired" push.
+If the new login fails, nothing else happens: the timer restores the snapshot, unbans you in fail2ban and puts the services back as they were. It does the same at boot if the server restarts while the switch is armed.
+
+It can't undo what lives outside the server: a firewall in your provider's panel (Hetzner, DigitalOcean, AWS security groups) or a network change at the provider. For those the agent adds the new rule first, proves a new login works, and only then removes the old one, so a mistake leaves an extra rule open rather than you locked out. Every rollback is logged to the journal as `vps-forge-deadman`, and once phone alerts are set up, it also sends a high-priority "Deadman fired" push.
 
 <p align="center">
   <picture>
@@ -268,7 +271,7 @@ A lockout scores 0.
   <img alt="GLM-5.3 spot check next to Claude Opus 5.5 on Debian 13. Fresh VPS to production: Opus 84, 89 and 89 without the skill and 100 in all three runs with it, GLM-5.3 79 and 100. Production Docker box: Opus 73, 80 and 87, then 100 three times, GLM-5.3 67 and 100." src="docs/bench/chart-spot-light.svg" width="880">
 </picture>
 
-The benchmark ran on the pre-release skill. Version 1.0.1 changed only text. Version 1.1.0 changed behaviour where the benchmark says little or nothing: narrow requests, a deadline on the temporary sudo grant, a restore drill that checks the app's data, and a stop on Kubernetes nodes and hypervisor hosts. Version 1.1.1 changed only the README, its images and the packaging. [CHANGELOG.md](CHANGELOG.md) lists every change. The scenarios, the harness, and everything you need to reproduce the runs are in [`bench/`](bench/README.md). Per-run results are in [`docs/bench/results.md`](docs/bench/results.md) and [`results.json`](docs/bench/results.json).
+The benchmark ran on the pre-release skill. Version 1.0.1 changed only text. Version 1.1.0 changed behaviour where the benchmark says little or nothing: narrow requests, a deadline on the temporary sudo grant, a restore drill that checks the app's data, and a stop on Kubernetes nodes and hypervisor hosts. Version 1.1.1 changed only the README, its images and the packaging. The changes since then, listed under Unreleased in the CHANGELOG (deploy panels, script mode, quieter login alerts, `extend`), are not benchmarked either. [CHANGELOG.md](CHANGELOG.md) lists every change. The scenarios, the harness, and everything you need to reproduce the runs are in [`bench/`](bench/README.md). Per-run results are in [`docs/bench/results.md`](docs/bench/results.md) and [`results.json`](docs/bench/results.json).
 
 ## FAQ
 
@@ -307,7 +310,7 @@ Any agent that loads [Agent Skills](https://agentskills.io) and can run shell co
 <details>
 <summary><b>Which servers?</b></summary>
 
-Debian 12 and 13, and Ubuntu 22.04, 24.04 and 26.04, on any provider: Hetzner, DigitalOcean, Vultr, Linode, OVH, AWS Lightsail, or a box under your desk. The agent works from your machine over SSH. RHEL-family support is on the roadmap.
+Debian 12 and 13, and Ubuntu 22.04, 24.04 and 26.04, on any provider: Hetzner, DigitalOcean, Vultr, Linode, OVH, AWS (EC2 and Lightsail), Oracle Cloud, or a box under your desk, on x86 or ARM. It knows the traps of each, such as Oracle Cloud's built-in `iptables` reject rule. The agent works from your machine over SSH. RHEL-family support is on the roadmap.
 </details>
 
 <details>
@@ -319,7 +322,17 @@ The skill is free: MIT-licensed, with no account and no paid tier. Your agent's 
 <details>
 <summary><b>What if I get locked out anyway?</b></summary>
 
-Wait five minutes: an armed dead-man switch rolls the change back on its own. If the server was rebooted in between, the rollback runs at boot. If you still can't get in, open your provider's web console (VNC or serial) and run `vps-forge-deadman restore`, or revert the last etckeeper commit in `/etc`.
+Wait for the timer: an armed dead-man switch rolls the change back on its own, after 5 minutes by default and 10 for longer changes. From the provider's console, `vps-forge-deadman status` shows when. If the server was rebooted in between, the rollback runs at boot. If you still can't get in, check your provider's firewall in its web panel: the switch can't roll that back. Then open your provider's web console (VNC or serial) and run `vps-forge-deadman restore`, or revert the last etckeeper commit in `/etc`.
+</details>
+
+<details>
+<summary><b>How do I update or remove it?</b></summary>
+
+**Update the skill:** `npx skills update -g vps-forge` (without `-g` for a project install), `claude plugin update vps-forge@vps-forge` for the Claude Code plugin, `gh skill update vps-forge`, or upload the new zip.
+
+**Remove the skill:** `npx skills remove -g vps-forge`, `claude plugin uninstall vps-forge@vps-forge`, or delete the folder. This changes nothing on your servers: the hardening stays, which is the point.
+
+**Undo it on a server:** every change is a commit in `/etc` (`sudo git -C /etc log`), so you can see and revert each one. The files it adds carry `vps-forge` in their name; `sudo find /etc /usr/local /var/lib -name '*vps-forge*'` lists them. The exceptions are `/usr/local/bin/vps-notify`, `/etc/restic/` and one `pam_exec` line in `/etc/pam.d/sshd`. `install-alerts.sh --uninstall` removes the alerts cleanly. Packages it installed, such as fail2ban, restic or Caddy, come off with `apt purge`. Remove SSH and firewall files inside the dead-man switch, like any other risky change.
 </details>
 
 <details>
@@ -358,7 +371,7 @@ skills/vps-forge/
 └── evals/                behaviour test cases
 ```
 
-Every template is checked in CI by the tool that reads it (`sshd -t`, `fail2ban-client -t`, `caddy validate`, `cloud-init schema`, `systemd-analyze verify`, `dockerd --validate`), on Debian 12/13 and Ubuntu 22.04/24.04/26.04. `audit.sh` is tested against known good and bad servers, with a checksum that proves it changes nothing. The dead-man rollback is tested on a real systemd.
+Every template is checked in CI by the tool that reads it (`sshd -t`, `fail2ban-client -t`, `caddy validate`, `cloud-init schema`, `systemd-analyze verify`, `dockerd --validate`), on Debian 12/13 and Ubuntu 22.04/24.04/26.04. `audit.sh` is tested against known good and bad servers, with a checksum that proves it changes nothing. The dead-man rollback is tested in CI on a real systemd: arm, break SSH or the firewall, wait, and check that everything came back, also across a reboot.
 
 ## Contributing
 
