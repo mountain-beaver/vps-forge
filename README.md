@@ -65,6 +65,9 @@ It asks which agents to install for. Add `-g` to install for your user rather th
 
 The agent picks up the skill, asks up to four short questions, shows a plan and works through it phase by phase.
 
+> [!IMPORTANT]
+> **Before you point it at a server you care about:** take a provider snapshot, and find your provider's web console (VNC or serial). The agent checks that you know where the console is before its first risky step. If a change cuts off SSH, the [dead-man switch](#every-risky-change-has-an-automatic-undo) rolls it back within five minutes, and the console covers everything else. First time? Try it on a throwaway box.
+
 <details>
 <summary><b>Claude Code</b>: install as a plugin</summary>
 
@@ -178,7 +181,7 @@ One wrong `sshd` or firewall change can make a server unreachable. So every SSH,
 3. It logs in again over a **new** connection that can't reuse the old one.
 4. Only if that login works does it disarm the timer.
 
-If the new login fails, nothing else happens: the timer restores the snapshot, unbans you in fail2ban and puts the services back as they were. It does the same at boot if the server restarts while the switch is armed.
+If the new login fails, nothing else happens: the timer restores the snapshot, unbans you in fail2ban and puts the services back as they were. It does the same at boot if the server restarts while the switch is armed. Every rollback is logged to the journal as `vps-forge-deadman`, and once phone alerts are set up, it also sends a high-priority "Deadman fired" push.
 
 <p align="center">
   <picture>
@@ -266,6 +269,20 @@ The benchmark ran on the pre-release skill. Version 1.0.1 changed only text. Ver
 <summary><b>Is it safe to let an AI agent run commands as root on my server?</b></summary>
 
 It is safer with the skill than without it, and that is the point of it. Changes that can cut off access run inside the dead-man switch above. Config changes are committed to git in `/etc` with etckeeper, so they can be reverted. On a server that is already in production, the agent audits first and changes nothing until you approve. Still, keep your provider's snapshots and web console at hand.
+</details>
+
+<details>
+<summary><b>Which key does the agent log in with? Does it keep root?</b></summary>
+
+Yours. The agent normally runs on your machine and connects the way you do, so it gets no key of its own. If you log in as root today, it starts there, creates an admin user that holds only the key you connect with, proves that login from a new connection, and then turns off root and password logins. It keeps root login only if you say a deploy tool needs it.
+
+Whether `sudo` asks for a password is your choice. Passwordless sudo is simpler, but then a stolen key alone gives root. With password sudo, the agent works under a temporary passwordless grant that expires on a timer after four hours, even across reboots, and it removes the grant itself as its very last step. If it ran from a cloud sandbox instead of your machine, it also removes its own IP from the firewall, fail2ban and sshd allow lists at the end. `audit.sh` flags anything left behind.
+</details>
+
+<details>
+<summary><b>Will it lock the server down so hard that it gets in my way?</b></summary>
+
+You choose how far it goes. `baseline` is keys only, root off, a default-deny firewall and fail2ban; `hardened`, the default, adds modern SSH crypto, Docker-aware firewall rules and alerts; only `paranoid` puts SSH behind a VPN or adds FIDO2. A narrow request such as "move SSH and add fail2ban" gets exactly that, plus a one-line offer of the rest. The agent asks before it changes the SSH port, turns off password login or enables automatic reboots, unless you told it to decide on its own. `SERVER.md` lists every open port and why it's open.
 </details>
 
 <details>

@@ -3,6 +3,9 @@
 ## Unreleased
 
 ### Docs
+- **Before you start:** the Quick start now says to take a snapshot and find the provider's web console first, and to try a throwaway box the first time.
+- **FAQ:** which key the agent logs in with, what happens to root and to its temporary sudo grant, and how to keep the result from getting in your way (levels, narrow requests).
+- **Dead-man switch:** the README says where a rollback is logged and that it sends a "Deadman fired" alert once alerts are set up.
 - **GLM-5.3 spot check.** Four runs of GLM-5.3 in the ZCode desktop app, with and without the skill: 79 → 100 and 67 → 100, no lockouts. Results in `docs/bench/glm-5.3.md`, caveats in the README.
 - **Benchmark harness:** `BENCH_MANUAL` lets a person drive a desktop agent while the harness boots, relays and judges the VM.
 
