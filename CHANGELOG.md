@@ -29,11 +29,14 @@
 - **Vendor repositories get automatic updates too.** When the skill adds Caddy, Tailscale or CrowdSec, it adds their origin to unattended-upgrades in the same phase, and asks first for Docker, whose upgrade restarts every container. `audit.sh` has a new check, `updates.third_party`: it warns when Docker, Caddy, Tailscale or CrowdSec isn't followed by unattended-upgrades, and notes any other third-party repository, such as a provider's agent, without a warning.
 
 ### Tests
-- **The dead-man rollback and the systemd-only audit checks run in CI**, in a podman container that boots systemd: a broken sshd and a drop-all firewall rolled back by the timer, the rollback at boot after a reboot while armed, and concurrent arms, and `extend`. Both suites build their image when it's missing, and in CI a missing podman is a failure instead of a skip.
+- **The dead-man rollback and the systemd-only audit checks run in CI**, in a podman container that boots systemd: a broken sshd and a drop-all firewall rolled back by the timer, the rollback at boot after a reboot while armed, concurrent arms, `extend`, and ufw and fail2ban: a `ufw enable` during the window is undone, a deleted ufw rule is loaded again, and the address recorded at arm is unbanned. Both suites build their image when it's missing, and in CI a missing podman is a failure instead of a skip.
 
 ### Docs
-- **Quick start:** `npx skills add … -g` is the default, so the agent finds the skill in any folder; the Node.js version it needs; how to check the skill loaded; which key the agent uses, on the first screen.
-- **FAQ:** how to update or remove the skill, and how to undo what it did on a server; Oracle Cloud, AWS EC2 and ARM are listed; the lockout answer starts with the provider firewall.
+- **Quick start:** `npx skills add … -g` is the default, so the agent finds the skill in any folder; the Node.js version it needs; how to check the skill loaded, and the sign that it didn't (the agent changes SSH or the firewall without arming the dead-man switch); which key the agent uses, on the first screen.
+- **FAQ:** how to update or remove the skill, and how to undo what it did on a server; Oracle Cloud, AWS EC2 and ARM are listed; the lockout answer names the provider firewall; what to do when the agent doesn't use the skill.
+- **"Don't trust it? Break it."** A few commands in the README lock you out of a throwaway server on purpose and let the switch undo it, with `make deadman-systemd` for anyone without a spare server.
+- **The cost of each kernel setting** (`references/kernel.md`, and in `99-vps-forge.conf`): `kptr_restrict=2` hides kernel symbols from `perf` even as root, `ptrace_scope=1` needs `sudo` for `strace -p`, and so on. `troubleshooting.md` shows how to relax one setting in a local override file instead of deleting the whole file, and what `audit.sh` says about it afterwards.
+- **Skill description:** Oracle Cloud, AWS EC2 and ARM, so agents pick the skill up for those servers.
 - **Benchmark:** the hero chart marks the SSH port move, whose 100 comes from behaviour 1.1.0 removed; the caption under it is one line; `bench/README.md` says how to reproduce the benchmarked pre-release skill from the `v1.0.0` tag.
 
 ## 1.1.1 (2026-10-25)

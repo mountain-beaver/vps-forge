@@ -57,7 +57,7 @@ vps-forge teaches the agent to do the whole job, in the right order, with a safe
 npx skills add mountain-beaver/vps-forge -g
 ```
 
-It asks which agents to install for. `-g` installs it for your user, so the agent finds it in any folder; leave it out to install into the current project only. The command comes from the open [`skills`](https://github.com/vercel-labs/skills) installer and needs Node.js 22.20 or later; no Node? Use the GitHub CLI or the zip below. To check it worked, ask your agent "which skills do you have?" and look for `vps-forge`.
+It asks which agents to install for. `-g` installs it for your user, so the agent finds it in any folder; leave it out to install into the current project only. The command comes from the open [`skills`](https://github.com/vercel-labs/skills) installer and needs Node.js 22.20 or later; no Node? Use the GitHub CLI or the zip below. To check it worked, ask your agent "which skills do you have?" and look for `vps-forge`. Then watch for one sign while it works: the agent runs `vps-forge-deadman arm` before every SSH or firewall change. If it changes either without arming first, stop it, because the skill isn't loaded ([FAQ](#faq)).
 
 **2. Talk to your agent about your server.** You don't need special words:
 
@@ -200,7 +200,18 @@ It can't undo what lives outside the server: a firewall in your provider's panel
   </picture>
 </p>
 
-The switch is a plain bash script, so you can use it without any agent: install `deadman.sh` as `/usr/local/sbin/vps-forge-deadman`, run `sudo vps-forge-deadman arm` before a risky change, and `disarm` once a new login works.
+**Don't trust it? Break it.** The switch is a plain bash script, so you can try it without any agent. On a throwaway server, logged in as a user with sudo, keep this session open and run:
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/deadman.sh
+less deadman.sh                                                       # read it before running it as root
+sudo install -m 755 deadman.sh /usr/local/sbin/vps-forge-deadman
+sudo vps-forge-deadman arm 1                                          # roll back in one minute
+echo 'AllowUsers deploy' | sudo tee /etc/ssh/sshd_config.d/50-users.conf   # you aren't "deploy"
+sudo sshd -t && sudo systemctl reload ssh                             # valid config, so it's applied
+```
+
+A new login from your machine (`ssh -o ControlPath=none you@server`) is now refused, so nobody can disarm. Wait a minute: `sudo vps-forge-deadman status` in the open session says `ROLLED BACK`, `50-users.conf` is gone, and the new login works again. In real use you run `arm` before a risky change and `disarm` once a new login works. No spare server? `make deadman-systemd` runs this and more in a podman container: a broken firewall, a reboot while armed, ufw and fail2ban.
 
 This is a design guarantee, and the benchmark can't prove it: nobody was locked out in either arm, because Opus is careful on its own. What the benchmark did measure is the near miss. Without the skill, the agent got its own admin IP banned by fail2ban in 7 of 60 runs while it worked. With the skill, that happened in none of 60.
 
@@ -305,6 +316,17 @@ Yes, that is who it's for. Before each change the agent says in one line what it
 <summary><b>Which agents and models does it work with?</b></summary>
 
 Any agent that loads [Agent Skills](https://agentskills.io) and can run shell commands: Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI, Antigravity, OpenCode, Windsurf, Cline, Amp, Roo Code and more. Chat apps without a shell get script mode. Claude Opus 5.5 has the full benchmark, and GLM-5.3 in ZCode a four-run spot check. Results from other agents are welcome in an issue.
+</details>
+
+<details>
+<summary><b>The agent doesn't seem to use the skill. What now?</b></summary>
+
+Stop it before it changes SSH or the firewall: without the skill there is no dead-man switch. You can tell from the work itself. With the skill loaded, the agent asks a few short questions, shows a plan, makes sure you know where your provider's web console is, and runs `vps-forge-deadman arm` before every SSH or firewall change. An SSH or firewall change without `arm` is the sure sign that the skill isn't loaded. The usual causes:
+- **It was installed into another project.** Without `-g`, `npx skills add` installs into the current folder only. Reinstall with `-g`, or start the agent in that folder.
+- **The session started before the install.** Agents read their skill list when a session starts, so open a new one.
+- **Claude Code plugin:** check that `vps-forge` is installed and enabled in `/plugin`.
+- **Claude.ai and Claude Desktop:** the skill must be switched on under Settings → Capabilities → Skills, and code execution must be on.
+- **The request didn't sound like server work.** Name it: "use the vps-forge skill to harden 203.0.113.10".
 </details>
 
 <details>

@@ -26,7 +26,7 @@ audit: ## audit.sh behaviour scenarios in containers (DISTRO=ubuntu:24.04 for on
 audit-systemd: ## audit.sh checks that need systemd (podman, localhost/u24sd)
 	bash tests/audit-systemd.sh
 
-deadman-systemd: ## deadman with real systemd in podman (localhost/u24sd, ~90 s, needs network)
+deadman-systemd: ## deadman with real systemd in podman (localhost/u24sd, ~6 min, needs network)
 	bash tests/deadman-systemd.sh
 
 ci: ## everything CI runs, locally, in containers

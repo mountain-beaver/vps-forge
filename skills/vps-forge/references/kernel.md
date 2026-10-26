@@ -27,6 +27,16 @@ What the file does, so you can explain it:
 - **Filesystem:** `protected_{hardlinks,symlinks,fifos,regular}` blocks classic `/tmp` race attacks. `suid_dumpable=0` stops setuid programs from dumping memory.
 - **Memory:** `vm.swappiness=10` keeps hot memory in RAM.
 
+What each group costs. Say it in one line when you apply the file on a box where the user debugs or profiles, and write it into SERVER.md:
+- **Network:** nothing on a single-homed server. Asymmetric routing is the exception (next section).
+- **`kptr_restrict=2`:** kernel addresses read as zeros **even for root**, so `perf` and `bpftrace` lose kernel symbols under `sudo` too. While profiling, `sysctl -w kernel.kptr_restrict=1` shows them to root again and `audit.sh` still passes it.
+- **`dmesg_restrict=1`:** `dmesg` needs `sudo`. Most distros already default to this.
+- **`yama.ptrace_scope=1`:** `strace -p`, `gdb -p` and similar attach tools, such as py-spy, fail without `sudo` on a process they didn't start. Starting a program under `strace` still works, and root (`CAP_SYS_PTRACE`) can attach to anything.
+- **`protected_fifos=2`, `protected_regular=2`:** in a sticky world- or group-writable directory such as `/tmp`, opening a file or FIFO with `O_CREAT` is refused when it already exists and belongs to another user. Rare; it shows up as root getting "Permission denied" writing to a user's file in `/tmp`.
+- **`suid_dumpable=0`, `swappiness=10`, BBR:** no practical cost.
+
+To relax one setting, never delete the whole file. troubleshooting.md "A tool broke after the kernel hardening" has the procedure. A setting the user relaxed (in `/etc/sysctl.d/99-zz-local.conf`, or noted in SERVER.md) is their choice: keep it on later runs, don't offer to revert it, and explain the `kernel.sysctl` WARN it causes instead of fixing it.
+
 ## When NOT to apply a setting
 
 - **VPN gateway, Tailscale exit node or subnet router, or multi-homed host:** use `rp_filter = 2` (loose). Strict mode drops legitimate asymmetric traffic, and Tailscale warns about it.

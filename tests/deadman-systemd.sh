@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # deadman.sh with real systemd: timer rollback, enable states, files created after arm, nft
-# tables, extend, the boot-time rollback after a reboot, locking, and client-ip under sudo over SSH.
+# tables, extend, the boot-time rollback after a reboot, locking, client-ip under sudo over SSH,
+# and ufw and fail2ban (enable undone, deleted rule reloaded, ban lifted).
 # Runs in a throwaway podman container (localhost/u24sd: Ubuntu 24.04 booting systemd) and takes
-# about three minutes. Needs network access for apt.
+# about six minutes. Needs network access for apt.
 set -uo pipefail
 cd "$(dirname "$0")/.." || exit 2
 # shellcheck source=tests/lib.sh
@@ -130,5 +131,39 @@ x 'rm -rf /etc/systemd/system/vps-forge-deadman-boot.service.d && systemctl daem
 q 'vps-forge-deadman arm 5 && vps-forge-deadman disarm' && ok "arm and disarm work after the boot rollback" || bad "arm/disarm after the boot rollback"
 q '! test -e /var/lib/vps-forge/deadman/armed && ! test -e /etc/systemd/system/vps-forge-deadman-boot.service' \
   && ok "no reboot protection left behind" || bad "boot unit or marker left behind"
+
+# Installed only now, so the steps above run without ufw and fail2ban. The checks read the live
+# state (ufw status, iptables, fail2ban's ban list): restored files alone don't prove a reload.
+# ufw always accepts loopback, so these don't try to lock SSH out.
+step "ufw and fail2ban: enable rolled back, deleted rule and ban undone"
+x 'apt-get install -y -qq --no-install-recommends ufw fail2ban python3-systemd >/dev/null 2>&1' || bad "apt-get install ufw fail2ban"
+x 'printf "[sshd]\nenabled = true\nbackend = systemd\n" > /etc/fail2ban/jail.d/zz-test.local && systemctl restart fail2ban' || bad "fail2ban setup"
+f2b_up() { local i; for ((i = 0; i < 20; i++)); do q 'fail2ban-client status sshd' && return 0; sleep 1; done; return 1; }
+f2b_up || bad "fail2ban's sshd jail did not start: $(x 'systemctl status fail2ban --no-pager; journalctl -u fail2ban -n 20 --no-pager' 2>&1 | tail -n 25)"
+q 'ufw status | grep -q "^Status: inactive"' || bad "ufw is active before the test"
+
+x 'vps-forge-deadman arm 1' >/dev/null 2>&1 || bad "arm 1"
+x 'ufw default deny incoming >/dev/null && ufw --force enable >/dev/null' || bad "ufw enable"
+q 'ufw status | grep -q "^Status: active"' || bad "ufw did not come up (test is not meaningful)"
+wait_rolled_back 150 && ok "the timer rolled back" || bad "no rollback within 150 s: $(x 'journalctl -t vps-forge-deadman --no-pager | tail -n 20' 2>&1)"
+q 'ufw status | grep -q "^Status: inactive"' && ok "ufw enabled during the window is inactive again" || bad "ufw after the rollback: $(x 'ufw status' 2>&1)"
+st=$(x 'systemctl is-enabled ufw.service' 2>&1)
+x 'grep -q "^ENABLED=no" /etc/ufw/ufw.conf' && ok "ufw.conf says ENABLED=no again (ufw.service is $st)" || bad "ufw.conf: $(x 'grep ENABLED /etc/ufw/ufw.conf' 2>&1)"
+
+x 'ufw allow 22/tcp >/dev/null && ufw --force enable >/dev/null' || bad "ufw allow 22/tcp + enable"
+q 'iptables -S ufw-user-input | grep -q -- "--dport 22 "' || bad "the SSH rule is not loaded (test is not meaningful)"
+# 192.0.2.7 (TEST-NET-1): not in fail2ban's default ignoreip, unlike 127.0.0.1
+x 'vps-forge-deadman arm 1 --ip 192.0.2.7' >/dev/null 2>&1 || bad "arm 1 --ip 192.0.2.7"
+x 'ufw --force delete allow 22/tcp >/dev/null && fail2ban-client set sshd banip 192.0.2.7 >/dev/null' || bad "delete the SSH rule + ban"
+q 'iptables -S ufw-user-input | grep -q -- "--dport 22 "' && bad "the SSH rule is still loaded (test is not meaningful)"
+[[ "$(x 'fail2ban-client banned' 2>&1)" == *192.0.2.7* ]] || bad "the ban did not take (test is not meaningful)"
+wait_rolled_back 150 && ok "the timer rolled back" || bad "no rollback within 150 s: $(x 'journalctl -t vps-forge-deadman --no-pager | tail -n 20' 2>&1)"
+q 'ufw status | grep -q "^Status: active"' && ok "ufw is still active" || bad "ufw after the rollback: $(x 'ufw status' 2>&1)"
+q 'iptables -S ufw-user-input | grep -q -- "--dport 22 "' && ok "the deleted SSH rule is loaded again" || bad "SSH rule after the rollback: $(x 'iptables -S ufw-user-input' 2>&1)"
+f2b_up && ok "fail2ban is running" || bad "fail2ban is down after the rollback"
+out=$(x 'fail2ban-client banned' 2>&1)
+[[ "$out" != *192.0.2.7* ]] && ok "the address recorded at arm is unbanned" || bad "192.0.2.7 is still banned: $out"
+x 'journalctl -t vps-forge-deadman --no-pager | grep -q "unbanned 192.0.2.7"' && ok "the unban is logged" || bad "no unban in the journal"
+x 'ufw --force disable >/dev/null; ufw --force reset >/dev/null'
 
 finish

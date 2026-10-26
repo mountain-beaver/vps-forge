@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
       # Rootful podman: Ubuntu 24.04 restricts unprivileged user namespaces.
-      - name: Dead-man switch (timer rollback, reboot while armed, locking)
+      - name: Dead-man switch (timer rollback, reboot while armed, locking, ufw, fail2ban)
         run: sudo -E bash tests/deadman-systemd.sh
       - name: audit.sh checks that need systemd
         run: sudo -E bash tests/audit-systemd.sh

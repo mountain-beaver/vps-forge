@@ -1,5 +1,9 @@
 # Troubleshooting
 
+## The skill didn't load
+
+An agent without the skill hardens a server with no dead-man switch. The sure sign: it changes SSH or the firewall without running `deadman.sh arm` first. It usually also skips the question about the provider's web console. Stop it there. The usual causes are a project install (`npx skills add` without `-g`) while the agent runs in another folder, a session that started before the install (open a new one), a plugin that isn't enabled (`/plugin` in Claude Code), the skill or code execution switched off in Claude.ai's Settings → Capabilities, or a request that didn't sound like server work (name the skill). If you're an agent reading this mid-task after a change made without the switch, tell the user, then arm before the next risky step and test access from a new connection.
+
 ## Locked out
 
 0. **Banned by fail2ban?** If SSH times out or is refused right after test logins, your IP is probably banned (the deadman doesn't touch fail2ban). From another IP (phone hotspot) or the console: `fail2ban-client banned` (`fail2ban-client status sshd` on 0.11, Ubuntu 22.04), then `fail2ban-client set sshd unbanip <ip>` and `fail2ban-client set recidive unbanip <ip>`. Then put it into `ignoreip` in `/etc/fail2ban/jail.d/vps-forge.local` and `systemctl reload fail2ban`, so the next test logins don't ban it again (firewall.md).
@@ -68,6 +72,16 @@ It's waiting for a conffile question or the needrestart dialog. Use the non-inte
 ## "Backup WARNING" or "Backup overdue"
 
 WARNING means restic exit 3: a snapshot exists, but some files were unreadable (`journalctl -u vps-forge-backup` names them). Fix their permissions or exclude them in `/etc/restic/exclude`. "Backup FAILED" is a real failure (repository, credentials, an fstab volume that is not mounted). "Overdue" with no failure means the timer isn't running: `systemctl list-timers vps-forge-backup.timer`.
+
+## A tool broke after the kernel hardening (perf, strace, gdb, dmesg)
+
+The cost of each setting is listed in kernel.md. Relax only the one that's in the way, and keep the file: deleting `99-vps-forge.conf` throws away the network and filesystem protections too, and the live values stay until the next reboot anyway.
+```bash
+sysctl -w kernel.yama.ptrace_scope=0                                   # now, until reboot
+echo 'kernel.yama.ptrace_scope = 0' > /etc/sysctl.d/99-zz-local.conf   # sorts after 99-vps-forge.conf, so it wins
+sysctl --system >/dev/null && sysctl kernel.yama.ptrace_scope
+```
+A local file survives the skill's next run, which may rewrite `99-vps-forge.conf`. Often a temporary `sysctl -w` while debugging, or `sudo`, is enough. `audit.sh` reports a relaxed value as a WARN in `kernel.sysctl`, except `kptr_restrict=1`, which passes. Record the choice in SERVER.md, so the WARN is expected.
 
 ## Unattended upgrades never run
 
