@@ -37,6 +37,7 @@
 - **"Don't trust it? Break it."** A few commands in the README lock you out of a throwaway server on purpose and let the switch undo it, with `make deadman-systemd` for anyone without a spare server.
 - **The cost of each kernel setting** (`references/kernel.md`, and in `99-vps-forge.conf`): `kptr_restrict=2` hides kernel symbols from `perf` even as root, `ptrace_scope=1` needs `sudo` for `strace -p`, and so on. `troubleshooting.md` shows how to relax one setting in a local override file instead of deleting the whole file, and what `audit.sh` says about it afterwards.
 - **Skill description:** Oracle Cloud, AWS EC2 and ARM, so agents pick the skill up for those servers.
+- **The README in Chinese, Japanese and Russian** (`README.zh-CN.md`, `README.ja.md`, `README.ru.md`), with a language switcher on top. English stays authoritative, and `make test` checks that each translation keeps every link, command and table of the English file and warns when one falls behind. The skill itself stays in English; it already talks to you in your language.
 - **Benchmark:** the hero chart marks the SSH port move, whose 100 comes from behaviour 1.1.0 removed; the caption under it is one line; `bench/README.md` says how to reproduce the benchmarked pre-release skill from the `v1.0.0` tag.
 
 ## 1.1.1 (2026-10-25)

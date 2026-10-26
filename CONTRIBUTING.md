@@ -28,4 +28,4 @@ If you change behaviour, add or adjust a case in `skills/vps-forge/evals/` (form
 
 - Provider notes (console location, firewall, snapshot quirks) for Hetzner, DigitalOcean, Vultr, OVH, Linode, Contabo, Oracle Cloud
 - Additional `audit.sh` checks (with a clear PASS/WARN/FAIL rationale)
-- Translations of the README
+- Translations of the README, or fixes to the existing ones (`README.zh-CN.md`, `README.ja.md`, `README.ru.md`). A translation mirrors `README.md` exactly: the same links, images, commands, tables and `<details>` blocks, with in-page anchors pointing at the translated headings. Its first lines carry the language switcher and a `<!-- translation of README.md, source sha256: ... -->` comment with the first 12 hex digits of `sha256sum README.md` it was made from. `make test` fails on a structural difference and warns when the English README has moved on.

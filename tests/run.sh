@@ -382,6 +382,8 @@ released = re.findall(r"^## (\d+\.\d+\.\d+)", open("CHANGELOG.md").read(), re.M)
 audit = re.search(r'^VERSION="([^"]+)"', open(f"{skill}/scripts/audit.sh").read(), re.M).group(1)
 assert released and released[0] == plugin == audit, f"plugin.json {plugin}, CHANGELOG {released[:1]}, audit.sh {audit}"
 PY
+echo "== README translations"
+python3 tests/translations.py || fail=1
 if command -v claude >/dev/null; then
   claude plugin validate --strict . >/dev/null 2>&1 && ok "claude plugin validate --strict ." || bad "claude plugin validate ."
   claude plugin validate --strict .claude-plugin/plugin.json >/dev/null 2>&1 && ok "claude plugin validate --strict plugin.json" || bad "claude plugin validate plugin.json"

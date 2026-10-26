@@ -33,6 +33,10 @@ An [Agent Skill](https://agentskills.io) for hardening Debian/Ubuntu servers. Th
 
 `tests/templates.sh` and `tests/audit-scenarios.sh` rewrite `/etc` and refuse to run outside a container. Always start them through `tests/in-container.sh`, never on the host.
 
+## README translations
+
+`README.zh-CN.md`, `README.ja.md` and `README.ru.md` mirror `README.md`; `tests/translations.py` (part of `make test`) fails when their links, images, commands, tables or `<details>` blocks differ, and warns when README.md changed since the sha256 in their header comment. When you change README.md, change the translations the same way and update that hash (`sha256sum README.md | cut -c1-12`). Only the README is translated: the skill itself stays in English.
+
 ## Skill text
 
 - Keep the skill agent-neutral: say "the agent", not a product name, and do not rely on one tool's built-ins.
