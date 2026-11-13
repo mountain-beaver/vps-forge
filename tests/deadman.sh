@@ -64,6 +64,46 @@ grep -q planted "$R/elsewhere/authorized_keys" && ok "nothing written through th
 rm -f "$R/home/admin/.ssh"; mv "$R/admin-ssh-real" "$R/home/admin/.ssh"
 rm -f "$R/var/lib/vps-forge/deadman/restore-partial"
 
+# Homes root doesn't own are read and written with the owner's rights (needs real root: chown).
+if chown 65534:65534 "$R/home/admin" 2>/dev/null && command -v setpriv >/dev/null; then
+  chmod 755 "$R"   # mktemp -d is 700; a real / is open to every user
+  chown -R 65534:65534 "$R/home/admin"
+  echo "SECRET-ROOT-ONLY" > "$R/etc/secret"; chmod 600 "$R/etc/secret"
+  mkdir -p "$R/home/new/.ssh"; ln -sfn "$R/etc/secret" "$R/home/new/.ssh/authorized_keys"
+  chown -R -h 65534:65534 "$R/home/new"
+  bash "$DEADMAN" snapshot >/dev/null 2>&1 || bad "snapshot with a nobody-owned home"
+  T="$R/var/lib/vps-forge/deadman/latest/snapshot.tar"
+  ! tar -xOf "$T" 2>/dev/null | grep -q SECRET-ROOT-ONLY && ok "a user's symlink to a root-only file is not copied into the snapshot" \
+    || bad "the snapshot holds a root-only file reached through a user's symlink"
+  tar --numeric-owner -tvf "$T" home/admin/.ssh/authorized_keys 2>/dev/null | grep -q '65534/65534' \
+    && ok "the user's authorized_keys is in the snapshot with its owner" || bad "the user's authorized_keys is missing from the snapshot or lost its owner"
+  setpriv --reuid=65534 --regid=65534 --clear-groups sh -c 'echo "ssh-ed25519 AAAAwrong typo" > "$1"' sh "$R/home/admin/.ssh/authorized_keys"
+  rm -f "$R/home/new/.ssh/authorized_keys"
+  bash "$DEADMAN" restore >/dev/null 2>&1
+  grep -q AAAAadmin "$R/home/admin/.ssh/authorized_keys" && ok "authorized_keys in a nobody-owned home restored" || bad "authorized_keys in a nobody-owned home not restored"
+  [[ "$(stat -c %u:%a "$R/home/admin/.ssh/authorized_keys")" == 65534:600 ]] && ok "restored as its owner, mode 600" \
+    || bad "restored file is $(stat -c %u:%a "$R/home/admin/.ssh/authorized_keys"), want 65534:600"
+  ! grep -qs SECRET-ROOT-ONLY "$R/home/new/.ssh/authorized_keys" && grep -q SECRET-ROOT-ONLY "$R/etc/secret" \
+    && ok "no root-only content written into a user's home" || bad "root-only content leaked into a user's home"
+  # a file the user created after the snapshot is removed with the user's rights
+  bash "$DEADMAN" snapshot >/dev/null 2>&1
+  setpriv --reuid=65534 --regid=65534 --clear-groups sh -c 'echo "ssh-ed25519 AAAAlate" > "$1"' sh "$R/home/new/.ssh/authorized_keys"
+  bash "$DEADMAN" restore >/dev/null 2>&1
+  [[ ! -e "$R/home/new/.ssh/authorized_keys" ]] && ok "a key file created after the snapshot is moved aside" || bad "a key file created after the snapshot survived"
+  # Root's rights are never used inside a user's home: where the owner can't write, nothing is written.
+  bash "$DEADMAN" snapshot >/dev/null 2>&1
+  setpriv --reuid=65534 --regid=65534 --clear-groups sh -c 'echo "ssh-ed25519 AAAAuser-own" > "$1"' sh "$R/home/admin/.ssh/authorized_keys"
+  chmod 500 "$R/home/admin/.ssh"
+  bash "$DEADMAN" restore >/dev/null 2>&1 && bad "restore into a home the owner can't write reported success" \
+    || { grep -q AAAAuser-own "$R/home/admin/.ssh/authorized_keys" && ok "no write with root's rights in a home the owner can't write" \
+         || bad "the rollback wrote into a home with root's rights"; }
+  chmod 700 "$R/home/admin/.ssh"
+  chown -R 0:0 "$R/home/admin" "$R/home/new"; rm -rf "$R/home/new" "$R/etc/secret"
+  rm -f "$R/var/lib/vps-forge/deadman/restore-partial"
+else
+  echo "  skip owner-rights restore (needs real root and setpriv)"
+fi
+
 # disarm must tell "changes kept" apart from "already rolled back" (exit 3).
 S="$R/var/lib/vps-forge/deadman"
 bash "$DEADMAN" arm 5 >/dev/null 2>&1 || bad "arm (test mode) failed"

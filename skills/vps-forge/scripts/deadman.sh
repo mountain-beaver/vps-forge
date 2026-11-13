@@ -183,6 +183,25 @@ safe_parent() { # relative path
   d="${base%/}/$(dirname "$1")"
   [[ -d "$d" && ! -L "$d" && "$(readlink -f "$d")" == "$d" ]]
 }
+# Who controls a path: uid:gid of the deepest directory on the way that root doesn't own, 0:0 when
+# root owns them all, -1 when one can't be read. A user can swap a directory they control for a
+# symlink at any moment, even after safe_parent said yes, so such paths are read and written only
+# with that user's rights (as_owner): the race then gets them nothing they couldn't do anyway.
+path_owner() { # relative path
+  local d u
+  d="${ROOT%/}/$(dirname "$1")"
+  while [[ -n "$d" && "$d" != / && "$d" != "${ROOT%/}" ]]; do
+    u=$(stat -c %u:%g -- "$d" 2>/dev/null) || { echo -1; return; }
+    [[ "$u" == 0:* ]] || { echo "$u"; return; }
+    d=$(dirname "$d")
+  done
+  echo 0:0
+}
+as_owner() { # uid:gid command...
+  local o=$1; shift
+  if [[ "${o%%:*}" == "$(id -u)" ]]; then "$@"
+  else setpriv --reuid="${o%%:*}" --regid="${o#*:}" --clear-groups -- "$@"; fi
+}
 # The skill edits these (the admin's key, emptying root's file), and a wrong edit locks the user out.
 key_paths() {
   local home seen=" "
@@ -196,17 +215,40 @@ key_paths() {
 }
 
 snapshot() { # -> prints snapshot dir
-  local ts dir p u existing=() absent=() keep all=()
+  local ts dir p u o m stage existing=() owned=() absent=() keep all=()
   ts=$(date +%Y%m%d-%H%M%S)
   # unique even within one second: a second snapshot must never overwrite the armed one
   mkdir -p "$STATE" && dir=$(mktemp -d "$STATE/$ts-XXXX") || die "cannot create a snapshot dir in $STATE"
   all=("${PATHS[@]}")
   while IFS= read -r p; do [[ -n "$p" ]] && all+=("$p"); done < <(key_paths)
   for p in "${all[@]}"; do
-    if [[ -e "${ROOT%/}/$p" || -L "${ROOT%/}/$p" ]]; then existing+=("$p"); else absent+=("$p"); fi
+    o=0:0; [[ "$p" == etc/* ]] || o=$(path_owner "$p")
+    if [[ "$o" == -1 ]]; then log "WARNING: cannot inspect /$(dirname "$p"); /$p is not in the snapshot"
+    elif [[ "$o" != 0:* ]]; then
+      if as_owner "$o" test -e "${ROOT%/}/$p" -o -L "${ROOT%/}/$p"; then owned+=("$p")
+      elif [[ -e "${ROOT%/}/$p" || -L "${ROOT%/}/$p" ]]; then log "WARNING: /$p exists but its owner can't reach it; it is not in the snapshot"
+      else absent+=("$p"); fi
+    elif [[ -e "${ROOT%/}/$p" || -L "${ROOT%/}/$p" ]]; then existing+=("$p"); else absent+=("$p"); fi
   done
   ((${#existing[@]})) || die "nothing to snapshot"
   tar -C "$ROOT" -cpf "$dir/snapshot.tar" "${existing[@]}" || die "tar failed"
+  # Files in a home root doesn't control: copied with the owner's rights, never followed as root.
+  if ((${#owned[@]})); then
+    stage=$(mktemp -d) || die "mktemp failed"
+    for p in "${owned[@]}"; do
+      o=$(path_owner "$p")
+      mkdir -p "$stage/$(dirname "$p")"
+      if [[ "$o" != -1 && "$o" != 0:* ]] && as_owner "$o" cat -- "${ROOT%/}/$p" > "$stage/$p" \
+         && m=$(as_owner "$o" stat -L -c %a -- "${ROOT%/}/$p"); then
+        chmod "$m" "$stage/$p"; chown "$o" "$stage/$p" 2>/dev/null || true
+        tar -C "$stage" -rpf "$dir/snapshot.tar" "$p" || die "tar failed"
+        existing+=("$p")
+      else
+        log "WARNING: cannot read /$p as its owner; it is not in the snapshot"
+      fi
+    done
+    rm -rf "$stage"
+  fi
   printf '%s\n' "${existing[@]}" > "$dir/paths"
   printf '%s\n' "${absent[@]}" > "$dir/absent"
   if [[ "$SKIP_SERVICES" != 1 ]]; then
@@ -230,6 +272,20 @@ snapshot() { # -> prints snapshot dir
   find "$STATE" -mindepth 1 -maxdepth 1 -type d -name '20*' -printf '%f\n' | sort | head -n -"$KEEP" \
     | while read -r old; do [[ "$keep" == *" $old "* ]] || rm -rf "${STATE:?}/$old"; done
   echo "$dir"
+}
+
+restore_owned() { # rel-path owner tmpdir rbdir: put a home file back with its owner's rights
+  local p=$1 o=$2 src="$3/$1" dst="${ROOT%/}/$1" bak="$4/$1" mode
+  # An old-format snapshot may hold a symlink; reading through it as root could leak its target.
+  [[ -f "$src" && ! -L "$src" ]] || { log "ERROR: the snapshot of /$p is not a regular file"; return 1; }
+  mode=$(stat -c %a -- "$src")
+  mkdir -p "$(dirname "$bak")"
+  if as_owner "$o" test -e "$dst"; then
+    as_owner "$o" cat -- "$dst" > "$bak" 2>/dev/null; chmod 600 "$bak"
+  fi
+  # shellcheck disable=SC2016  # expanded by the inner shell
+  as_owner "$o" sh -c 'umask 077; n="$1.vps-forge-new"; rm -f -- "$n" && cat > "$n" && chmod "$2" "$n" && mv -fT -- "$n" "$1"' \
+    sh "$dst" "$mode" < "$src" || { log "ERROR: cannot write /$p as its owner; it was NOT restored"; return 1; }
 }
 
 swap_in() { # src dst bak: replace dst with src; the replaced version is moved to bak
@@ -302,7 +358,7 @@ drop_new_nft_tables() { # snapshot-dir rolled-back-dir changed-paths...
 }
 
 restore() { # snapshot-dir
-  local dir=${1:-} tmp p ufw_active=0 ssh_socket=0 nft_active=0 failed=() changed=() gone
+  local dir=${1:-} tmp p o ufw_active=0 ssh_socket=0 nft_active=0 failed=() changed=() gone
   [[ -n "$dir" && -f "$dir/snapshot.tar" ]] || die "no snapshot found (looked at ${dir:-$STATE/latest})"
   log "restoring SSH/firewall/sudo/PAM config and authorized_keys from $dir"
   local rb
@@ -316,6 +372,14 @@ restore() { # snapshot-dir
     [[ -n "$p" ]] && [[ -e "$tmp/$p" || -L "$tmp/$p" ]] || continue
     if [[ "$p" != etc/* ]] && ! safe_parent "$p"; then
       log "ERROR: /$(dirname "$p") is now missing or a symlink; /$p was NOT restored"; failed+=("/$p"); continue
+    fi
+    o=0:0; [[ "$p" == etc/* ]] || o=$(path_owner "$p")
+    if [[ "$o" == -1 ]]; then
+      log "ERROR: cannot inspect /$(dirname "$p"); /$p was NOT restored"; failed+=("/$p"); continue
+    elif [[ "$o" != 0:* ]]; then
+      as_owner "$o" cat -- "${ROOT%/}/$p" 2>/dev/null | cmp -s - "$tmp/$p" || changed+=("$p")
+      if restore_owned "$p" "$o" "$tmp" "$rb"; then log "restored /$p"; else failed+=("/$p"); fi
+      continue
     fi
     diff -rq --no-dereference "$tmp/$p" "${ROOT%/}/$p" >/dev/null 2>&1 || changed+=("$p")
     if swap_in "$tmp/$p" "${ROOT%/}/$p" "$rb/$p"; then log "restored /$p"; else failed+=("/$p"); fi
@@ -331,6 +395,16 @@ restore() { # snapshot-dir
     [[ -n "$p" ]] && ! grep -qxF "$p" "$dir/paths" && [[ -e "${ROOT%/}/$p" || -L "${ROOT%/}/$p" ]] || continue
     if [[ "$p" != etc/* ]] && ! safe_parent "$p"; then
       log "ERROR: /$(dirname "$p") is now a symlink; /$p (created after the snapshot) was NOT removed"; failed+=("/$p (not removed)"); continue
+    fi
+    o=0:0; [[ "$p" == etc/* ]] || o=$(path_owner "$p")
+    if [[ "$o" != 0:* ]]; then
+      mkdir -p "$(dirname "$rb/$p")"
+      if [[ "$o" != -1 ]] && { as_owner "$o" cat -- "${ROOT%/}/$p" > "$rb/$p" 2>/dev/null; chmod 600 "$rb/$p"; as_owner "$o" rm -f -- "${ROOT%/}/$p"; }; then
+        log "removed /$p (created after the snapshot)"; changed+=("$p")
+      else
+        log "ERROR: cannot remove /$p (created after the snapshot) as its owner"; failed+=("/$p (not removed)")
+      fi
+      continue
     fi
     if mkdir -p "$(dirname "$rb/$p")" && mv -T "${ROOT%/}/$p" "$rb/$p"; then
       log "removed /$p (created after the snapshot)"
