@@ -68,7 +68,7 @@ Create a task list from the phases below, trimmed to the chosen profile and leve
 
 | # | Phase | Read | Key outcome |
 |---|---|---|---|
-| 0 | Recon | `scripts/audit.sh` | Facts, a baseline score, and red flags spotted before any change. Stop on a Kubernetes node, a hypervisor host or a non-Debian/Ubuntu system (distro-notes.md). Coolify, Dokploy, CapRover, Kamal or Dokku found or planned: read `references/paas.md` before phase 3 |
+| 0 | Recon | `scripts/audit.sh` | Facts, a baseline score, and red flags spotted before any change. `/var/lib/vps-forge/progress.log` exists: an earlier run stopped. Re-check that each phase it lists as done really is (audit, `sshd -T`, `ufw status`), then resume at the first phase not done. Stop on a Kubernetes node, a hypervisor host or a non-Debian/Ubuntu system (distro-notes.md). Coolify, Dokploy, CapRover, Kamal or Dokku found or planned: read `references/paas.md` before phase 3 |
 | 1 | Safety net | `references/base.md` §Safety net | Provider snapshot, console known, etckeeper on, deadman installed |
 | 2 | Base system | `references/base.md` | Non-interactive full upgrade, unattended security updates, time sync, swap, journald limits, hostname that survives reboots |
 | 3 | Admin user & SSH | `references/ssh.md` | Admin user with a key, sudo policy chosen, root login and passwords off, modern crypto, verified from a new session |

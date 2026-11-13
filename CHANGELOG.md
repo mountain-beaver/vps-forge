@@ -48,6 +48,9 @@
 ### Audit
 - **`intrusion.ips` checks the CrowdSec bouncer.** A running CrowdSec engine only detects attacks; the bouncer blocks them. The check passes with an active `crowdsec-firewall-bouncer` or a bouncer registered in `cscli bouncers list`, and warns otherwise instead of passing on the engine alone.
 
+### Workflow
+- **Resuming an interrupted run.** Phase 0 now reads `/var/lib/vps-forge/progress.log` when it exists, re-checks that every phase listed as done really is, and resumes at the first phase that isn't. The log was written before, but nothing told the agent to read it.
+
 ## 1.1.1 (2026-10-25)
 
 The skill and its scripts behave exactly as in 1.1.0. This release changes the README, its images and the packaging.
