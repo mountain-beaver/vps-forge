@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.2.0 (2026-11-13)
 
 ### Distribution
 - **Signed releases.** The release workflow attests SLSA build provenance for `vps-forge-skill.zip` and every script, so `gh attestation verify audit.sh -R mountain-beaver/vps-forge` proves a downloaded file came from this repository's release workflow.
@@ -59,6 +59,7 @@
 - **`references/providers.md`:** for Hetzner, DigitalOcean, Vultr, Linode, OVHcloud, AWS EC2 and Lightsail, and Oracle Cloud: where the web console is and what it needs, how to take a snapshot, and how to add one firewall rule in the panel and the CLI, with the commands that would replace a whole rule set named so the agent never uses them. Checked against each provider's documentation. The provider details from `base.md` and `distro-notes.md` moved there.
 - **`references/standards.md`:** where the defaults differ on purpose from Lynis, CIS and ssh-audit (MaxAuthTries 5, MaxSessions 10, SSH tunnels allowed, no banner, curve25519 at hardened, ed25519-only host key, port and log level) and why, so an agent or auditor explains these findings instead of "fixing" them. Lynis values are from its SSH-7408 test; no CIS control numbers are quoted.
 - The README no longer promises RHEL-family support: those servers are out of scope, and the skill stops on them.
+- The README's `curl` commands and the `--pin` example point at v1.2.0, and its FAQ shows how to check a downloaded script with `gh attestation verify`.
 - **Skill description:** the triggers come right after what the skill does, and RHEL-family servers, Kubernetes nodes and hypervisor hosts are named as places where the skill loads in order to stop and explain, not as places where it shouldn't load (which contradicted the stop rule and the k3s eval). `plugin.json`, `marketplace.json` and `llms.txt` say the same.
 
 ### Audit

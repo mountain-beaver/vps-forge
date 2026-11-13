@@ -1,4 +1,4 @@
-== vps-forge audit 1.1.1 on vps1 (Debian GNU/Linux 13 (trixie))
+== vps-forge audit 1.2.0 on vps1 (Debian GNU/Linux 13 (trixie))
   PASS  ssh.root      root login disabled
   PASS  ssh.password  password authentication disabled
   PASS  firewall.host ufw active, default deny incoming

@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.ja.md">日本語</a> · <b>Русский</b></sub></p>
 
-<!-- translation of README.md, source sha256: 90d257aea2ba -->
+<!-- translation of README.md, source sha256: 5a74157c2e5d -->
 
 <p align="center"><sub>Это перевод английского README. Если версии расходятся, верна английская. Нашли ошибку в переводе? Откройте <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a>.</sub></p>
 
@@ -117,7 +117,7 @@ npx skills add mountain-beaver/vps-forge -g -a codex
 gh skill install mountain-beaver/vps-forge vps-forge --agent cursor --scope user
 ```
 
-`--agent` принимает имена вроде `claude-code`, `codex`, `cursor`, `github-copilot`, `gemini-cli` и `opencode`; полный список выводит `gh skill install --help`. Закрепить конкретный релиз можно флагом `--pin v1.1.1` или указав его вместе с навыком: `vps-forge@v1.1.1`.
+`--agent` принимает имена вроде `claude-code`, `codex`, `cursor`, `github-copilot`, `gemini-cli` и `opencode`; полный список выводит `gh skill install --help`. Закрепить конкретный релиз можно флагом `--pin v1.2.0` или указав его вместе с навыком: `vps-forge@v1.2.0`.
 </details>
 
 <details>
@@ -209,7 +209,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 **Не доверяете? Попробуйте сломать.** Dead-man switch — обычный bash-скрипт, и его можно проверить без всякого агента. На сервере, который не жалко, войдите пользователем с sudo, оставьте эту сессию открытой и выполните:
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/deadman.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.2.0/skills/vps-forge/scripts/deadman.sh
 less deadman.sh                                                       # прочитайте, прежде чем запускать от root
 sudo install -m 755 deadman.sh /usr/local/sbin/vps-forge-deadman
 sudo vps-forge-deadman arm 1                                          # откат через минуту
@@ -288,7 +288,7 @@ sudo sshd -t && sudo systemctl reload ssh                             # конф
   <img alt="Выборочная проверка GLM-5.3 рядом с Claude Opus 5.5 на Debian 13. Новый VPS до продакшена: Opus — 84, 89 и 89 без навыка и 100 во всех трёх прогонах с ним, GLM-5.3 — 79 и 100. Продакшен-сервер с Docker: Opus — 73, 80 и 87, затем трижды 100, GLM-5.3 — 67 и 100." src="docs/bench/chart-spot-light.svg" width="880">
 </picture>
 
-Бенчмарк проводился на предрелизной версии навыка. Версия 1.0.1 изменила только текст. Версия 1.1.0 изменила поведение там, где бенчмарк почти ничего не говорит или молчит совсем: узкие запросы, срок действия временного права на sudo, учения по восстановлению с проверкой данных приложения и остановка на узлах Kubernetes и хостах гипервизоров. Версия 1.1.1 изменила только README, его изображения и упаковку. Изменения после неё, перечисленные в разделе Unreleased в CHANGELOG (панели деплоя, режим скриптов, более тихие оповещения о входе, `extend`), в бенчмарке тоже не проверялись. Все изменения перечислены в [CHANGELOG.md](CHANGELOG.md). Сценарии, стенд и всё, что нужно для воспроизведения прогонов, лежат в [`bench/`](bench/README.md). Результаты по каждому прогону — в [`docs/bench/results.md`](docs/bench/results.md) и [`results.json`](docs/bench/results.json).
+Бенчмарк проводился на предрелизной версии навыка. Версия 1.0.1 изменила только текст. Версия 1.1.0 изменила поведение там, где бенчмарк почти ничего не говорит или молчит совсем: узкие запросы, срок действия временного права на sudo, учения по восстановлению с проверкой данных приложения и остановка на узлах Kubernetes и хостах гипервизоров. Версия 1.1.1 изменила только README, его изображения и упаковку. Версия 1.2.0 (панели деплоя, режим скриптов, более тихие оповещения о входе, `extend`, `authorized_keys` в снимке dead-man switch, проверка CrowdSec, которой нужен bouncer) в бенчмарке тоже не проверялась. Все изменения перечислены в [CHANGELOG.md](CHANGELOG.md). Сценарии, стенд и всё, что нужно для воспроизведения прогонов, лежат в [`bench/`](bench/README.md). Результаты по каждому прогону — в [`docs/bench/results.md`](docs/bench/results.md) и [`results.json`](docs/bench/results.json).
 
 ## Частые вопросы
 
@@ -375,12 +375,12 @@ Debian 12 и 13, Ubuntu 22.04, 24.04 и 26.04, у любого провайде�
 Да. `audit.sh` — самостоятельный аудит только для чтения:
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/audit.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.2.0/skills/vps-forge/scripts/audit.sh
 less audit.sh          # прочитайте, прежде чем запускать что-либо от root
 sudo bash audit.sh     # только чтение; --json для машинного вывода
 ```
 
-`deadman.sh`, `external-check.sh` и `install-alerts.sh` тоже работают сами по себе. У каждого есть `--help`.
+`deadman.sh`, `external-check.sh` и `install-alerts.sh` тоже работают сами по себе. У каждого есть `--help`. Начиная с v1.2.0 у релизов есть подписанное происхождение сборки: `gh attestation verify audit.sh -R mountain-beaver/vps-forge` доказывает, что скачанный скрипт собран релизным workflow этого репозитория.
 </details>
 
 ## Что внутри

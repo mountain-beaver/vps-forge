@@ -113,7 +113,7 @@ The full list of about 80 agents is in the installer's [agent table](https://git
 gh skill install mountain-beaver/vps-forge vps-forge --agent cursor --scope user
 ```
 
-`--agent` takes names such as `claude-code`, `codex`, `cursor`, `github-copilot`, `gemini-cli` and `opencode`; `gh skill install --help` lists them all. Pin a release with `--pin v1.1.1`, or name it with the skill: `vps-forge@v1.1.1`.
+`--agent` takes names such as `claude-code`, `codex`, `cursor`, `github-copilot`, `gemini-cli` and `opencode`; `gh skill install --help` lists them all. Pin a release with `--pin v1.2.0`, or name it with the skill: `vps-forge@v1.2.0`.
 </details>
 
 <details>
@@ -205,7 +205,7 @@ It can't undo what lives outside the server: a firewall in your provider's panel
 **Don't trust it? Break it.** The switch is a plain bash script, so you can try it without any agent. On a throwaway server, logged in as a user with sudo, keep this session open and run:
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/deadman.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.2.0/skills/vps-forge/scripts/deadman.sh
 less deadman.sh                                                       # read it before running it as root
 sudo install -m 755 deadman.sh /usr/local/sbin/vps-forge-deadman
 sudo vps-forge-deadman arm 1                                          # roll back in one minute
@@ -284,7 +284,7 @@ A lockout scores 0.
   <img alt="GLM-5.3 spot check next to Claude Opus 5.5 on Debian 13. Fresh VPS to production: Opus 84, 89 and 89 without the skill and 100 in all three runs with it, GLM-5.3 79 and 100. Production Docker box: Opus 73, 80 and 87, then 100 three times, GLM-5.3 67 and 100." src="docs/bench/chart-spot-light.svg" width="880">
 </picture>
 
-The benchmark ran on the pre-release skill. Version 1.0.1 changed only text. Version 1.1.0 changed behaviour where the benchmark says little or nothing: narrow requests, a deadline on the temporary sudo grant, a restore drill that checks the app's data, and a stop on Kubernetes nodes and hypervisor hosts. Version 1.1.1 changed only the README, its images and the packaging. The changes since then, listed under Unreleased in the CHANGELOG (deploy panels, script mode, quieter login alerts, `extend`), are not benchmarked either. [CHANGELOG.md](CHANGELOG.md) lists every change. The scenarios, the harness, and everything you need to reproduce the runs are in [`bench/`](bench/README.md). Per-run results are in [`docs/bench/results.md`](docs/bench/results.md) and [`results.json`](docs/bench/results.json).
+The benchmark ran on the pre-release skill. Version 1.0.1 changed only text. Version 1.1.0 changed behaviour where the benchmark says little or nothing: narrow requests, a deadline on the temporary sudo grant, a restore drill that checks the app's data, and a stop on Kubernetes nodes and hypervisor hosts. Version 1.1.1 changed only the README, its images and the packaging. Version 1.2.0 (deploy panels, script mode, quieter login alerts, `extend`, `authorized_keys` in the dead-man snapshot, a CrowdSec check that needs a bouncer) is not benchmarked either. [CHANGELOG.md](CHANGELOG.md) lists every change. The scenarios, the harness, and everything you need to reproduce the runs are in [`bench/`](bench/README.md). Per-run results are in [`docs/bench/results.md`](docs/bench/results.md) and [`results.json`](docs/bench/results.json).
 
 ## FAQ
 
@@ -371,12 +371,12 @@ No. The skill and its scripts have no telemetry. Alerts go only to the ntfy topi
 Yes. `audit.sh` is a standalone, read-only audit:
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/audit.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.2.0/skills/vps-forge/scripts/audit.sh
 less audit.sh          # read it before running anything as root
 sudo bash audit.sh     # read-only; --json for machine output
 ```
 
-`deadman.sh`, `external-check.sh` and `install-alerts.sh` work on their own as well. Each one has a `--help`.
+`deadman.sh`, `external-check.sh` and `install-alerts.sh` work on their own as well. Each one has a `--help`. Releases from v1.2.0 on carry signed build provenance: `gh attestation verify audit.sh -R mountain-beaver/vps-forge` proves that a downloaded script came from this repository's release workflow.
 </details>
 
 ## What's inside

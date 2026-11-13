@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <b>日本語</b> · <a href="README.ru.md">Русский</a></sub></p>
 
-<!-- translation of README.md, source sha256: 90d257aea2ba -->
+<!-- translation of README.md, source sha256: 5a74157c2e5d -->
 
 <p align="center"><sub>これは英語版 README の翻訳です。内容が異なる場合は英語版が正しいものとします。誤りに気づいたら <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a> でお知らせください。</sub></p>
 
@@ -117,7 +117,7 @@ npx skills add mountain-beaver/vps-forge -g -a codex
 gh skill install mountain-beaver/vps-forge vps-forge --agent cursor --scope user
 ```
 
-`--agent` には `claude-code`、`codex`、`cursor`、`github-copilot`、`gemini-cli`、`opencode` などの名前を指定します。すべての名前は `gh skill install --help` で確認できます。リリースを固定するには `--pin v1.1.1` を使うか、スキル名に続けて `vps-forge@v1.1.1` と指定します。
+`--agent` には `claude-code`、`codex`、`cursor`、`github-copilot`、`gemini-cli`、`opencode` などの名前を指定します。すべての名前は `gh skill install --help` で確認できます。リリースを固定するには `--pin v1.2.0` を使うか、スキル名に続けて `vps-forge@v1.2.0` と指定します。
 </details>
 
 <details>
@@ -209,7 +209,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 **信用できませんか？ それなら壊してみてください**。スイッチはただの bash スクリプトなので、エージェントなしで試せます。使い捨てのサーバーに sudo 権限のあるユーザーでログインし、このセッションを開いたまま次を実行します。
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/deadman.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.2.0/skills/vps-forge/scripts/deadman.sh
 less deadman.sh                                                       # root で実行する前に中身を読む
 sudo install -m 755 deadman.sh /usr/local/sbin/vps-forge-deadman
 sudo vps-forge-deadman arm 1                                          # 1 分後にロールバック
@@ -288,7 +288,7 @@ sudo sshd -t && sudo systemctl reload ssh                             # 設定�
   <img alt="Debian 13 での GLM-5.3 のスポットチェックと Claude Opus 5.5 の比較。新規 VPS から本番環境へ：Opus はスキルなしで 84、89、89、スキルありで 3 回とも 100。GLM-5.3 は 79 と 100。本番 Docker サーバー：Opus は 73、80、87、スキルありで 3 回とも 100。GLM-5.3 は 67 と 100。" src="docs/bench/chart-spot-light.svg" width="880">
 </picture>
 
-ベンチマークはリリース前のスキルで実行しました。バージョン 1.0.1 で変わったのはテキストだけです。バージョン 1.1.0 では、ベンチマークがほとんど、あるいはまったく評価していない部分の挙動が変わりました。限定的な依頼への対応、一時的な sudo 権限付与の期限、アプリのデータを確認するリストア訓練、Kubernetes ノードとハイパーバイザーホストでの作業中止です。バージョン 1.1.1 で変わったのは README、その画像、パッケージングだけです。それ以降の変更（CHANGELOG の Unreleased に記載されたデプロイパネル、スクリプトモード、控えめになったログインアラート、`extend`）もベンチマークしていません。すべての変更は [CHANGELOG.md](CHANGELOG.md) に記載しています。シナリオ、ハーネス、実行の再現に必要なものはすべて [`bench/`](bench/README.md) にあります。実行ごとの結果は [`docs/bench/results.md`](docs/bench/results.md) と [`results.json`](docs/bench/results.json) にあります。
+ベンチマークはリリース前のスキルで実行しました。バージョン 1.0.1 で変わったのはテキストだけです。バージョン 1.1.0 では、ベンチマークがほとんど、あるいはまったく評価していない部分の挙動が変わりました。限定的な依頼への対応、一時的な sudo 権限付与の期限、アプリのデータを確認するリストア訓練、Kubernetes ノードとハイパーバイザーホストでの作業中止です。バージョン 1.1.1 で変わったのは README、その画像、パッケージングだけです。バージョン 1.2.0（デプロイパネル、スクリプトモード、控えめになったログインアラート、`extend`、デッドマンスイッチのスナップショットに含まれる `authorized_keys`、bouncer を必須とする CrowdSec チェック）もベンチマークしていません。すべての変更は [CHANGELOG.md](CHANGELOG.md) に記載しています。シナリオ、ハーネス、実行の再現に必要なものはすべて [`bench/`](bench/README.md) にあります。実行ごとの結果は [`docs/bench/results.md`](docs/bench/results.md) と [`results.json`](docs/bench/results.json) にあります。
 
 ## FAQ
 
@@ -375,12 +375,12 @@ Debian 12 と 13、Ubuntu 22.04、24.04、26.04 で、プロバイダーは問�
 はい。`audit.sh` は単体で動く読み取り専用の監査スクリプトです。
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/audit.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.2.0/skills/vps-forge/scripts/audit.sh
 less audit.sh          # root で何かを実行する前に中身を読む
 sudo bash audit.sh     # 読み取り専用。--json で機械可読な出力
 ```
 
-`deadman.sh`、`external-check.sh`、`install-alerts.sh` も単体で動きます。どれにも `--help` があります。
+`deadman.sh`、`external-check.sh`、`install-alerts.sh` も単体で動きます。どれにも `--help` があります。v1.2.0 以降のリリースには署名付きのビルド来歴（provenance）が付きます。`gh attestation verify audit.sh -R mountain-beaver/vps-forge` で、ダウンロードしたスクリプトがこのリポジトリのリリースワークフローで作られたことを確認できます。
 </details>
 
 ## リポジトリの中身

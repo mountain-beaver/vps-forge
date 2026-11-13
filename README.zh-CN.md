@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <b>简体中文</b> · <a href="README.ja.md">日本語</a> · <a href="README.ru.md">Русский</a></sub></p>
 
-<!-- translation of README.md, source sha256: 90d257aea2ba -->
+<!-- translation of README.md, source sha256: 5a74157c2e5d -->
 
 <p align="center"><sub>本文是英文 README 的译文，两者如有出入，以英文版为准。翻译有误之处，欢迎提交 <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a> 指正。</sub></p>
 
@@ -117,7 +117,7 @@ npx skills add mountain-beaver/vps-forge -g -a codex
 gh skill install mountain-beaver/vps-forge vps-forge --agent cursor --scope user
 ```
 
-`--agent` 接受 `claude-code`、`codex`、`cursor`、`github-copilot`、`gemini-cli` 和 `opencode` 等名称；`gh skill install --help` 会列出全部可选值。用 `--pin v1.1.1` 可以固定到某个发布版本，也可以写在技能名后面：`vps-forge@v1.1.1`。
+`--agent` 接受 `claude-code`、`codex`、`cursor`、`github-copilot`、`gemini-cli` 和 `opencode` 等名称；`gh skill install --help` 会列出全部可选值。用 `--pin v1.2.0` 可以固定到某个发布版本，也可以写在技能名后面：`vps-forge@v1.2.0`。
 </details>
 
 <details>
@@ -209,7 +209,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 **不信？那就亲手弄坏它。** 这个开关只是一个普通的 bash 脚本，不需要任何 Agent 就能试。在一台用完即弃的服务器上，以有 sudo 权限的用户登录，保持当前会话不要断开，然后运行：
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/deadman.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.2.0/skills/vps-forge/scripts/deadman.sh
 less deadman.sh                                                       # 以 root 运行之前先通读一遍
 sudo install -m 755 deadman.sh /usr/local/sbin/vps-forge-deadman
 sudo vps-forge-deadman arm 1                                          # 一分钟后回滚
@@ -288,7 +288,7 @@ sudo sshd -t && sudo systemctl reload ssh                             # 配置�
   <img alt="GLM-5.3 抽查结果与 Claude Opus 5.5 在 Debian 13 上的对比。全新 VPS 到生产环境：Opus 不用技能为 84、89 和 89，使用技能三次均为 100；GLM-5.3 为 79 和 100。生产环境 Docker 服务器：Opus 为 73、80 和 87，之后三次均为 100；GLM-5.3 为 67 和 100。" src="docs/bench/chart-spot-light.svg" width="880">
 </picture>
 
-基准测试运行的是发布前版本的技能。1.0.1 版只改动了文字。1.1.0 版改变的行为，落在基准测试几乎没有或完全没有涉及的地方：范围很窄的请求、临时 sudo 授权的截止时间、检查应用数据的恢复演练，以及遇到 Kubernetes 节点和虚拟化宿主机时停止操作。1.1.1 版只改动了 README、其中的图片和打包方式。此后的改动列在 CHANGELOG 的 Unreleased 部分（部署面板、脚本模式、更安静的登录告警、`extend`），同样没有经过基准测试。[CHANGELOG.md](CHANGELOG.md) 列出了所有改动。场景、测试框架以及复现这些运行所需的一切都在 [`bench/`](bench/README.md) 中。每次运行的结果见 [`docs/bench/results.md`](docs/bench/results.md) 和 [`results.json`](docs/bench/results.json)。
+基准测试运行的是发布前版本的技能。1.0.1 版只改动了文字。1.1.0 版改变的行为，落在基准测试几乎没有或完全没有涉及的地方：范围很窄的请求、临时 sudo 授权的截止时间、检查应用数据的恢复演练，以及遇到 Kubernetes 节点和虚拟化宿主机时停止操作。1.1.1 版只改动了 README、其中的图片和打包方式。1.2.0 版（部署面板、脚本模式、更安静的登录告警、`extend`、死人开关快照包含 `authorized_keys`、CrowdSec 检查要求有 bouncer）同样没有经过基准测试。[CHANGELOG.md](CHANGELOG.md) 列出了所有改动。场景、测试框架以及复现这些运行所需的一切都在 [`bench/`](bench/README.md) 中。每次运行的结果见 [`docs/bench/results.md`](docs/bench/results.md) 和 [`results.json`](docs/bench/results.json)。
 
 ## 常见问题
 
@@ -375,12 +375,12 @@ Debian 12 和 13，以及 Ubuntu 22.04、24.04 和 26.04，服务商不限：Het
 可以。`audit.sh` 是一个独立的只读审计脚本：
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/audit.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.2.0/skills/vps-forge/scripts/audit.sh
 less audit.sh          # 以 root 运行任何东西之前先通读一遍
 sudo bash audit.sh     # 只读；加 --json 输出机器可读的结果
 ```
 
-`deadman.sh`、`external-check.sh` 和 `install-alerts.sh` 也都能单独使用，每个脚本都有 `--help`。
+`deadman.sh`、`external-check.sh` 和 `install-alerts.sh` 也都能单独使用，每个脚本都有 `--help`。从 v1.2.0 起，每个发布版本都附带签名的构建来源证明：`gh attestation verify audit.sh -R mountain-beaver/vps-forge` 可以证明下载的脚本出自本仓库的发布工作流。
 </details>
 
 ## 包含内容
