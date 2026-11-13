@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <b>简体中文</b> · <a href="README.ja.md">日本語</a> · <a href="README.ru.md">Русский</a></sub></p>
 
-<!-- translation of README.md, source sha256: 359e61a0af37 -->
+<!-- translation of README.md, source sha256: 90d257aea2ba -->
 
 <p align="center"><sub>本文是英文 README 的译文，两者如有出入，以英文版为准。翻译有误之处，欢迎提交 <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a> 指正。</sub></p>
 
@@ -389,14 +389,13 @@ sudo bash audit.sh     # 只读；加 --json 输出机器可读的结果
 skills/vps-forge/
 ├── SKILL.md              工作流程、安全规则、级别、完成标准
 ├── references/           每个阶段一个文件，仅在需要时加载
-├── scripts/
-│   ├── audit.sh          只读审计：70+ 项检查、评分、JSON
-│   ├── deadman.sh        为 SSH、密钥、防火墙、sudo 和 PAM 做快照并自动回滚
-│   ├── external-check.sh 从你的机器进行外部检查：端口、SSH 认证、TLS、ssh-audit
-│   └── install-alerts.sh vps-notify：ntfy、Telegram 或 webhook 告警
 ├── assets/               经过校验的模板：sshd、sysctl、fail2ban、apt、Docker、Caddy、
 │                         restic、Cloudflare 同步、motd、SERVER.md、cloud-init
-└── evals/                行为测试用例
+└── scripts/
+    ├── audit.sh          只读审计：70+ 项检查、评分、JSON
+    ├── deadman.sh        为 SSH、密钥、防火墙、sudo 和 PAM 做快照并自动回滚
+    ├── external-check.sh 从你的机器进行外部检查：端口、SSH 认证、TLS、ssh-audit
+    └── install-alerts.sh vps-notify：ntfy、Telegram 或 webhook 告警
 ```
 
 每个模板都在 CI 中由读取它的工具检查（`sshd -t`、`fail2ban-client -t`、`caddy validate`、`cloud-init schema`、`systemd-analyze verify`、`dockerd --validate`），覆盖 Debian 12/13 和 Ubuntu 22.04/24.04/26.04。`audit.sh` 会针对已知良好和已知有问题的服务器进行测试，并用校验和证明它不做任何改动。失效保护开关的回滚在 CI 中用真实的 systemd 测试：布防，弄坏 SSH 或防火墙，等待，然后检查一切是否恢复原状，包括跨重启的情况。

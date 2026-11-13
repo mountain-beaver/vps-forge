@@ -36,7 +36,7 @@ ci-all: ci audit-systemd deadman-systemd ## everything CI runs except the macOS 
 
 package: ## build dist/vps-forge-skill.zip for claude.ai upload (same as the release workflow)
 	@mkdir -p $(DIST) && rm -f $(DIST)/vps-forge-skill.zip
-	cd skills && zip -qr -X $(CURDIR)/$(DIST)/vps-forge-skill.zip vps-forge -x 'vps-forge/evals/*'
+	cd skills && zip -qr -X $(CURDIR)/$(DIST)/vps-forge-skill.zip vps-forge
 	@echo "$(DIST)/vps-forge-skill.zip ($(VERSION))"
 
 directory: ## build dist/directory: the plugin folder Anthropic's directory reads (same as the directory workflow)
@@ -44,7 +44,7 @@ directory: ## build dist/directory: the plugin folder Anthropic's directory read
 
 # Pin the judge and use a 0.85 threshold so llm grader noise is not a gate; see CONTRIBUTING.md.
 eval: ## behaviour evals with `claude plugin eval` (spends tokens)
-	cd $(SKILL) && claude plugin eval . --allow-tools Write,Edit,Bash --scaffold --threshold 0.85 --judge-model claude-haiku-5-5
+	claude plugin eval . --eval-dir evals --allow-tools Write,Edit,Bash --scaffold --threshold 0.85 --judge-model claude-haiku-5-5
 
 clean: ## remove build output
 	rm -rf $(DIST)

@@ -21,7 +21,7 @@ Scripts must pass `shellcheck -S warning`; without shellcheck installed `make te
 
 If you add a template, teach `tests/templates.sh` to validate it (and `fill()` in `tests/lib.sh` any new `<placeholder>`). If you add or change an `audit.sh` check, add a scenario to `tests/audit-scenarios.sh` that proves both its PASS and its FAIL.
 
-If you change behaviour, add or adjust a case in `skills/vps-forge/evals/` (format: `claude plugin eval`).
+If you change behaviour, add or adjust a case in `evals/` at the repository root (format: `claude plugin eval`; `make eval` runs them with `--eval-dir evals`).
 
 `make eval` pins the judge model and uses `--threshold 0.85`: `llm` graders are noisy, so one missed grader in one run should not fail the suite. Fix a real regression, or replace a vague rubric with a deterministic `regex`, `tool_used`, `tool_order` or `file_exists` grader, instead of lowering the threshold.
 

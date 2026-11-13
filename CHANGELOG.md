@@ -6,6 +6,7 @@
 - **Signed releases.** The release workflow attests SLSA build provenance for `vps-forge-skill.zip` and every script, so `gh attestation verify audit.sh -R mountain-beaver/vps-forge` proves a downloaded file came from this repository's release workflow.
 - **Directory listing details in `plugin.json`:** `displayName` (so the listing reads vps-forge, not "Vps Forge"), the icon path, and links to the documentation, the issue tracker and a new `PRIVACY.md`.
 - **`PRIVACY.md`:** the project collects nothing; it lists what the skill sends where, all of it to services you choose, including the certificate contact email that goes to Let's Encrypt.
+- **The evals no longer ship to users.** They lived in `skills/vps-forge/evals/`, and `npx skills add` and `gh skill install` copy the whole skill folder, so every install carried 57 test files (checked with both installers). They now live in `evals/` at the repository root; `make eval` runs them with `--eval-dir evals` against the plugin, and the zip and the directory build no longer need to cut them out.
 
 ### Safety
 - **Provider firewalls are named as outside the dead-man switch.** The switch only snapshots files on the server, so a rule in the provider's panel or API can't roll back. The skill now changes those additively (add the new rule, prove a new login, remove the old rule last) and never replaces a whole rule set in one call. The README no longer says that every change that could cut you off rolls itself back.

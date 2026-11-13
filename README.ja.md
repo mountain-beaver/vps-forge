@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <b>日本語</b> · <a href="README.ru.md">Русский</a></sub></p>
 
-<!-- translation of README.md, source sha256: 359e61a0af37 -->
+<!-- translation of README.md, source sha256: 90d257aea2ba -->
 
 <p align="center"><sub>これは英語版 README の翻訳です。内容が異なる場合は英語版が正しいものとします。誤りに気づいたら <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a> でお知らせください。</sub></p>
 
@@ -389,14 +389,13 @@ sudo bash audit.sh     # 読み取り専用。--json で機械可読な出力
 skills/vps-forge/
 ├── SKILL.md              ワークフロー、安全ルール、レベル、完了の定義
 ├── references/           フェーズごとに 1 ファイル、必要なときだけ読み込む
-├── scripts/
-│   ├── audit.sh          読み取り専用の監査：70 以上のチェック、スコア、JSON
-│   ├── deadman.sh        SSH、鍵、ファイアウォール、sudo、PAM のスナップショットと自動ロールバック
-│   ├── external-check.sh 手元のマシンからの外部チェック：ポート、SSH 認証、TLS、ssh-audit
-│   └── install-alerts.sh vps-notify：ntfy、Telegram、Webhook によるアラート
 ├── assets/               検証済みテンプレート：sshd、sysctl、fail2ban、apt、Docker、Caddy、
 │                         restic、Cloudflare 同期、motd、SERVER.md、cloud-init
-└── evals/                挙動のテストケース
+└── scripts/
+    ├── audit.sh          読み取り専用の監査：70 以上のチェック、スコア、JSON
+    ├── deadman.sh        SSH、鍵、ファイアウォール、sudo、PAM のスナップショットと自動ロールバック
+    ├── external-check.sh 手元のマシンからの外部チェック：ポート、SSH 認証、TLS、ssh-audit
+    └── install-alerts.sh vps-notify：ntfy、Telegram、Webhook によるアラート
 ```
 
 すべてのテンプレートは、それを読み込むツール自身によって CI でチェックしています（`sshd -t`、`fail2ban-client -t`、`caddy validate`、`cloud-init schema`、`systemd-analyze verify`、`dockerd --validate`）。対象は Debian 12/13 と Ubuntu 22.04/24.04/26.04 です。`audit.sh` は既知の良いサーバーと悪いサーバーに対してテストし、何も変更しないことをチェックサムで証明しています。デッドマンスイッチのロールバックは、CI 上の実際の systemd でテストしています。アームし、SSH かファイアウォールを壊し、待ってから、すべてが元に戻ったことを確認します。再起動をまたぐケースも含みます。

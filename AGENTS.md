@@ -5,12 +5,13 @@ An [Agent Skill](https://agentskills.io) for hardening Debian/Ubuntu servers. Th
 - `references/`: one file per phase, loaded on demand.
 - `scripts/`: bash that runs as root on servers.
 - `assets/`: config templates.
-- `evals/`: behaviour evals in `claude plugin eval` format.
+
+Behaviour evals live in `evals/` at the repository root (`claude plugin eval` format), outside the skill, so installers that copy the skill folder don't ship them to users.
 
 ## Commands
 
 - `make test`: lint, manifests, version check, audit smoke test, deadman round trip. No sudo needed.
-- `make directory`: builds `dist/directory`, the plugin folder that Anthropic's directory reads from the `directory` branch (only `.claude-plugin/plugin.json`, the icon, `skills/vps-forge` without evals, LICENSE and `.github/directory/README.md`). `.github/workflows/directory.yml` commits it to that branch on every release tag.
+- `make directory`: builds `dist/directory`, the plugin folder that Anthropic's directory reads from the `directory` branch (only `.claude-plugin/plugin.json`, the icon, `skills/vps-forge`, LICENSE and `.github/directory/README.md`). `.github/workflows/directory.yml` commits it to that branch on every release tag.
 - `make ci`: the per-distro CI suites (checks, templates, audit) in podman/docker containers on Debian 12/13 and Ubuntu 22.04/24.04/26.04. `make ci-all` adds the systemd suites (`audit-systemd`, `deadman-systemd`); only CI's macOS job for `external-check.sh` has no local target.
   - Narrow it with `DISTRO=debian:13 make templates` or `make audit`.
 - `make lint`: the static checks only (no containers, no network, no root).

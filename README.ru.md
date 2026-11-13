@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.ja.md">日本語</a> · <b>Русский</b></sub></p>
 
-<!-- translation of README.md, source sha256: 359e61a0af37 -->
+<!-- translation of README.md, source sha256: 90d257aea2ba -->
 
 <p align="center"><sub>Это перевод английского README. Если версии расходятся, верна английская. Нашли ошибку в переводе? Откройте <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a>.</sub></p>
 
@@ -389,14 +389,13 @@ sudo bash audit.sh     # только чтение; --json для машинно
 skills/vps-forge/
 ├── SKILL.md              порядок работы, правила безопасности, уровни, критерии готовности
 ├── references/           по файлу на этап, загружаются только при необходимости
-├── scripts/
-│   ├── audit.sh          аудит только для чтения: 70+ проверок, оценка, JSON
-│   ├── deadman.sh        снапшот и автоматический откат для SSH, ключей, файрвола, sudo и PAM
-│   ├── external-check.sh внешняя проверка с вашей машины: порты, аутентификация SSH, TLS, ssh-audit
-│   └── install-alerts.sh vps-notify: оповещения через ntfy, Telegram или вебхук
 ├── assets/               проверенные шаблоны: sshd, sysctl, fail2ban, apt, Docker, Caddy,
 │                         restic, синхронизация с Cloudflare, motd, SERVER.md, cloud-init
-└── evals/                тест-кейсы поведения
+└── scripts/
+    ├── audit.sh          аудит только для чтения: 70+ проверок, оценка, JSON
+    ├── deadman.sh        снапшот и автоматический откат для SSH, ключей, файрвола, sudo и PAM
+    ├── external-check.sh внешняя проверка с вашей машины: порты, аутентификация SSH, TLS, ssh-audit
+    └── install-alerts.sh vps-notify: оповещения через ntfy, Telegram или вебхук
 ```
 
 Каждый шаблон проверяется в CI тем инструментом, который его читает (`sshd -t`, `fail2ban-client -t`, `caddy validate`, `cloud-init schema`, `systemd-analyze verify`, `dockerd --validate`), на Debian 12/13 и Ubuntu 22.04/24.04/26.04. `audit.sh` тестируется на заведомо исправных и проблемных серверах, а контрольная сумма доказывает, что он ничего не меняет. Откат dead-man switch тестируется в CI на настоящем systemd: взвести, сломать SSH или файрвол, подождать и убедиться, что всё вернулось, в том числе после перезагрузки.

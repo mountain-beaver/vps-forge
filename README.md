@@ -385,14 +385,13 @@ sudo bash audit.sh     # read-only; --json for machine output
 skills/vps-forge/
 ├── SKILL.md              workflow, safety rules, levels, definition of done
 ├── references/           one file per phase, loaded only when needed
-├── scripts/
-│   ├── audit.sh          read-only audit: 70+ checks, score, JSON
-│   ├── deadman.sh        snapshot and automatic rollback for SSH, keys, firewall, sudo and PAM
-│   ├── external-check.sh outside-in check from your machine: ports, SSH auth, TLS, ssh-audit
-│   └── install-alerts.sh vps-notify: ntfy, Telegram or webhook alerts
 ├── assets/               validated templates: sshd, sysctl, fail2ban, apt, Docker, Caddy,
 │                         restic, Cloudflare sync, motd, SERVER.md, cloud-init
-└── evals/                behaviour test cases
+└── scripts/
+    ├── audit.sh          read-only audit: 70+ checks, score, JSON
+    ├── deadman.sh        snapshot and automatic rollback for SSH, keys, firewall, sudo and PAM
+    ├── external-check.sh outside-in check from your machine: ports, SSH auth, TLS, ssh-audit
+    └── install-alerts.sh vps-notify: ntfy, Telegram or webhook alerts
 ```
 
 Every template is checked in CI by the tool that reads it (`sshd -t`, `fail2ban-client -t`, `caddy validate`, `cloud-init schema`, `systemd-analyze verify`, `dockerd --validate`), on Debian 12/13 and Ubuntu 22.04/24.04/26.04. `audit.sh` is tested against known good and bad servers, with a checksum that proves it changes nothing. The dead-man rollback is tested in CI on a real systemd: arm, break SSH or the firewall, wait, and check that everything came back, also across a reboot.

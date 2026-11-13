@@ -309,7 +309,7 @@ echo "== external-check verdicts (stubbed ssh/curl/openssl)"
 external_check_tests
 
 echo "== JSON / YAML"
-for f in .claude-plugin/marketplace.json .claude-plugin/plugin.json "$SKILL/assets/docker/daemon.json" "$SKILL"/evals/*/files/*.json; do
+for f in .claude-plugin/marketplace.json .claude-plugin/plugin.json "$SKILL/assets/docker/daemon.json" evals/*/files/*.json; do
   python3 -m json.tool "$f" >/dev/null && ok "$f" || bad "$f"
 done
 python3 - "$SKILL" <<'PY' && ok "yaml + evals + SKILL.md frontmatter" || bad "yaml + evals + SKILL.md frontmatter"
@@ -343,9 +343,9 @@ def check_grader(path, fm, body):
     if kind == "llm":
         assert fm.get("criteria") or body.strip(), f"{path}: llm grader needs criteria"
 
-for f in glob.glob(f"{skill}/evals/*/case.yaml") + [f"{skill}/assets/cloud-init.yaml"]:
+for f in glob.glob("evals/*/case.yaml") + [f"{skill}/assets/cloud-init.yaml"]:
     yaml.safe_load(open(f))
-for d in sorted(glob.glob(f"{skill}/evals/*")):
+for d in sorted(glob.glob("evals/*")):
     if not os.path.isdir(d):
         continue
     prompt = os.path.join(d, "prompt.md")
