@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# vps-forge deadman: automatic rollback of SSH / firewall / sudo / PAM config unless disarmed.
+# vps-forge deadman: automatic rollback of SSH / firewall / sudo / PAM config and authorized_keys
+# unless disarmed.
 #
 #   vps-forge-deadman arm [MINUTES] [--ip ADDR]
 #                                     snapshot config now, roll back in MINUTES (default 5). The
@@ -52,6 +53,7 @@ PATHS=(etc/ssh etc/default/ssh etc/ufw etc/default/ufw etc/nftables.conf etc/ipt
        etc/pam.d/common-session-noninteractive etc/security/access.conf
        etc/systemd/system/ssh.socket etc/systemd/system/ssh.service
        etc/systemd/system/ssh.socket.d etc/systemd/system/ssh.service.d)
+# Also snapshotted: the authorized_keys of root and of every account with a login shell (key_paths).
 # Their `systemctl is-enabled` state is recorded at snapshot time and re-applied by the rollback.
 UNITS=(ssh.service ssh.socket ufw.service nftables.service netfilter-persistent.service)
 
@@ -173,12 +175,34 @@ unban_client() { # snapshot-dir
   fi
 }
 
+# A home-relative path is only touched when its directory is real: no symlink anywhere on the way,
+# so a user who points ~/.ssh elsewhere can't make the root-run rollback write outside the home.
+safe_parent() { # relative path
+  local base d
+  base=$(readlink -f "$ROOT") || return 1
+  d="${base%/}/$(dirname "$1")"
+  [[ -d "$d" && ! -L "$d" && "$(readlink -f "$d")" == "$d" ]]
+}
+# The skill edits these (the admin's key, emptying root's file), and a wrong edit locks the user out.
+key_paths() {
+  local home seen=" "
+  { echo /root; awk -F: '$7 !~ /(nologin|false|sync|halt|shutdown)$/ {print $6}' "${ROOT%/}/etc/passwd" 2>/dev/null; } |
+  while IFS= read -r home; do
+    home=${home%/}
+    [[ "$home" == /?* && "$home" != *..* && "$seen" != *" $home "* ]] || continue
+    seen+="$home "
+    safe_parent "${home#/}/.ssh/authorized_keys" && echo "${home#/}/.ssh/authorized_keys"
+  done
+}
+
 snapshot() { # -> prints snapshot dir
-  local ts dir p u existing=() absent=() keep
+  local ts dir p u existing=() absent=() keep all=()
   ts=$(date +%Y%m%d-%H%M%S)
   # unique even within one second: a second snapshot must never overwrite the armed one
   mkdir -p "$STATE" && dir=$(mktemp -d "$STATE/$ts-XXXX") || die "cannot create a snapshot dir in $STATE"
-  for p in "${PATHS[@]}"; do
+  all=("${PATHS[@]}")
+  while IFS= read -r p; do [[ -n "$p" ]] && all+=("$p"); done < <(key_paths)
+  for p in "${all[@]}"; do
     if [[ -e "${ROOT%/}/$p" || -L "${ROOT%/}/$p" ]]; then existing+=("$p"); else absent+=("$p"); fi
   done
   ((${#existing[@]})) || die "nothing to snapshot"
@@ -280,7 +304,7 @@ drop_new_nft_tables() { # snapshot-dir rolled-back-dir changed-paths...
 restore() { # snapshot-dir
   local dir=${1:-} tmp p ufw_active=0 ssh_socket=0 nft_active=0 failed=() changed=() gone
   [[ -n "$dir" && -f "$dir/snapshot.tar" ]] || die "no snapshot found (looked at ${dir:-$STATE/latest})"
-  log "restoring SSH/firewall/sudo/PAM config from $dir"
+  log "restoring SSH/firewall/sudo/PAM config and authorized_keys from $dir"
   local rb
   rb="$dir/rolled-back-$(date +%Y%m%d-%H%M%S)"
   tmp=$(mktemp -d) || die "mktemp failed"
@@ -290,6 +314,9 @@ restore() { # snapshot-dir
   rm -f "$STATE/restore-partial"
   while read -r p; do
     [[ -n "$p" ]] && [[ -e "$tmp/$p" || -L "$tmp/$p" ]] || continue
+    if [[ "$p" != etc/* ]] && ! safe_parent "$p"; then
+      log "ERROR: /$(dirname "$p") is now missing or a symlink; /$p was NOT restored"; failed+=("/$p"); continue
+    fi
     diff -rq --no-dereference "$tmp/$p" "${ROOT%/}/$p" >/dev/null 2>&1 || changed+=("$p")
     if swap_in "$tmp/$p" "${ROOT%/}/$p" "$rb/$p"; then log "restored /$p"; else failed+=("/$p"); fi
   done < "$dir/paths"
@@ -302,6 +329,9 @@ restore() { # snapshot-dir
   else gone=$(printf '%s\n' etc/systemd/system/ssh.socket.d etc/systemd/system/ssh.service.d); fi
   while read -r p; do
     [[ -n "$p" ]] && ! grep -qxF "$p" "$dir/paths" && [[ -e "${ROOT%/}/$p" || -L "${ROOT%/}/$p" ]] || continue
+    if [[ "$p" != etc/* ]] && ! safe_parent "$p"; then
+      log "ERROR: /$(dirname "$p") is now a symlink; /$p (created after the snapshot) was NOT removed"; failed+=("/$p (not removed)"); continue
+    fi
     if mkdir -p "$(dirname "$rb/$p")" && mv -T "${ROOT%/}/$p" "$rb/$p"; then
       log "removed /$p (created after the snapshot)"
       changed+=("$p")

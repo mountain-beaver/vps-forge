@@ -186,7 +186,7 @@ One wrong `sshd` or firewall change can make a server unreachable. So every SSH,
   </picture>
 </p>
 
-1. `deadman.sh arm` snapshots the config and starts a 5-minute systemd timer.
+1. `deadman.sh arm` snapshots the SSH, firewall, sudo and PAM config and the `authorized_keys` files, and starts a 5-minute systemd timer.
 2. The agent makes the change and validates it (`sshd -t`, `visudo -c`, `nft -c`).
 3. It logs in again over a **new** connection that can't reuse the old one.
 4. Only if that login works does it disarm the timer.
@@ -387,7 +387,7 @@ skills/vps-forge/
 ├── references/           one file per phase, loaded only when needed
 ├── scripts/
 │   ├── audit.sh          read-only audit: 70+ checks, score, JSON
-│   ├── deadman.sh        snapshot and automatic rollback for SSH, firewall, sudo and PAM
+│   ├── deadman.sh        snapshot and automatic rollback for SSH, keys, firewall, sudo and PAM
 │   ├── external-check.sh outside-in check from your machine: ports, SSH auth, TLS, ssh-audit
 │   └── install-alerts.sh vps-notify: ntfy, Telegram or webhook alerts
 ├── assets/               validated templates: sshd, sysctl, fail2ban, apt, Docker, Caddy,

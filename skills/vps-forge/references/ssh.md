@@ -184,7 +184,7 @@ Afterwards, `ss -Htlnp | grep -E 'sshd|systemd'` shows only the new port, and th
 
 ## Cleaning up what the provider left
 
-- Review `/root/.ssh/authorized_keys` and every `/home/*/.ssh/authorized_keys`. Ask about any key the user doesn't recognise. Once root login is off, root's file is unused; empty it if the user agrees.
+- Review `/root/.ssh/authorized_keys` and every `/home/*/.ssh/authorized_keys`. Ask about any key the user doesn't recognise. Once root login is off, root's file is unused; empty it if the user agrees. Remove keys inside a deadman window and test the admin login from a new connection: the snapshot holds every `authorized_keys` file, so deleting the wrong key rolls back.
 - Default cloud users (`ubuntu`, `debian`, `admin`, `linuxuser`): once the new admin works, offer to lock (`usermod -L -e 1 <user>`) or remove them. Some providers' web consoles expect them, so ask first.
 - Root password: `passwd -S root`. If you set one for console use, keep it. Otherwise `passwd -l root` locks it, which is harmless with key-only SSH and NOPASSWD sudo. Under password sudo, lock root only after the user has proven the saved password works (`ssh -t <admin>@<host> sudo -v`): otherwise a lost password leaves no way to root but the provider's rescue mode.
 - `/etc/sudoers.d/90-cloud-init-users` often grants the cloud user NOPASSWD sudo. Remove it once that user is gone.

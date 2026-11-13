@@ -7,7 +7,7 @@ An agent without the skill hardens a server with no dead-man switch. The sure si
 ## Locked out
 
 0. **Banned by fail2ban?** If SSH times out or is refused right after test logins, your IP is probably banned (the deadman doesn't touch fail2ban). From another IP (phone hotspot) or the console: `fail2ban-client banned` (`fail2ban-client status sshd` on 0.11, Ubuntu 22.04), then `fail2ban-client set sshd unbanip <ip>` and `fail2ban-client set recidive unbanip <ip>`. Then put it into `ignoreip` in `/etc/fail2ban/jail.d/vps-forge.local` and `systemctl reload fail2ban`, so the next test logins don't ban it again (firewall.md).
-1. **Wait for the deadman.** If it was armed, it restores the SSH, firewall, sudoers and PAM config, the ssh/firewall units' enabled state, and removes files created during the window when the timer fires (default 5 min). Then try again. Check later with `journalctl -t vps-forge-deadman`.
+1. **Wait for the deadman.** If it was armed, it restores the SSH, firewall, sudoers and PAM config, the `authorized_keys` of root and of every login account, the ssh/firewall units' enabled state, and removes files created during the window when the timer fires (default 5 min). Then try again. Check later with `journalctl -t vps-forge-deadman`.
 2. **Provider console** (VNC/serial): log in with a console password, or with root's password if one was set. Then:
    ```bash
    vps-forge-deadman restore          # if the snapshot exists

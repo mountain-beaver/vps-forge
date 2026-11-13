@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.ja.md">日本語</a> · <b>Русский</b></sub></p>
 
-<!-- translation of README.md, source sha256: cd214fcd1c0e -->
+<!-- translation of README.md, source sha256: 3f990cc4595d -->
 
 <p align="center"><sub>Это перевод английского README. Если версии расходятся, верна английская. Нашли ошибку в переводе? Откройте <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a>.</sub></p>
 
@@ -190,7 +190,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
   </picture>
 </p>
 
-1. `deadman.sh arm` делает снапшот конфигурации и запускает 5-минутный таймер systemd.
+1. `deadman.sh arm` делает снапшот конфигурации SSH, файрвола, sudo и PAM и файлов `authorized_keys` и запускает 5-минутный таймер systemd.
 2. Агент вносит изменение и проверяет его (`sshd -t`, `visudo -c`, `nft -c`).
 3. Он заново входит по **новому** подключению, которое не может переиспользовать старое.
 4. Таймер снимается, только если этот вход удался.
@@ -391,7 +391,7 @@ skills/vps-forge/
 ├── references/           по файлу на этап, загружаются только при необходимости
 ├── scripts/
 │   ├── audit.sh          аудит только для чтения: 70+ проверок, оценка, JSON
-│   ├── deadman.sh        снапшот и автоматический откат для SSH, файрвола, sudo и PAM
+│   ├── deadman.sh        снапшот и автоматический откат для SSH, ключей, файрвола, sudo и PAM
 │   ├── external-check.sh внешняя проверка с вашей машины: порты, аутентификация SSH, TLS, ssh-audit
 │   └── install-alerts.sh vps-notify: оповещения через ntfy, Telegram или вебхук
 ├── assets/               проверенные шаблоны: sshd, sysctl, fail2ban, apt, Docker, Caddy,

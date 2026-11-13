@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <b>简体中文</b> · <a href="README.ja.md">日本語</a> · <a href="README.ru.md">Русский</a></sub></p>
 
-<!-- translation of README.md, source sha256: cd214fcd1c0e -->
+<!-- translation of README.md, source sha256: 3f990cc4595d -->
 
 <p align="center"><sub>本文是英文 README 的译文，两者如有出入，以英文版为准。翻译有误之处，欢迎提交 <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a> 指正。</sub></p>
 
@@ -190,7 +190,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
   </picture>
 </p>
 
-1. `deadman.sh arm` 为配置做快照，并启动一个 5 分钟的 systemd 计时器。
+1. `deadman.sh arm` 为 SSH、防火墙、sudo 和 PAM 配置以及 `authorized_keys` 文件做快照，并启动一个 5 分钟的 systemd 计时器。
 2. Agent 进行改动并校验（`sshd -t`、`visudo -c`、`nft -c`）。
 3. 它通过一个**新**连接重新登录，这个连接无法复用旧连接。
 4. 只有这次登录成功，它才会撤防、关掉计时器。
@@ -391,7 +391,7 @@ skills/vps-forge/
 ├── references/           每个阶段一个文件，仅在需要时加载
 ├── scripts/
 │   ├── audit.sh          只读审计：70+ 项检查、评分、JSON
-│   ├── deadman.sh        为 SSH、防火墙、sudo 和 PAM 做快照并自动回滚
+│   ├── deadman.sh        为 SSH、密钥、防火墙、sudo 和 PAM 做快照并自动回滚
 │   ├── external-check.sh 从你的机器进行外部检查：端口、SSH 认证、TLS、ssh-audit
 │   └── install-alerts.sh vps-notify：ntfy、Telegram 或 webhook 告警
 ├── assets/               经过校验的模板：sshd、sysctl、fail2ban、apt、Docker、Caddy、

@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <b>日本語</b> · <a href="README.ru.md">Русский</a></sub></p>
 
-<!-- translation of README.md, source sha256: cd214fcd1c0e -->
+<!-- translation of README.md, source sha256: 3f990cc4595d -->
 
 <p align="center"><sub>これは英語版 README の翻訳です。内容が異なる場合は英語版が正しいものとします。誤りに気づいたら <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a> でお知らせください。</sub></p>
 
@@ -190,7 +190,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
   </picture>
 </p>
 
-1. `deadman.sh arm` が設定のスナップショットを取り、5 分の systemd タイマーを開始します。
+1. `deadman.sh arm` が SSH、ファイアウォール、sudo、PAM の設定と `authorized_keys` ファイルのスナップショットを取り、5 分の systemd タイマーを開始します。
 2. エージェントが変更を加え、検証します（`sshd -t`、`visudo -c`、`nft -c`）。
 3. 古い接続を再利用できない **新しい** 接続で、もう一度ログインします。
 4. そのログインが成功した場合にのみ、タイマーを解除します。
@@ -391,7 +391,7 @@ skills/vps-forge/
 ├── references/           フェーズごとに 1 ファイル、必要なときだけ読み込む
 ├── scripts/
 │   ├── audit.sh          読み取り専用の監査：70 以上のチェック、スコア、JSON
-│   ├── deadman.sh        SSH、ファイアウォール、sudo、PAM のスナップショットと自動ロールバック
+│   ├── deadman.sh        SSH、鍵、ファイアウォール、sudo、PAM のスナップショットと自動ロールバック
 │   ├── external-check.sh 手元のマシンからの外部チェック：ポート、SSH 認証、TLS、ssh-audit
 │   └── install-alerts.sh vps-notify：ntfy、Telegram、Webhook によるアラート
 ├── assets/               検証済みテンプレート：sshd、sysctl、fail2ban、apt、Docker、Caddy、

@@ -14,6 +14,7 @@
 
 ### Dead-man switch
 - **`vps-forge-deadman extend MINUTES`** moves a pending rollback to MINUTES from now and keeps the same snapshot, for a change that takes longer than the window. It refuses once the rollback has fired or while it runs, and if it can't schedule the new timer it rolls back at once instead of leaving the change unguarded. The skill arms 10 minutes for multi-step changes and never extends after a failed test login.
+- **`authorized_keys` is in the snapshot.** Root's file and the file of every account with a login shell are snapshotted at arm and restored by the rollback, with their mode and owner, so emptying root's file or overwriting the admin's key during a window rolls back like any other SSH change. A `~/.ssh` that is a symlink is never followed, at snapshot or at rollback.
 
 ### Alerts
 - **SSH login alerts no longer train you to mute them.** The first login from a `user@address` not seen for `SSH_ALERT_KNOWN_DAYS` (30) is still high priority. Later logins from it come at low priority, without sound, and at most one an hour, so your own scp, rsync and deploys stay quiet while a new address still rings. `SSH_ALERT_KNOWN_DAYS=0` alerts every login as before. Re-run `install-alerts.sh --ssh-login` to update the hook.
