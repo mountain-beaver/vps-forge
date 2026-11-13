@@ -334,7 +334,7 @@ Stop it before it changes SSH or the firewall: without the skill there is no dea
 <details>
 <summary><b>Which servers?</b></summary>
 
-Debian 12 and 13, and Ubuntu 22.04, 24.04 and 26.04, on any provider: Hetzner, DigitalOcean, Vultr, Linode, OVH, AWS (EC2 and Lightsail), Oracle Cloud, or a box under your desk, on x86 or ARM. It knows the traps of each, such as Oracle Cloud's built-in `iptables` reject rule. The agent works from your machine over SSH. RHEL-family support is on the roadmap.
+Debian 12 and 13, and Ubuntu 22.04, 24.04 and 26.04, on any provider: Hetzner, DigitalOcean, Vultr, Linode, OVH, AWS (EC2 and Lightsail), Oracle Cloud, or a box under your desk, on x86 or ARM. It knows the traps of each, such as Oracle Cloud's built-in `iptables` reject rule. The agent works from your machine over SSH. RHEL-family servers (Rocky, Alma, Fedora) are out of scope: the skill stops and says so rather than apply Debian tooling to them.
 </details>
 
 <details>

@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.ja.md">日本語</a> · <b>Русский</b></sub></p>
 
-<!-- translation of README.md, source sha256: 81137792cb12 -->
+<!-- translation of README.md, source sha256: 359e61a0af37 -->
 
 <p align="center"><sub>Это перевод английского README. Если версии расходятся, верна английская. Нашли ошибку в переводе? Откройте <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a>.</sub></p>
 
@@ -338,7 +338,7 @@ sudo sshd -t && sudo systemctl reload ssh                             # конф
 <details>
 <summary><b>Какие серверы поддерживаются?</b></summary>
 
-Debian 12 и 13, Ubuntu 22.04, 24.04 и 26.04, у любого провайдера: Hetzner, DigitalOcean, Vultr, Linode, OVH, AWS (EC2 и Lightsail), Oracle Cloud или машина у вас под столом, на x86 или ARM. Навык знает ловушки каждого из них, например встроенное правило reject в `iptables` у Oracle Cloud. Агент работает с вашей машины по SSH. Поддержка семейства RHEL в планах.
+Debian 12 и 13, Ubuntu 22.04, 24.04 и 26.04, у любого провайдера: Hetzner, DigitalOcean, Vultr, Linode, OVH, AWS (EC2 и Lightsail), Oracle Cloud или машина у вас под столом, на x86 или ARM. Навык знает ловушки каждого из них, например встроенное правило reject в `iptables` у Oracle Cloud. Агент работает с вашей машины по SSH. Серверы семейства RHEL (Rocky, Alma, Fedora) вне рамок навыка: он останавливается и говорит об этом, а не применяет к ним инструменты Debian.
 </details>
 
 <details>

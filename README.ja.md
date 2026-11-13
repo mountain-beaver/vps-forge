@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <b>日本語</b> · <a href="README.ru.md">Русский</a></sub></p>
 
-<!-- translation of README.md, source sha256: 81137792cb12 -->
+<!-- translation of README.md, source sha256: 359e61a0af37 -->
 
 <p align="center"><sub>これは英語版 README の翻訳です。内容が異なる場合は英語版が正しいものとします。誤りに気づいたら <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a> でお知らせください。</sub></p>
 
@@ -338,7 +338,7 @@ SSH やファイアウォールを変更する前に止めてください。ス�
 <details>
 <summary><b>対応しているサーバーは？</b></summary>
 
-Debian 12 と 13、Ubuntu 22.04、24.04、26.04 で、プロバイダーは問いません：Hetzner、DigitalOcean、Vultr、Linode、OVH、AWS（EC2 と Lightsail）、Oracle Cloud、あるいは机の下のマシンでも構いません。x86 でも ARM でも動きます。Oracle Cloud に組み込まれた `iptables` の reject ルールなど、それぞれの落とし穴も把握しています。エージェントはあなたのマシンから SSH で作業します。RHEL 系のサポートはロードマップにあります。
+Debian 12 と 13、Ubuntu 22.04、24.04、26.04 で、プロバイダーは問いません：Hetzner、DigitalOcean、Vultr、Linode、OVH、AWS（EC2 と Lightsail）、Oracle Cloud、あるいは机の下のマシンでも構いません。x86 でも ARM でも動きます。Oracle Cloud に組み込まれた `iptables` の reject ルールなど、それぞれの落とし穴も把握しています。エージェントはあなたのマシンから SSH で作業します。RHEL 系のサーバー（Rocky、Alma、Fedora）は対象外です。スキルは Debian 向けのツールを当てはめず、作業を止めてその旨を伝えます。
 </details>
 
 <details>

@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <b>简体中文</b> · <a href="README.ja.md">日本語</a> · <a href="README.ru.md">Русский</a></sub></p>
 
-<!-- translation of README.md, source sha256: 81137792cb12 -->
+<!-- translation of README.md, source sha256: 359e61a0af37 -->
 
 <p align="center"><sub>本文是英文 README 的译文，两者如有出入，以英文版为准。翻译有误之处，欢迎提交 <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a> 指正。</sub></p>
 
@@ -338,7 +338,7 @@ sudo sshd -t && sudo systemctl reload ssh                             # 配置�
 <details>
 <summary><b>支持哪些服务器？</b></summary>
 
-Debian 12 和 13，以及 Ubuntu 22.04、24.04 和 26.04，服务商不限：Hetzner、DigitalOcean、Vultr、Linode、OVH、AWS（EC2 和 Lightsail）、Oracle Cloud，或者你桌子底下的一台机器，x86 或 ARM 均可。它了解每家的坑，比如 Oracle Cloud 内置的 `iptables` reject 规则。Agent 在你的机器上通过 SSH 工作。对 RHEL 系发行版的支持已列入路线图。
+Debian 12 和 13，以及 Ubuntu 22.04、24.04 和 26.04，服务商不限：Hetzner、DigitalOcean、Vultr、Linode、OVH、AWS（EC2 和 Lightsail）、Oracle Cloud，或者你桌子底下的一台机器，x86 或 ARM 均可。它了解每家的坑，比如 Oracle Cloud 内置的 `iptables` reject 规则。Agent 在你的机器上通过 SSH 工作。RHEL 系服务器（Rocky、Alma、Fedora）不在本技能范围内：技能会停下来说明原因，而不会把 Debian 的工具套用到它们身上。
 </details>
 
 <details>
