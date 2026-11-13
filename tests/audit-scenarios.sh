@@ -74,6 +74,7 @@ expect late-dropin ssh.root_login FAIL
 rm -f /etc/ssh/sshd_config.d/99-hardening.conf
 run_audit cloud-init-only
 expect cloud-init-only ssh.password_auth FAIL
+msg_has cloud-init-only ssh.password_auth '00-vps-forge\.conf' "names the drop-in that wins"
 
 step "Match block re-enables passwords for outside clients"
 reset_ssh

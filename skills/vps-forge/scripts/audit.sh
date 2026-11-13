@@ -350,7 +350,7 @@ if [[ -n "$SSHD_T" ]]; then
     if (( key_required )); then
       info ssh.password_auth "PasswordAuthentication yes${srcs:+ (set in: $srcs)} has no effect while AuthenticationMethods $methods requires a key; set it to no so removing AuthenticationMethods can't bring passwords back"
     else
-    fail ssh.password_auth "password authentication enabled${srcs:+ (set in: $srcs; the first value read wins)}"
+    fail ssh.password_auth "password authentication enabled${srcs:+ (set in: $srcs; the first value read wins, so set PasswordAuthentication no in a drop-in that sorts before it, such as sshd_config.d/00-vps-forge.conf)}"
     fi
   fi
 

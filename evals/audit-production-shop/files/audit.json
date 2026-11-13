@@ -3,7 +3,7 @@
 {"section":"updates","id":"updates.pending","status":"WARN","message":"14 security update(s) pending, 31 total"},
 {"section":"updates","id":"updates.unattended","status":"FAIL","message":"unattended-upgrades is not installed: security fixes depend on someone remembering"},
 {"section":"ssh","id":"ssh.root_login","status":"WARN","message":"root login allowed with keys (PermitRootLogin prohibit-password); use an admin user + sudo"},
-{"section":"ssh","id":"ssh.password_auth","status":"FAIL","message":"password authentication enabled (set in: /etc/ssh/sshd_config.d/50-cloud-init.conf; the first value read wins)"},
+{"section":"ssh","id":"ssh.password_auth","status":"FAIL","message":"password authentication enabled (set in: /etc/ssh/sshd_config.d/50-cloud-init.conf; the first value read wins, so set PasswordAuthentication no in a drop-in that sorts before it, such as sshd_config.d/00-vps-forge.conf)"},
 {"section":"ssh","id":"ssh.allowlist","status":"WARN","message":"no AllowUsers/AllowGroups: any account with a key can log in"},
 {"section":"accounts","id":"accounts.keys","status":"INFO","message":"root: 3 key(s) in /root/.ssh/authorized_keys → ED25519 SHA256:aa… you@laptop; ED25519 SHA256:bb… deploy@github-actions; RSA SHA256:cc… old-freelancer"},
 {"section":"firewall","id":"firewall.host","status":"PASS","message":"ufw active, default deny incoming"},
