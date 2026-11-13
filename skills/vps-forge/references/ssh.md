@@ -9,6 +9,7 @@
 - Hardened crypto (hardened+)
 - Changing the port
 - FIDO2 keys and TOTP (paranoid)
+- Rotating a key
 - Cleaning up what the provider left
 - Hand-off cleanup (phase 12)
 - Verification and client config
@@ -185,6 +186,24 @@ Afterwards, `ss -Htlnp | grep -E 'sshd|systemd'` shows only the new port, and th
   - `nullok` (with `pam_permit.so` after it) lets users who haven't enrolled yet (deploy and CI accounts) log in with their key only. Without it, every member of `sshusers` who hasn't run `google-authenticator` is locked out. Remove `nullok` only once every account is enrolled, or put service accounts in a `Match User` block with `AuthenticationMethods publickey`.
   - sshd: change the existing lines **in `00-vps-forge.conf` itself** to `KbdInteractiveAuthentication yes` and `AuthenticationMethods publickey,keyboard-interactive`. A new drop-in such as `10-2fa.conf` is silently ignored, because sshd keeps the first value it reads (see the drop-in trap above).
   - Do the PAM and sshd edits inside one deadman window: arm → edit both → `sshd -t` → `sshd -T | grep -Ei '^(kbdinteractiveauthentication|authenticationmethods) '` shows `yes` and `publickey,keyboard-interactive` → reload → the user logs in from a new terminal with `-o ControlPath=none` and gets the verification-code prompt → disarm. Scratch codes are printed once, and the user must store them offline.
+
+## Rotating a key
+
+A new laptop, a leaked key, a contractor leaving: add the new key first, prove it, and only then remove the old one. Swapping them in one step locks the user out if the new key has a typo.
+
+1. The user creates the new key locally (`ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_new`) and sends only the `.pub` line.
+2. `vps-forge-deadman arm 5`, append it with `>>` (never `>`) to `/home/<admin>/.ssh/authorized_keys`, then test from a new connection **with only the new key**: `ssh -o ControlPath=none -o IdentitiesOnly=yes -i ~/.ssh/id_ed25519_new -p <port> <admin>@<host> 'sudo -n vps-forge-deadman disarm'` (password sudo: "Test and disarm").
+3. In a second deadman window, remove the old key by its fingerprint, test with the new key again, and disarm:
+   ```bash
+   OLD='SHA256:<fingerprint of the old key>'; K=/home/<admin>/.ssh/authorized_keys
+   while IFS= read -r l; do
+     [ "$(printf '%s\n' "$l" | ssh-keygen -lf - 2>/dev/null | awk '{print $2}')" = "$OLD" ] || printf '%s\n' "$l"
+   done < "$K" > /root/ak.new
+   grep -q . /root/ak.new && ssh-keygen -lf /root/ak.new && install -m 600 -o <admin> -g <admin> /root/ak.new "$K"; rm -f /root/ak.new
+   ```
+4. The user points `IdentityFile` in `~/.ssh/config` at the new key and deletes the old one.
+
+Suggest a **second key** in `authorized_keys` that lives somewhere else: a hardware key, or a key on another device kept offline. A lost or broken laptop then means using the other key, not a trip to the provider console. Rotate deploy keys the same way, and update the pipeline's secret before removing the old key.
 
 ## Cleaning up what the provider left
 

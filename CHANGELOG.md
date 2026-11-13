@@ -69,6 +69,7 @@
 
 ### SSH
 - **ssh-audit 3.9+ and post-quantum key exchange.** ssh-audit now warns about every KEX without post-quantum protection. The `hardened` level keeps `curve25519-sha256` after the post-quantum hybrids for older clients and Kamal, so that one warning is expected, and `external-check.sh --ssh-audit` reports it as a pass while still warning about anything else. The `paranoid` level drops curve25519 where `mlkem768x25519` or `sntrup761x25519` exists; ssh-audit 3.9.0 is then clean on Debian 13 and Ubuntu 24.04 and 26.04.
+- **Key rotation** (`ssh.md` "Rotating a key"): add the new key, prove a login with only that key from a new connection, then remove the old key by fingerprint in a second deadman window; plus the advice to keep a second key on another device. `backups.md` shows the same add-first, remove-last rotation for the restic repository password (`restic key add`, `key list`, `key remove`).
 
 ## 1.1.1 (2026-10-25)
 
