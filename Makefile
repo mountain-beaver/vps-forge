@@ -44,7 +44,7 @@ directory: ## build dist/directory: the plugin folder Anthropic's directory read
 
 # Pin the judge and use a 0.85 threshold so llm grader noise is not a gate; see CONTRIBUTING.md.
 eval: ## behaviour evals with `claude plugin eval` (spends tokens)
-	cd $(SKILL) && claude plugin eval . --allow-tools Write,Edit,Bash --scaffold --threshold 0.85 --judge-model claude-haiku-4-5
+	cd $(SKILL) && claude plugin eval . --allow-tools Write,Edit,Bash --scaffold --threshold 0.85 --judge-model claude-haiku-5-5
 
 clean: ## remove build output
 	rm -rf $(DIST)
