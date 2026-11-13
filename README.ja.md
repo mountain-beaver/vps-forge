@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <b>日本語</b> · <a href="README.ru.md">Русский</a></sub></p>
 
-<!-- translation of README.md, source sha256: e30d862511b3 -->
+<!-- translation of README.md, source sha256: 73c383f80424 -->
 
 <p align="center"><sub>これは英語版 README の翻訳です。内容が異なる場合は英語版が正しいものとします。誤りに気づいたら <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a> でお知らせください。</sub></p>
 
@@ -123,7 +123,7 @@ gh skill install mountain-beaver/vps-forge vps-forge --agent cursor --scope user
 <details>
 <summary><b>Claude.ai と Claude Desktop</b>：zip をアップロード</summary>
 
-[最新リリース](https://github.com/mountain-beaver/vps-forge/releases/latest) から `vps-forge-skill.zip` をダウンロードし、Settings → Capabilities → Skills → "Upload skill" からアップロードします。コード実行を有効にしておく必要があります。
+[最新リリース](https://github.com/mountain-beaver/vps-forge/releases/latest) から `vps-forge-skill.zip` をダウンロードし、Customize → Skills からアップロードします（"+" → "Create skill" → "Upload a skill"）。コード実行を有効にしておく必要があります（Settings → Capabilities）。
 
 チャットアプリはサーバーに SSH 接続できないため、そこではスキルは **スクリプトモード** で動作します。まず読み取り専用の監査が渡されるので、それを実行して結果を貼り付けます。その後、段階ごとに短いスクリプトが 1 つずつ渡されます。SSH やファイアウォールを変更する前には、スクリプトがいったん止まり、2 つ目のターミナルからログインするよう求めます。そのログインに失敗すれば、サーバーが自分でその手順を元に戻します。すべてを自分で実行するので、エージェントが知っているのはあなたが貼り付けた内容だけです。また、外部からのチェックには Mac、Linux、WSL のいずれかのターミナルが必要です。
 </details>
@@ -331,7 +331,7 @@ SSH やファイアウォールを変更する前に止めてください。ス�
 - **別のプロジェクトにインストールされている**。`-g` を付けないと、`npx skills add` は現在のフォルダーにしかインストールしません。`-g` を付けて再インストールするか、そのフォルダーでエージェントを起動してください。
 - **インストール前にセッションを開始していた**。エージェントはセッション開始時にスキル一覧を読み込むので、新しいセッションを開いてください。
 - **Claude Code のプラグイン**：`/plugin` で `vps-forge` がインストールされ、有効になっているか確認してください。
-- **Claude.ai と Claude Desktop**：Settings → Capabilities → Skills でスキルをオンにし、コード実行も有効にしておく必要があります。
+- **Claude.ai と Claude Desktop**：Customize → Skills でスキルをオンにし、Settings → Capabilities でコード実行も有効にしておく必要があります。
 - **依頼がサーバー作業らしく聞こえなかった**。はっきり伝えてください：「vps-forge スキルを使って 203.0.113.10 をハードニングして」。
 </details>
 

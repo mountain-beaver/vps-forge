@@ -119,7 +119,7 @@ gh skill install mountain-beaver/vps-forge vps-forge --agent cursor --scope user
 <details>
 <summary><b>Claude.ai and Claude Desktop</b>: upload a zip</summary>
 
-Download `vps-forge-skill.zip` from the [latest release](https://github.com/mountain-beaver/vps-forge/releases/latest) and upload it under Settings → Capabilities → Skills → "Upload skill". Code execution has to be on.
+Download `vps-forge-skill.zip` from the [latest release](https://github.com/mountain-beaver/vps-forge/releases/latest) and upload it under Customize → Skills: "+", then "Create skill" → "Upload a skill". Code execution has to be on (Settings → Capabilities).
 
 A chat app can't SSH into your server, so there the skill works in **script mode**. It first gives you a read-only audit to run and paste back, then one short script per stage. Before every SSH or firewall change, the script stops and asks you to log in from a second terminal; if that login fails, the server undoes the step by itself. You run everything yourself, so the agent only knows what you paste back, and the outside-in check needs a Mac, Linux or WSL terminal.
 </details>
@@ -327,7 +327,7 @@ Stop it before it changes SSH or the firewall: without the skill there is no dea
 - **It was installed into another project.** Without `-g`, `npx skills add` installs into the current folder only. Reinstall with `-g`, or start the agent in that folder.
 - **The session started before the install.** Agents read their skill list when a session starts, so open a new one.
 - **Claude Code plugin:** check that `vps-forge` is installed and enabled in `/plugin`.
-- **Claude.ai and Claude Desktop:** the skill must be switched on under Settings → Capabilities → Skills, and code execution must be on.
+- **Claude.ai and Claude Desktop:** the skill must be switched on under Customize → Skills, and code execution must be on under Settings → Capabilities.
 - **The request didn't sound like server work.** Name it: "use the vps-forge skill to harden 203.0.113.10".
 </details>
 

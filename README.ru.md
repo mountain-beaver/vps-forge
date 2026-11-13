@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.ja.md">日本語</a> · <b>Русский</b></sub></p>
 
-<!-- translation of README.md, source sha256: e30d862511b3 -->
+<!-- translation of README.md, source sha256: 73c383f80424 -->
 
 <p align="center"><sub>Это перевод английского README. Если версии расходятся, верна английская. Нашли ошибку в переводе? Откройте <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a>.</sub></p>
 
@@ -123,7 +123,7 @@ gh skill install mountain-beaver/vps-forge vps-forge --agent cursor --scope user
 <details>
 <summary><b>Claude.ai и Claude Desktop</b>: загрузка zip-архива</summary>
 
-Скачайте `vps-forge-skill.zip` из [последнего релиза](https://github.com/mountain-beaver/vps-forge/releases/latest) и загрузите его в Settings → Capabilities → Skills → «Upload skill». Должно быть включено выполнение кода.
+Скачайте `vps-forge-skill.zip` из [последнего релиза](https://github.com/mountain-beaver/vps-forge/releases/latest) и загрузите его в Customize → Skills: «+», затем «Create skill» → «Upload a skill». Должно быть включено выполнение кода (Settings → Capabilities).
 
 Чат-приложение не может зайти на сервер по SSH, поэтому там навык работает в **режиме скриптов**. Сначала он даёт аудит только для чтения: вы запускаете его и вставляете вывод обратно в чат. Потом — по одному короткому скрипту на этап. Перед каждым изменением SSH или файрвола скрипт останавливается и просит войти из второго терминала; если вход не удался, сервер сам отменит шаг. Всё запускаете вы, поэтому агент знает только то, что вы ему вставили, а для внешней проверки нужен терминал на Mac, Linux или в WSL.
 </details>
@@ -331,7 +331,7 @@ sudo sshd -t && sudo systemctl reload ssh                             # конф
 - **Навык установлен в другой проект.** Без `-g` команда `npx skills add` ставит его только в текущую папку. Переустановите с `-g` или запускайте агента в той папке.
 - **Сессия началась до установки.** Агенты читают список навыков при старте сессии, так что откройте новую.
 - **Плагин Claude Code:** проверьте в `/plugin`, что `vps-forge` установлен и включён.
-- **Claude.ai и Claude Desktop:** навык должен быть включён в Settings → Capabilities → Skills, и должно быть включено выполнение кода.
+- **Claude.ai и Claude Desktop:** навык должен быть включён в Customize → Skills, а выполнение кода — в Settings → Capabilities.
 - **Запрос не был похож на работу с сервером.** Скажите прямо: «используй навык vps-forge, чтобы защитить сервер 203.0.113.10».
 </details>
 

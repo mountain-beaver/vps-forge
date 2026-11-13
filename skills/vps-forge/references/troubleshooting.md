@@ -2,7 +2,7 @@
 
 ## The skill didn't load
 
-An agent without the skill hardens a server with no dead-man switch. The sure sign: it changes SSH or the firewall without running `deadman.sh arm` first. It usually also skips the question about the provider's web console. Stop it there. The usual causes are a project install (`npx skills add` without `-g`) while the agent runs in another folder, a session that started before the install (open a new one), a plugin that isn't enabled (`/plugin` in Claude Code), the skill or code execution switched off in Claude.ai's Settings → Capabilities, or a request that didn't sound like server work (name the skill). If you're an agent reading this mid-task after a change made without the switch, tell the user, then arm before the next risky step and test access from a new connection.
+An agent without the skill hardens a server with no dead-man switch. The sure sign: it changes SSH or the firewall without running `deadman.sh arm` first. It usually also skips the question about the provider's web console. Stop it there. The usual causes are a project install (`npx skills add` without `-g`) while the agent runs in another folder, a session that started before the install (open a new one), a plugin that isn't enabled (`/plugin` in Claude Code), in Claude.ai the skill switched off under Customize → Skills or code execution off under Settings → Capabilities, or a request that didn't sound like server work (name the skill). If you're an agent reading this mid-task after a change made without the switch, tell the user, then arm before the next risky step and test access from a new connection.
 
 ## Locked out
 

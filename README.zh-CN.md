@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <b>简体中文</b> · <a href="README.ja.md">日本語</a> · <a href="README.ru.md">Русский</a></sub></p>
 
-<!-- translation of README.md, source sha256: e30d862511b3 -->
+<!-- translation of README.md, source sha256: 73c383f80424 -->
 
 <p align="center"><sub>本文是英文 README 的译文，两者如有出入，以英文版为准。翻译有误之处，欢迎提交 <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a> 指正。</sub></p>
 
@@ -123,7 +123,7 @@ gh skill install mountain-beaver/vps-forge vps-forge --agent cursor --scope user
 <details>
 <summary><b>Claude.ai 和 Claude Desktop</b>：上传 zip 包</summary>
 
-从[最新发布](https://github.com/mountain-beaver/vps-forge/releases/latest)下载 `vps-forge-skill.zip`，然后在 Settings → Capabilities → Skills → "Upload skill" 中上传。需要开启代码执行（Code execution）。
+从[最新发布](https://github.com/mountain-beaver/vps-forge/releases/latest)下载 `vps-forge-skill.zip`，然后在 Customize → Skills 中上传：点击 "+"，再选 "Create skill" → "Upload a skill"。需要在 Settings → Capabilities 中开启代码执行（Code execution）。
 
 聊天应用无法 SSH 到你的服务器，所以在那里技能以**脚本模式**工作。它先给你一段只读的审计脚本，由你运行后把输出贴回来，然后每个阶段给你一段简短的脚本。每次修改 SSH 或防火墙之前，脚本都会停下来，请你从第二个终端登录；如果这次登录失败，服务器会自行撤销这一步。所有命令都由你自己运行，因此 Agent 只知道你贴回来的内容，而从外部进行的检查需要 Mac、Linux 或 WSL 终端。
 </details>
@@ -331,7 +331,7 @@ sudo sshd -t && sudo systemctl reload ssh                             # 配置�
 - **安装到了别的项目里。** 不加 `-g` 时，`npx skills add` 只安装到当前目录。用 `-g` 重新安装，或者在那个目录中启动 Agent。
 - **会话在安装之前就已开始。** Agent 在会话开始时读取技能列表，所以请新开一个会话。
 - **Claude Code 插件：** 在 `/plugin` 中确认 `vps-forge` 已安装并已启用。
-- **Claude.ai 和 Claude Desktop：** 必须在 Settings → Capabilities → Skills 中启用该技能，并开启代码执行。
+- **Claude.ai 和 Claude Desktop：** 必须在 Customize → Skills 中启用该技能，并在 Settings → Capabilities 中开启代码执行。
 - **请求听起来不像是服务器相关的工作。** 直接点名：“用 vps-forge 技能加固 203.0.113.10”。
 </details>
 
