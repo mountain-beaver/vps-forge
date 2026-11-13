@@ -98,6 +98,24 @@ if chown 65534:65534 "$R/home/admin" 2>/dev/null && command -v setpriv >/dev/nul
     || { grep -q AAAAuser-own "$R/home/admin/.ssh/authorized_keys" && ok "no write with root's rights in a home the owner can't write" \
          || bad "the rollback wrote into a home with root's rights"; }
   chmod 700 "$R/home/admin/.ssh"
+  # Hostile key files and shared paths are left out instead of read or trusted.
+  ln -sfn /dev/zero "$R/home/new/.ssh/authorized_keys"
+  mkdir -p "$R/home/fifo/.ssh" "$R/home/big/.ssh" "$R/srv/shared/grp/.ssh" "$R/home/two/.ssh"
+  mkfifo "$R/home/fifo/.ssh/authorized_keys"
+  head -c 2097152 /dev/zero > "$R/home/big/.ssh/authorized_keys"
+  echo "ssh-ed25519 AAAAgrp" > "$R/srv/shared/grp/.ssh/authorized_keys"; chmod 775 "$R/srv/shared"
+  echo "ssh-ed25519 AAAAtwo" > "$R/home/two/.ssh/authorized_keys"
+  chown -R -h 65534:65534 "$R/home/new" "$R/home/fifo" "$R/home/big"
+  chown 65534:65534 "$R/home/two"; chown -R 65533:65533 "$R/home/two/.ssh"
+  cp "$R/etc/passwd" "$R/passwd.bak"
+  printf 'new:x:1002:1002::/home/new:/bin/bash\nfifo:x:1003:1003::/home/fifo:/bin/bash\nbig:x:1004:1004::/home/big:/bin/bash\ngrp:x:1005:1005::/srv/shared/grp:/bin/bash\ntwo:x:1006:1006::/home/two:/bin/bash\n' >> "$R/etc/passwd"
+  timeout 60 bash "$DEADMAN" snapshot >/dev/null 2>&1 && ok "snapshot finishes with /dev/zero, a FIFO and a 2 MiB key file" || bad "snapshot hung or failed on hostile key files"
+  P="$R/var/lib/vps-forge/deadman/latest/paths"
+  ! grep -qE 'home/(new|fifo|big)/' "$P" && ok "non-regular and oversized key files are left out" || bad "hostile key files in the snapshot: $(grep home/ "$P" | tr '\n' ' ')"
+  ! grep -qE 'srv/shared/grp/|home/two/' "$P" && ok "a group-writable root dir or two owners on the way: path left alone" \
+    || bad "untrusted path in the snapshot: $(grep -E 'srv|two' "$P" | tr '\n' ' ')"
+  (( $(du -sk "$R/var/lib/vps-forge/deadman/latest" | cut -f1) < 1024 )) && ok "the snapshot stays small" || bad "the snapshot grew past 1 MiB"
+  mv "$R/passwd.bak" "$R/etc/passwd"; rm -rf "$R/home/fifo" "$R/home/big" "$R/home/two" "$R/srv/shared"
   chown -R 0:0 "$R/home/admin" "$R/home/new"; rm -rf "$R/home/new" "$R/etc/secret"
   rm -f "$R/var/lib/vps-forge/deadman/restore-partial"
 else

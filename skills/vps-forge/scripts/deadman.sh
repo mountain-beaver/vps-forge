@@ -183,19 +183,31 @@ safe_parent() { # relative path
   d="${base%/}/$(dirname "$1")"
   [[ -d "$d" && ! -L "$d" && "$(readlink -f "$d")" == "$d" ]]
 }
-# Who controls a path: uid:gid of the deepest directory on the way that root doesn't own, 0:0 when
-# root owns them all, -1 when one can't be read. A user can swap a directory they control for a
-# symlink at any moment, even after safe_parent said yes, so such paths are read and written only
-# with that user's rights (as_owner): the race then gets them nothing they couldn't do anyway.
+# Who controls a path: uid:gid of the one account that owns directories on the way, 0:0 when root
+# owns them all and none is group- or world-writable, -1 (leave the path alone) when a directory
+# can't be read, two accounts share the way, or a root directory is writable by others. A user can
+# swap a directory they control for a symlink at any moment, even after safe_parent said yes, so
+# such paths are read and written only with that user's rights (as_owner): the race then gets
+# them nothing they couldn't do anyway.
 path_owner() { # relative path
-  local d u
+  local d s owner=0:0
   d="${ROOT%/}/$(dirname "$1")"
   while [[ -n "$d" && "$d" != / && "$d" != "${ROOT%/}" ]]; do
-    u=$(stat -c %u:%g -- "$d" 2>/dev/null) || { echo -1; return; }
-    [[ "$u" == 0:* ]] || { echo "$u"; return; }
+    s=$(stat -c '%u:%g %a' -- "$d" 2>/dev/null) || { echo -1; return; }
+    if [[ "$s" == 0:* ]]; then
+      (( 8#${s#* } & 8#022 )) && { echo -1; return; }
+    elif [[ "$owner" == 0:0 ]]; then owner=${s% *}
+    elif [[ "${owner%%:*}" != "${s%%:*}" ]]; then echo -1; return
+    fi
     d=$(dirname "$d")
   done
-  echo 0:0
+  echo "$owner"
+}
+# Reads a user's file for root: regular files only, at most 1 MiB, 10 seconds (no /dev/zero, no FIFO).
+read_owned() { # owner path out-file
+  as_owner "$1" test -f "$2" || return 1
+  as_owner "$1" timeout 10 head -c 1048577 -- "$2" > "$3" || return 1
+  (( $(stat -c %s -- "$3") <= 1048576 )) || { : > "$3"; return 1; }
 }
 as_owner() { # uid:gid command...
   local o=$1; shift
@@ -238,13 +250,13 @@ snapshot() { # -> prints snapshot dir
     for p in "${owned[@]}"; do
       o=$(path_owner "$p")
       mkdir -p "$stage/$(dirname "$p")"
-      if [[ "$o" != -1 && "$o" != 0:* ]] && as_owner "$o" cat -- "${ROOT%/}/$p" > "$stage/$p" \
+      if [[ "$o" != -1 && "$o" != 0:* ]] && read_owned "$o" "${ROOT%/}/$p" "$stage/$p" \
          && m=$(as_owner "$o" stat -L -c %a -- "${ROOT%/}/$p"); then
         chmod "$m" "$stage/$p"; chown "$o" "$stage/$p" 2>/dev/null || true
         tar -C "$stage" -rpf "$dir/snapshot.tar" "$p" || die "tar failed"
         existing+=("$p")
       else
-        log "WARNING: cannot read /$p as its owner; it is not in the snapshot"
+        log "WARNING: cannot read /$p as its owner (not a regular file, over 1 MiB, or unreadable); it is not in the snapshot"
       fi
     done
     rm -rf "$stage"
@@ -281,7 +293,8 @@ restore_owned() { # rel-path owner tmpdir rbdir: put a home file back with its o
   mode=$(stat -c %a -- "$src")
   mkdir -p "$(dirname "$bak")"
   if as_owner "$o" test -e "$dst"; then
-    as_owner "$o" cat -- "$dst" > "$bak" 2>/dev/null; chmod 600 "$bak"
+    read_owned "$o" "$dst" "$bak" 2>/dev/null || log "WARNING: the current /$p could not be kept (not a regular file or over 1 MiB)"
+    chmod 600 "$bak" 2>/dev/null
   fi
   # shellcheck disable=SC2016  # expanded by the inner shell
   as_owner "$o" sh -c 'umask 077; n="$1.vps-forge-new"; rm -f -- "$n" && cat > "$n" && chmod "$2" "$n" && mv -fT -- "$n" "$1"' \
@@ -377,7 +390,7 @@ restore() { # snapshot-dir
     if [[ "$o" == -1 ]]; then
       log "ERROR: cannot inspect /$(dirname "$p"); /$p was NOT restored"; failed+=("/$p"); continue
     elif [[ "$o" != 0:* ]]; then
-      as_owner "$o" cat -- "${ROOT%/}/$p" 2>/dev/null | cmp -s - "$tmp/$p" || changed+=("$p")
+      { read_owned "$o" "${ROOT%/}/$p" "$tmp/.current" 2>/dev/null && cmp -s "$tmp/.current" "$tmp/$p"; } || changed+=("$p")
       if restore_owned "$p" "$o" "$tmp" "$rb"; then log "restored /$p"; else failed+=("/$p"); fi
       continue
     fi
@@ -399,7 +412,7 @@ restore() { # snapshot-dir
     o=0:0; [[ "$p" == etc/* ]] || o=$(path_owner "$p")
     if [[ "$o" != 0:* ]]; then
       mkdir -p "$(dirname "$rb/$p")"
-      if [[ "$o" != -1 ]] && { as_owner "$o" cat -- "${ROOT%/}/$p" > "$rb/$p" 2>/dev/null; chmod 600 "$rb/$p"; as_owner "$o" rm -f -- "${ROOT%/}/$p"; }; then
+      if [[ "$o" != -1 ]] && { read_owned "$o" "${ROOT%/}/$p" "$rb/$p" 2>/dev/null; chmod 600 "$rb/$p" 2>/dev/null; as_owner "$o" rm -f -- "${ROOT%/}/$p"; }; then
         log "removed /$p (created after the snapshot)"; changed+=("$p")
       else
         log "ERROR: cannot remove /$p (created after the snapshot) as its owner"; failed+=("/$p (not removed)")
