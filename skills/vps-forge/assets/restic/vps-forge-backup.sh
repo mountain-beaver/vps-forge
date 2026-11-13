@@ -50,7 +50,9 @@ fi
 if [[ "$MODE" == "maintenance" ]]; then
   hc /start
   restic unlock || true    # removes only stale locks
-  restic forget --prune \
+  # Group by tag, not restic's default host,paths: the path list changes with what exists on
+  # disk, and a group whose paths changed would otherwise be kept forever.
+  restic forget --prune --group-by host,tags --tag vps-forge \
     --keep-daily "${KEEP_DAILY:-7}" --keep-weekly "${KEEP_WEEKLY:-4}" --keep-monthly "${KEEP_MONTHLY:-12}" \
     || die "forget/prune failed"
   restic check --read-data-subset="${CHECK_SUBSET:-5%}" || die "repository check FAILED (possible corruption)"

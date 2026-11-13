@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: provider-firewall-additive
+expected_outcome: |
+  Changes the provider firewall additively and in the right order: first adds an inbound rule for 2222 to the Hetzner firewall (hcloud firewall add-rule, or the panel), then moves sshd inside a dead-man window, proves a new login on 2222, and only then removes the port 22 rule. Never replaces the whole rule set (no hcloud firewall replace-rules), and says the dead-man switch can't roll back the provider firewall.

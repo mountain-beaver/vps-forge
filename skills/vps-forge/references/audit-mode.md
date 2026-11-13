@@ -34,7 +34,7 @@ Use this for "check my server", for any server already in production, and as pha
 | **Info** | Observations | SSH port, OS version, uptime |
 
 `audit.sh` FAIL usually maps to Critical/High and WARN to Medium/Low. Use judgment and context: an open port 5432 is critical when it's Postgres with a weak password, and fine when it's an intentional, TLS-only, IP-allowlisted replica.
-
+ Findings from Lynis, ssh-audit or a CIS checklist that match a deliberate default (MaxAuthTries 5, SSH tunnels allowed, no banner, curve25519 at hardened) are not defects: explain them with standards.md.
 ## Findings report format
 
 Lead with the verdict, then the findings sorted by severity. Write it in the user's language:

@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <b>日本語</b> · <a href="README.ru.md">Русский</a></sub></p>
 
-<!-- translation of README.md, source sha256: cd214fcd1c0e -->
+<!-- translation of README.md, source sha256: 5a74157c2e5d -->
 
 <p align="center"><sub>これは英語版 README の翻訳です。内容が異なる場合は英語版が正しいものとします。誤りに気づいたら <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a> でお知らせください。</sub></p>
 
@@ -117,13 +117,13 @@ npx skills add mountain-beaver/vps-forge -g -a codex
 gh skill install mountain-beaver/vps-forge vps-forge --agent cursor --scope user
 ```
 
-`--agent` には `claude-code`、`codex`、`cursor`、`github-copilot`、`gemini-cli`、`opencode` などの名前を指定します。すべての名前は `gh skill install --help` で確認できます。リリースを固定するには `--pin v1.0.0` を使います。
+`--agent` には `claude-code`、`codex`、`cursor`、`github-copilot`、`gemini-cli`、`opencode` などの名前を指定します。すべての名前は `gh skill install --help` で確認できます。リリースを固定するには `--pin v1.2.0` を使うか、スキル名に続けて `vps-forge@v1.2.0` と指定します。
 </details>
 
 <details>
 <summary><b>Claude.ai と Claude Desktop</b>：zip をアップロード</summary>
 
-[最新リリース](https://github.com/mountain-beaver/vps-forge/releases/latest) から `vps-forge-skill.zip` をダウンロードし、Settings → Capabilities → Skills → "Upload skill" からアップロードします。コード実行を有効にしておく必要があります。
+[最新リリース](https://github.com/mountain-beaver/vps-forge/releases/latest) から `vps-forge-skill.zip` をダウンロードし、Customize → Skills からアップロードします（"+" → "Create skill" → "Upload a skill"）。コード実行を有効にしておく必要があります（Settings → Capabilities）。
 
 チャットアプリはサーバーに SSH 接続できないため、そこではスキルは **スクリプトモード** で動作します。まず読み取り専用の監査が渡されるので、それを実行して結果を貼り付けます。その後、段階ごとに短いスクリプトが 1 つずつ渡されます。SSH やファイアウォールを変更する前には、スクリプトがいったん止まり、2 つ目のターミナルからログインするよう求めます。そのログインに失敗すれば、サーバーが自分でその手順を元に戻します。すべてを自分で実行するので、エージェントが知っているのはあなたが貼り付けた内容だけです。また、外部からのチェックには Mac、Linux、WSL のいずれかのターミナルが必要です。
 </details>
@@ -155,8 +155,8 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 
 | 領域 | 完成したサーバーでは |
 |---|---|
-| **アクセス** | あなたの鍵だけを登録した管理ユーザー。root ログインとパスワードログインは無効で、`AllowGroups` も設定済みです。SSH の暗号設定はモダンかつバージョンに応じたものなので、`ssh-audit` に合格します。 |
-| **ファイアウォール** | ufw または nftables で、デフォルト拒否、IPv4 と IPv6 で同じルール。Docker が公開するポートもカバーし、あなた自身の IP は常に最初に通します。 |
+| **アクセス** | あなたの鍵だけを登録した管理ユーザー。root ログインとパスワードログインは無効で、`AllowGroups` も設定済みです。SSH の暗号設定はモダンかつバージョンに応じたものなので、`ssh-audit` で failure は出ません。唯一の warning は想定どおりのもので、古いクライアントのために従来の curve25519 を残しているためです。paranoid レベルではこれも外します。 |
+| **ファイアウォール** | ufw で、デフォルト拒否、IPv4 と IPv6 で同じルール。Docker が公開するポートもカバーし、あなた自身の IP は常に最初に通します。 |
 | **侵入対策** | systemd バックエンドと recidive jail を使う fail2ban。起動する前に、あなたの IP を除外リストに入れておきます。paranoid レベルでは CrowdSec。 |
 | **アップデート** | 無人セキュリティアップデート。スキルが追加するベンダーリポジトリ（Caddy、Tailscale、CrowdSec、同意すれば Docker）も対象です。needrestart と、任意の再起動ウィンドウ。 |
 | **Web とアプリ** | localhost にバインドした Docker、TLS とセキュリティヘッダー付きの Caddy または nginx、データベースとワーカー用のプロファイル。 |
@@ -169,7 +169,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 
 | | **baseline** | **hardened**（デフォルト） | **paranoid** |
 |---|---|---|---|
-| SSH | 鍵認証のみ、root 不可、`AllowGroups` | + モダンな KEX と暗号（利用可能なら耐量子）、ed25519 ホスト鍵、`ssh-audit` で問題なし | + FIDO2 または TOTP、SSH は VPN 経由のみ |
+| SSH | 鍵認証のみ、root 不可、`AllowGroups` | + モダンな KEX と暗号（耐量子を優先）、ed25519 ホスト鍵、`ssh-audit` で failure なし | + 耐量子 KEX のみ、FIDO2 または TOTP、SSH は VPN 経由のみ |
 | ファイアウォール | デフォルト拒否 | + IPv6 も同等に、Docker 用ルール、プロバイダーのファイアウォール | + Web は Cloudflare 経由のみ、送信通信の見直し |
 | 侵入対策 | fail2ban | + recidive | CrowdSec |
 | アップデート | 無人セキュリティアップデート | + needrestart、Livepatch | + 再起動ウィンドウ |
@@ -190,7 +190,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
   </picture>
 </p>
 
-1. `deadman.sh arm` が設定のスナップショットを取り、5 分の systemd タイマーを開始します。
+1. `deadman.sh arm` が SSH、ファイアウォール、sudo、PAM の設定と `authorized_keys` ファイルのスナップショットを取り、5 分の systemd タイマーを開始します。
 2. エージェントが変更を加え、検証します（`sshd -t`、`visudo -c`、`nft -c`）。
 3. 古い接続を再利用できない **新しい** 接続で、もう一度ログインします。
 4. そのログインが成功した場合にのみ、タイマーを解除します。
@@ -209,7 +209,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 **信用できませんか？ それなら壊してみてください**。スイッチはただの bash スクリプトなので、エージェントなしで試せます。使い捨てのサーバーに sudo 権限のあるユーザーでログインし、このセッションを開いたまま次を実行します。
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/deadman.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.2.0/skills/vps-forge/scripts/deadman.sh
 less deadman.sh                                                       # root で実行する前に中身を読む
 sudo install -m 755 deadman.sh /usr/local/sbin/vps-forge-deadman
 sudo vps-forge-deadman arm 1                                          # 1 分後にロールバック
@@ -288,7 +288,7 @@ sudo sshd -t && sudo systemctl reload ssh                             # 設定�
   <img alt="Debian 13 での GLM-5.3 のスポットチェックと Claude Opus 5.5 の比較。新規 VPS から本番環境へ：Opus はスキルなしで 84、89、89、スキルありで 3 回とも 100。GLM-5.3 は 79 と 100。本番 Docker サーバー：Opus は 73、80、87、スキルありで 3 回とも 100。GLM-5.3 は 67 と 100。" src="docs/bench/chart-spot-light.svg" width="880">
 </picture>
 
-ベンチマークはリリース前のスキルで実行しました。バージョン 1.0.1 で変わったのはテキストだけです。バージョン 1.1.0 では、ベンチマークがほとんど、あるいはまったく評価していない部分の挙動が変わりました。限定的な依頼への対応、一時的な sudo 権限付与の期限、アプリのデータを確認するリストア訓練、Kubernetes ノードとハイパーバイザーホストでの作業中止です。バージョン 1.1.1 で変わったのは README、その画像、パッケージングだけです。それ以降の変更（CHANGELOG の Unreleased に記載されたデプロイパネル、スクリプトモード、控えめになったログインアラート、`extend`）もベンチマークしていません。すべての変更は [CHANGELOG.md](CHANGELOG.md) に記載しています。シナリオ、ハーネス、実行の再現に必要なものはすべて [`bench/`](bench/README.md) にあります。実行ごとの結果は [`docs/bench/results.md`](docs/bench/results.md) と [`results.json`](docs/bench/results.json) にあります。
+ベンチマークはリリース前のスキルで実行しました。バージョン 1.0.1 で変わったのはテキストだけです。バージョン 1.1.0 では、ベンチマークがほとんど、あるいはまったく評価していない部分の挙動が変わりました。限定的な依頼への対応、一時的な sudo 権限付与の期限、アプリのデータを確認するリストア訓練、Kubernetes ノードとハイパーバイザーホストでの作業中止です。バージョン 1.1.1 で変わったのは README、その画像、パッケージングだけです。バージョン 1.2.0（デプロイパネル、スクリプトモード、控えめになったログインアラート、`extend`、デッドマンスイッチのスナップショットに含まれる `authorized_keys`、bouncer を必須とする CrowdSec チェック）もベンチマークしていません。すべての変更は [CHANGELOG.md](CHANGELOG.md) に記載しています。シナリオ、ハーネス、実行の再現に必要なものはすべて [`bench/`](bench/README.md) にあります。実行ごとの結果は [`docs/bench/results.md`](docs/bench/results.md) と [`results.json`](docs/bench/results.json) にあります。
 
 ## FAQ
 
@@ -331,14 +331,14 @@ SSH やファイアウォールを変更する前に止めてください。ス�
 - **別のプロジェクトにインストールされている**。`-g` を付けないと、`npx skills add` は現在のフォルダーにしかインストールしません。`-g` を付けて再インストールするか、そのフォルダーでエージェントを起動してください。
 - **インストール前にセッションを開始していた**。エージェントはセッション開始時にスキル一覧を読み込むので、新しいセッションを開いてください。
 - **Claude Code のプラグイン**：`/plugin` で `vps-forge` がインストールされ、有効になっているか確認してください。
-- **Claude.ai と Claude Desktop**：Settings → Capabilities → Skills でスキルをオンにし、コード実行も有効にしておく必要があります。
+- **Claude.ai と Claude Desktop**：Customize → Skills でスキルをオンにし、Settings → Capabilities でコード実行も有効にしておく必要があります。
 - **依頼がサーバー作業らしく聞こえなかった**。はっきり伝えてください：「vps-forge スキルを使って 203.0.113.10 をハードニングして」。
 </details>
 
 <details>
 <summary><b>対応しているサーバーは？</b></summary>
 
-Debian 12 と 13、Ubuntu 22.04、24.04、26.04 で、プロバイダーは問いません：Hetzner、DigitalOcean、Vultr、Linode、OVH、AWS（EC2 と Lightsail）、Oracle Cloud、あるいは机の下のマシンでも構いません。x86 でも ARM でも動きます。Oracle Cloud に組み込まれた `iptables` の reject ルールなど、それぞれの落とし穴も把握しています。エージェントはあなたのマシンから SSH で作業します。RHEL 系のサポートはロードマップにあります。
+Debian 12 と 13、Ubuntu 22.04、24.04、26.04 で、プロバイダーは問いません：Hetzner、DigitalOcean、Vultr、Linode、OVH、AWS（EC2 と Lightsail）、Oracle Cloud、あるいは机の下のマシンでも構いません。x86 でも ARM でも動きます。Oracle Cloud に組み込まれた `iptables` の reject ルールなど、それぞれの落とし穴も把握しています。エージェントはあなたのマシンから SSH で作業します。RHEL 系のサーバー（Rocky、Alma、Fedora）は対象外です。スキルは Debian 向けのツールを当てはめず、作業を止めてその旨を伝えます。
 </details>
 
 <details>
@@ -375,12 +375,12 @@ Debian 12 と 13、Ubuntu 22.04、24.04、26.04 で、プロバイダーは問�
 はい。`audit.sh` は単体で動く読み取り専用の監査スクリプトです。
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/audit.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.2.0/skills/vps-forge/scripts/audit.sh
 less audit.sh          # root で何かを実行する前に中身を読む
 sudo bash audit.sh     # 読み取り専用。--json で機械可読な出力
 ```
 
-`deadman.sh`、`external-check.sh`、`install-alerts.sh` も単体で動きます。どれにも `--help` があります。
+`deadman.sh`、`external-check.sh`、`install-alerts.sh` も単体で動きます。どれにも `--help` があります。v1.2.0 以降のリリースには署名付きのビルド来歴（provenance）が付きます。`gh attestation verify audit.sh -R mountain-beaver/vps-forge` で、ダウンロードしたスクリプトがこのリポジトリのリリースワークフローで作られたことを確認できます。
 </details>
 
 ## リポジトリの中身
@@ -389,14 +389,13 @@ sudo bash audit.sh     # 読み取り専用。--json で機械可読な出力
 skills/vps-forge/
 ├── SKILL.md              ワークフロー、安全ルール、レベル、完了の定義
 ├── references/           フェーズごとに 1 ファイル、必要なときだけ読み込む
-├── scripts/
-│   ├── audit.sh          読み取り専用の監査：70 以上のチェック、スコア、JSON
-│   ├── deadman.sh        SSH、ファイアウォール、sudo、PAM のスナップショットと自動ロールバック
-│   ├── external-check.sh 手元のマシンからの外部チェック：ポート、SSH 認証、TLS、ssh-audit
-│   └── install-alerts.sh vps-notify：ntfy、Telegram、Webhook によるアラート
 ├── assets/               検証済みテンプレート：sshd、sysctl、fail2ban、apt、Docker、Caddy、
 │                         restic、Cloudflare 同期、motd、SERVER.md、cloud-init
-└── evals/                挙動のテストケース
+└── scripts/
+    ├── audit.sh          読み取り専用の監査：70 以上のチェック、スコア、JSON
+    ├── deadman.sh        SSH、鍵、ファイアウォール、sudo、PAM のスナップショットと自動ロールバック
+    ├── external-check.sh 手元のマシンからの外部チェック：ポート、SSH 認証、TLS、ssh-audit
+    └── install-alerts.sh vps-notify：ntfy、Telegram、Webhook によるアラート
 ```
 
 すべてのテンプレートは、それを読み込むツール自身によって CI でチェックしています（`sshd -t`、`fail2ban-client -t`、`caddy validate`、`cloud-init schema`、`systemd-analyze verify`、`dockerd --validate`）。対象は Debian 12/13 と Ubuntu 22.04/24.04/26.04 です。`audit.sh` は既知の良いサーバーと悪いサーバーに対してテストし、何も変更しないことをチェックサムで証明しています。デッドマンスイッチのロールバックは、CI 上の実際の systemd でテストしています。アームし、SSH かファイアウォールを壊し、待ってから、すべてが元に戻ったことを確認します。再起動をまたぐケースも含みます。

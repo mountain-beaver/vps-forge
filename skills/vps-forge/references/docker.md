@@ -31,11 +31,17 @@ Use Docker's own apt repository. The distro's `docker.io` lags behind and ships 
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL "https://download.docker.com/linux/$ID/gpg" -o /etc/apt/keyrings/docker.asc
 chmod a+r /etc/apt/keyrings/docker.asc
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/$ID $VERSION_CODENAME stable" \
-  > /etc/apt/sources.list.d/docker.list
+cat > /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/$ID
+Suites: ${UBUNTU_CODENAME:-$VERSION_CODENAME}
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
 apt-get update && $APT install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
-Remove the conflicting packages first if present: `docker.io docker-compose podman-docker containerd runc`.
+Remove the conflicting packages first if present: `docker.io docker-compose podman-docker containerd runc`. An older install may have a one-line `/etc/apt/sources.list.d/docker.list` for the same repository: delete it when you write `docker.sources`, or apt warns about a duplicate source. The repository's origin is still `Docker` (label `Docker CE`), so the unattended-upgrades line in base.md doesn't change.
 
 ## daemon.json
 

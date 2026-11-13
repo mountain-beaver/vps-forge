@@ -1,0 +1,25 @@
+## /etc/audit/rules.d/50-vps-forge.rules: managed by vps-forge (paranoid level, kernel.md)
+## Load:  augenrules --load   (rules.d/*.rules are merged in lexical order; check with auditctl -l)
+## Query: ausearch -i -k identity | sudoers | sshd | ssh-keys | root-cmd
+## Cost:  log volume, mostly root-cmd. auditd rotates its own log (/etc/audit/auditd.conf).
+
+# Accounts and groups: a new UID-0 user or a changed password hash shows up here.
+-w /etc/passwd -p wa -k identity
+-w /etc/group -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/gshadow -p wa -k identity
+
+# Who may become root.
+-w /etc/sudoers -p wa -k sudoers
+-w /etc/sudoers.d/ -p wa -k sudoers
+
+# The SSH server's config and root's keys.
+-w /etc/ssh/sshd_config -p wa -k sshd
+-w /etc/ssh/sshd_config.d/ -p wa -k sshd
+-w /root/.ssh/ -p wa -k ssh-keys
+
+# Every program run as root by a person who logged in (sudo, su): the login UID (auid) stays
+# that person's. System services have no login UID (4294967295) and are left out, which keeps
+# the volume sane. Both syscall ABIs, or a 32-bit binary slips past the rule.
+-a always,exit -F arch=b64 -S execve -F euid=0 -F auid>=1000 -F auid!=4294967295 -k root-cmd
+-a always,exit -F arch=b32 -S execve -F euid=0 -F auid>=1000 -F auid!=4294967295 -k root-cmd

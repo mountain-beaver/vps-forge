@@ -1,20 +1,27 @@
 # Changelog
 
-## Unreleased
+## 1.2.0 (2026-11-13)
 
 ### Distribution
 - **Signed releases.** The release workflow attests SLSA build provenance for `vps-forge-skill.zip` and every script, so `gh attestation verify audit.sh -R mountain-beaver/vps-forge` proves a downloaded file came from this repository's release workflow.
 - **Directory listing details in `plugin.json`:** `displayName` (so the listing reads vps-forge, not "Vps Forge"), the icon path, and links to the documentation, the issue tracker and a new `PRIVACY.md`.
 - **`PRIVACY.md`:** the project collects nothing; it lists what the skill sends where, all of it to services you choose, including the certificate contact email that goes to Let's Encrypt.
+- **The evals no longer ship to users.** They lived in `skills/vps-forge/evals/`, and `npx skills add` and `gh skill install` copy the whole skill folder, so every install carried 57 test files (checked with both installers). They now live in `evals/` at the repository root; `make eval` runs them with `--eval-dir evals` against the plugin, and the zip and the directory build no longer need to cut them out.
 
 ### Safety
 - **Provider firewalls are named as outside the dead-man switch.** The switch only snapshots files on the server, so a rule in the provider's panel or API can't roll back. The skill now changes those additively (add the new rule, prove a new login, remove the old rule last) and never replaces a whole rule set in one call. The README no longer says that every change that could cut you off rolls itself back.
+- **Copying the admin's key from root's file can't empty or overwrite it any more** (`references/ssh.md`). The extracted key goes to a temporary file first; it is appended only when it was found, passes `ssh-keygen -lf` and isn't there already, so a typo no longer leaves the admin with an empty `authorized_keys` and a second run no longer drops the keys the admin already had.
+- **An IPv6 admin address is exempted as its /64 everywhere.** `firewall.md` computes one `ADMIN_NET` (IPv4 as is, IPv6 widened to its /64) and the skill uses it for the ufw allow rule, fail2ban's `ignoreip` and sshd's `PerSourcePenaltyExemptList`. Before, only `ignoreip` got the /64, so once privacy extensions rotated the address, test logins were rate-limited by ufw and penalised by sshd again.
+- **The ed25519-only host key no longer breaks deploys silently.** A client that pinned the RSA or ECDSA host key gets `REMOTE HOST IDENTIFICATION HAS CHANGED` and refuses, even with `accept-new` (tested with OpenSSH 10.0). When root has deploy keys or a deploy panel is present, the skill keeps the RSA and ECDSA host keys unless the user agrees, and then hands over a ready `known_hosts` line built on the server.
+- **The password-sudo test works with sudo-rs.** Ubuntu 26.04's default `sudo` is sudo-rs, which answers `sudo -n -v` with `interactive authentication is required` and refuses outsiders with `I'm sorry <user>. I'm afraid I can't do that` (tested in an ubuntu:26.04 container). The test-and-disarm step, the hand-off cleanup and the reboot drill name both wordings instead of only classic sudo's.
 
 ### Dead-man switch
 - **`vps-forge-deadman extend MINUTES`** moves a pending rollback to MINUTES from now and keeps the same snapshot, for a change that takes longer than the window. It refuses once the rollback has fired or while it runs, and if it can't schedule the new timer it rolls back at once instead of leaving the change unguarded. The skill arms 10 minutes for multi-step changes and never extends after a failed test login.
+- **`authorized_keys` is in the snapshot.** Root's file and the file of every account with a login shell are snapshotted at arm and restored by the rollback, with their mode and owner, so emptying root's file or overwriting the admin's key during a window rolls back like any other SSH change. A `~/.ssh` that is a symlink is never followed, at snapshot or at rollback.
 
 ### Alerts
 - **SSH login alerts no longer train you to mute them.** The first login from a `user@address` not seen for `SSH_ALERT_KNOWN_DAYS` (30) is still high priority. Later logins from it come at low priority, without sound, and at most one an hour, so your own scp, rsync and deploys stay quiet while a new address still rings. `SSH_ALERT_KNOWN_DAYS=0` alerts every login as before. Re-run `install-alerts.sh --ssh-login` to update the hook.
+- **Installing SSH login alerts runs inside the dead-man switch.** `--ssh-login` edits `/etc/pam.d/sshd`, so the alerts phase now arms first, then tests from a new connection and disarms, like every other PAM change. The test message is sent by the installer's own `--test` under sudo: `vps-notify` run by a non-root admin can't read the root-only `notify.env` and failed with "run as root".
 
 ### Deploy panels
 - **Coolify, Dokploy, CapRover, Kamal and Dokku** (`references/paas.md`). These tools manage the server as root, run their own proxy on 80/443 and their own Docker setup, and the hardened defaults used to break them quietly: the next deploy failed. The skill now looks for them in recon and asks about them in intake. When one is there, root keeps key login, the panel's own SSH from its Docker network is exempt from fail2ban and from the SSH rate limit, no second proxy and no Docker daemon changes go in, the dashboard port closes only once the dashboard works on its domain, and the panel's data (Coolify's `APP_KEY` above all) goes into the backups. It also suggests the best order for a new box: harden first, then install the panel.
@@ -23,13 +30,22 @@
 
 ### Script mode
 - **A real procedure for chat apps without SSH** (`references/script-mode.md`). The agent asks for a read-only audit first and writes nothing blind. Then it hands over one short script per stage, as a bundle to copy with `scp`, and reads the pasted output before the next one. Before every SSH, firewall, sudo or PAM change the script stops and asks the user to log in from a second terminal, which is what disarms the switch; the script never disarms itself. The final report says what script mode couldn't check.
+- Script mode also applies when the user asks for the steps to run themselves, not only when the agent has no SSH. A later `sudo -n -v` check lists both passing wordings (sudo and sudo-rs) and what a refusal means.
+- Rule 1 says outright that the dead-man switch also covers steps handed to the user. For one small change, script mode hands over `deadman.sh` alone (or a `curl` from the pinned release) and forbids a home-made `systemd-run` rollback.
 
 ### Backups and updates
 - **SQLite databases are dumped, not copied live.** PocketBase, n8n, Uptime Kuma and similar apps keep their data in SQLite, and a file copy taken mid-write can restore as corrupt. The skill finds these files during recon, dumps each one with `sqlite3 .backup`, keeps the live file out of restic, and checks the restore with `PRAGMA integrity_check`.
 - **Vendor repositories get automatic updates too.** When the skill adds Caddy, Tailscale or CrowdSec, it adds their origin to unattended-upgrades in the same phase, and asks first for Docker, whose upgrade restarts every container. `audit.sh` has a new check, `updates.third_party`: it warns when Docker, Caddy, Tailscale or CrowdSec isn't followed by unattended-upgrades, and notes any other third-party repository, such as a provider's agent, without a warning.
+- **Fix: old backups expire even after the backed-up paths change.** `restic forget` grouped snapshots by host and paths, and the backup script includes only the paths that exist, so adding or removing a directory started a new group and the old one was kept forever. Maintenance now runs `forget --group-by host,tags --tag vps-forge`. Update `/usr/local/sbin/vps-forge-backup.sh` on existing servers.
 
 ### Tests
 - **The dead-man rollback and the systemd-only audit checks run in CI**, in a podman container that boots systemd: a broken sshd and a drop-all firewall rolled back by the timer, the rollback at boot after a reboot while armed, concurrent arms, `extend`, and ufw and fail2ban: a `ufw enable` during the window is undone, a deleted ufw rule is loaded again, and the address recorded at arm is unbanned. Both suites build their image when it's missing, and in CI a missing podman is a failure instead of a skip.
+- **`make ci-all`** runs `make ci` plus the systemd suites (`audit-systemd`, `deadman-systemd`). `make ci` and AGENTS.md no longer claim that `make ci` is everything CI runs.
+- **`make test` fails without shellcheck** instead of skipping the lint and still printing ALL CHECKS PASSED; `VPS_FORGE_SKIP_SHELLCHECK=1` skips it on purpose. **Every relative link and image in every Markdown file is checked** (`tests/links.py`), not only the README's.
+- `make eval` pins the judge to `claude-haiku-5-5`, the current Haiku (was `claude-haiku-4-5`).
+- The `audit-production-shop` eval's `audit.json` matches what `audit.sh` prints today: Debian 12 is a WARN (LTS since 2026-07-11), and the version, counts and score agree with the script's formula.
+- **Formal checks are deterministic graders now.** Eight `llm` graders became `regex` and `tool_used` graders: the sshd drop-in sorts first (`0x-*.conf`), the dead-man switch is armed before the sshd edit and before `Port 2222`, the new port is tested with `ControlPath=none`, `ssh.socket` is restarted, `ignoreip` is written before fail2ban starts, apt runs with `DEBIAN_FRONTEND=noninteractive`, `sshd -t` comes before the reload, and the skill doesn't load for a local nginx question. The regexes read only the agent's own lines of the trace, so the skill text it read can't satisfy them; `make test` checks that every pattern compiles.
+- **Eight new eval cases:** password sudo with the disarm from the root session, an agent in a cloud sandbox marking and later removing its own `agent session` entries, a Rocky Linux and a Proxmox host (the skill loads and stops), an additive Hetzner firewall change for a port move, resuming from `progress.log`, a request in Russian, and Ubuntu 26.04 with sudo-rs. One Sonnet run of the whole suite checked that the regex graders read the trace format; the `narrow-ssh-port` graders accept the safety steps either as commands or in a plan, because an agent without access to the box asks first. LLM graders that judge the answer use `focus: last_message`, because a judge given the trace sees only its first and last 12 messages; the fail2ban check in `fresh-ubuntu-docker-web` is a regex over the whole trace.
 
 ### Docs
 - **Quick start:** `npx skills add … -g` is the default, so the agent finds the skill in any folder; the Node.js version it needs; how to check the skill loaded, and the sign that it didn't (the agent changes SSH or the firewall without arming the dead-man switch); which key the agent uses, on the first screen.
@@ -39,6 +55,42 @@
 - **Skill description:** Oracle Cloud, AWS EC2 and ARM, so agents pick the skill up for those servers.
 - **The README in Chinese, Japanese and Russian** (`README.zh-CN.md`, `README.ja.md`, `README.ru.md`), with a language switcher on top. English stays authoritative, and `make test` checks that each translation keeps every link, command and table of the English file and warns when one falls behind. The skill itself stays in English; it already talks to you in your language.
 - **Benchmark:** the hero chart marks the SSH port move, whose 100 comes from behaviour 1.1.0 removed; the caption under it is one line; `bench/README.md` says how to reproduce the benchmarked pre-release skill from the `v1.0.0` tag.
+- Small fixes: the README no longer promises nftables (the skill configures ufw); `paas.md` no longer mentions a `userland-proxy` change that `docker.md` never makes; the hand-off cleanup cites the right SKILL.md rule; the GLM-5.3 spot check shows its chart again; CONTRIBUTING counts five distros.
+- **Claude.ai paths updated:** skills are uploaded and switched on under Customize → Skills; Settings → Capabilities only holds the code execution switch (README and `troubleshooting.md`).
+- The `gh skill install` pin example names the current release and shows both forms, `--pin <tag>` and `vps-forge@<tag>`.
+- **`references/providers.md`:** for Hetzner, DigitalOcean, Vultr, Linode, OVHcloud, AWS EC2 and Lightsail, and Oracle Cloud: where the web console is and what it needs, how to take a snapshot, and how to add one firewall rule in the panel and the CLI, with the commands that would replace a whole rule set named so the agent never uses them. Checked against each provider's documentation. The provider details from `base.md` and `distro-notes.md` moved there.
+- **`references/standards.md`:** where the defaults differ on purpose from Lynis, CIS and ssh-audit (MaxAuthTries 5, MaxSessions 10, SSH tunnels allowed, no banner, curve25519 at hardened, ed25519-only host key, port and log level) and why, so an agent or auditor explains these findings instead of "fixing" them. Lynis values are from its SSH-7408 test; no CIS control numbers are quoted.
+- The README no longer promises RHEL-family support: those servers are out of scope, and the skill stops on them.
+- The README's `curl` commands and the `--pin` example point at v1.2.0, and its FAQ shows how to check a downloaded script with `gh attestation verify`.
+- **Skill description:** the triggers come right after what the skill does, and RHEL-family servers, Kubernetes nodes and hypervisor hosts are named as places where the skill loads in order to stop and explain, not as places where it shouldn't load (which contradicted the stop rule and the k3s eval). `plugin.json`, `marketplace.json` and `llms.txt` say the same. It also triggers when the user shares a server audit or scan report and asks what to fix: in eval runs that request loaded the skill 1 time in 7 before and 4 in 4 after.
+
+### Audit
+- **`ssh.password_auth` names the fix:** when a file such as `50-cloud-init.conf` turns passwords on, the FAIL says to set `PasswordAuthentication no` in a drop-in that sorts before it (`00-vps-forge.conf`), not only that the first value wins.
+- **`intrusion.ips` checks the CrowdSec bouncer.** A running CrowdSec engine only detects attacks; the bouncer blocks them. The check passes with an active `crowdsec-firewall-bouncer` or a bouncer registered in `cscli bouncers list`, and warns otherwise instead of passing on the engine alone.
+
+### Workflow
+- **Resuming an interrupted run.** Phase 0 now reads `/var/lib/vps-forge/progress.log` when it exists, re-checks that every phase listed as done really is, and resumes at the first phase that isn't. The log was written before, but nothing told the agent to read it.
+
+### Docker
+- **Docker's apt repository is written as a deb822 `docker.sources` file**, as in Docker's current install guide, and an old one-line `docker.list` is removed so apt doesn't warn about a duplicate source. The repository origin (`Docker`) is unchanged, so the unattended-upgrades line stays.
+- **Docker's nftables firewall backend has no DOCKER-USER chain.** `firewall.md` says so and shows where filtering goes instead (an own nftables table with a forward-hook chain). `audit.sh` reads `"firewall-backend": "nftables"` from `daemon.json`, notes it (`exposure.docker_backend`), no longer counts rules left in DOCKER-USER as filtering, and its hint names the nftables way.
+- **ufw-docker is pinned.** `firewall.md` downloads it from a fixed commit and checks its sha256 before installing it, instead of fetching whatever `master` holds and running it as root, and says how to move to a newer reviewed commit. `ufw-docker install` now runs inside a deadman window, like any firewall change.
+
+### Distributions
+- **Ubuntu 26.04 in `distro-notes.md`:** OpenSSH 10.2 with socket activation, sudo-rs and the Rust core utilities by default, fail2ban 1.1.0 enabled and started on install (checked in ubuntu:26.04 containers and the release notes). Debian 12 is listed as LTS-only until 30 June 2028. Which releases start fail2ban on install (all supported ones except Ubuntu 22.04) is described once, in `firewall.md` "Start order", and the other places point there.
+
+### SSH
+- **ssh-audit 3.9+ and post-quantum key exchange.** ssh-audit now warns about every KEX without post-quantum protection. The `hardened` level keeps `curve25519-sha256` after the post-quantum hybrids for older clients and Kamal, so that one warning is expected, and `external-check.sh --ssh-audit` reports it as a pass while still warning about anything else. The `paranoid` level drops curve25519 where `mlkem768x25519` or `sntrup761x25519` exists; ssh-audit 3.9.0 is then clean on Debian 13 and Ubuntu 24.04 and 26.04.
+- **Key rotation** (`ssh.md` "Rotating a key"): add the new key, prove a login with only that key from a new connection, then remove the old key by fingerprint in a second deadman window; plus the advice to keep a second key on another device. `backups.md` shows the same add-first, remove-last rotation for the restic repository password (`restic key add`, `key list`, `key remove`).
+
+### Hardening
+- **An auditd rules template for the paranoid level** (`assets/auditd/50-vps-forge.rules`): watches the identity files, sudoers, the sshd config and root's `~/.ssh`, and logs every program a logged-in person runs as root, for both syscall ABIs. `kernel.md` used to say only "load a rules file". `tests/templates.sh` checks the rule grammar, the syscall names against `ausyscall` on each distro, and the watched paths (`auditctl` itself can't load rules inside a test container).
+
+### VPN
+- **WireGuard covers IPv6.** The server gets an IPv6 tunnel address next to the IPv4 one, the client config is shown with `AllowedIPs = 0.0.0.0/0, ::/0`, and NAT66 goes into `before6.rules` when the VPS has IPv6. With only `0.0.0.0/0`, a client on a dual-stack network sent its IPv6 traffic around the tunnel from its real address; `::/0` is now required even when the VPS has no IPv6, so that traffic is dropped instead. IPv6 forwarding comes with `accept_ra = 2` on the WAN interface, because forwarding makes the kernel ignore the router advertisements most VPS get their IPv6 route from.
+
+### Changed
+- The version also lives in `metadata.version` in the SKILL.md frontmatter, so installs that copy only the skill folder know which release they have. `make test` and the release workflow check it against plugin.json, CHANGELOG.md and audit.sh.
 
 ## 1.1.1 (2026-10-25)
 

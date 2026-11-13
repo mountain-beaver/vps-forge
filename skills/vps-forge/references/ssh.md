@@ -9,6 +9,7 @@
 - Hardened crypto (hardened+)
 - Changing the port
 - FIDO2 keys and TOTP (paranoid)
+- Rotating a key
 - Cleaning up what the provider left
 - Hand-off cleanup (phase 12)
 - Verification and client config
@@ -33,7 +34,7 @@ The test runs from a **new, unmultiplexed** connection. Without `-o ControlPath=
 - **NOPASSWD, or password sudo with the temporary grant** (below). One command proves the login, port, firewall and sudo, and disarms:
   `ssh -o ControlPath=none -o BatchMode=yes -p <port> <admin>@<host> 'sudo -n vps-forge-deadman disarm'`
   If it fails at any point, the switch stays armed and the timer rolls back.
-- **Password sudo without the grant.** `sudo -n` always fails here, so it can't be the disarm path. Run `ssh -o ControlPath=none -o BatchMode=yes -p <port> <admin>@<host> 'sudo -n -v'`. It must fail with `a password is required`, which proves the login and that sudoers lets the admin in. `Sorry, user … may not run sudo` means the policy is broken: let the change roll back. Don't use `sudo -n true` for this: it prints `a password is required` for non-sudoers too. Also check in the root session that `passwd -S <admin>` shows `P` (a password is set); with `L` the admin can never pass sudo. When both pass, run `vps-forge-deadman disarm` from the existing root session. Once that session is gone, the user has to run `sudo vps-forge-deadman disarm` themselves.
+- **Password sudo without the grant.** `sudo -n` always fails here, so it can't be the disarm path. Run `ssh -o ControlPath=none -o BatchMode=yes -p <port> <admin>@<host> 'sudo -n -v'`. It must fail asking for a password, which proves the login and that sudoers lets the admin in: `a password is required` from classic sudo, `interactive authentication is required` from sudo-rs (the default `sudo` on Ubuntu 26.04; `sudo --version` tells them apart). A refusal means the policy is broken, so let the change roll back: `Sorry, user … may not run sudo` (sudo) or `I'm sorry <admin>. I'm afraid I can't do that` (sudo-rs). Don't use `sudo -n true` for this: classic sudo prints `a password is required` for non-sudoers too. Also check in the root session that `passwd -S <admin>` shows `P` (a password is set); with `L` the admin can never pass sudo. When both pass, run `vps-forge-deadman disarm` from the existing root session. Once that session is gone, the user has to run `sudo vps-forge-deadman disarm` themselves.
 
 ## Admin user and sudo policy
 
@@ -48,10 +49,17 @@ chmod 600 /home/$U/.ssh/authorized_keys && chown "$U:$U" /home/$U/.ssh/authorize
 If root already has the user's key, copy **only that key**, never the whole file. Old contractors' keys and provider keys often sit in root's file, and copying the file would hand them the new sudo account. List the keys with `ssh-keygen -lf /root/.ssh/authorized_keys`. The key the user connects with right now is the one in `journalctl -u ssh -g 'Accepted publickey' -n 5` (match the fingerprint). Copy just `type base64 comment` from that line. Cloud images prefix root's keys with options such as `no-port-forwarding,…,command="echo 'Please login as…';exit 142"`, and a copied prefix breaks the admin login:
 ```bash
 B='<base64 body of that key>'
+K=/home/$U/.ssh/authorized_keys; T=$(mktemp)
 awk -v b="$B" '{ for (i = 2; i <= NF; i++) if ($i == b) { s = $(i-1) " " $i; for (j = i+1; j <= NF; j++) s = s " " $j; print s; exit } }' \
-  /root/.ssh/authorized_keys > /home/$U/.ssh/authorized_keys
-ssh-keygen -lf /home/$U/.ssh/authorized_keys   # same fingerprint as the journal line
+  /root/.ssh/authorized_keys > "$T"
+if [ -s "$T" ] && ssh-keygen -lf "$T"; then   # same fingerprint as the journal line
+  touch "$K"; [ -s "$K" ] && [ -n "$(tail -c 1 "$K")" ] && echo >> "$K"
+  grep -qF -- "$B" "$K" || cat "$T" >> "$K"
+  chmod 600 "$K" && chown "$U:$U" "$K"
+else echo "key not found in root's file: nothing written"; fi
+rm -f "$T"
 ```
+The key goes through a temporary file and is appended only if it isn't there yet, so a typo in `B` can't empty the admin's file and a second run can't wipe keys the admin already has.
 Ask about every other key (see "Cleaning up what the provider left").
 
 **The user logs in as root today?** At `hardened` and above, still create an admin user and move them off root. Use the name they asked for, otherwise `admin`. Copy only their key as above, prove the admin login and sudo from a new connection, and only then set `PermitRootLogin no`. A root login is one stolen key away from the whole box, and root's `authorized_keys` is exactly where forgotten keys pile up. Don't do this when the user explicitly says root must stay, for example for a deploy tool, or when Coolify, Dokploy, CapRover or Kamal manages the server as root (paas.md). Then keep `PermitRootLogin prohibit-password`, add root to `sshusers` (`usermod -aG sshusers root`; `AllowGroups` refuses root otherwise, whatever `PermitRootLogin` says), and say why in SERVER.md. Put the new login command at the top of the final report: `ssh <admin>@<host>`.
@@ -120,6 +128,8 @@ This is part of the SSH step at `hardened` (the default), not an optional extra:
 ```bash
 pick() { local have; have=$(ssh -Q "$1"); shift; local out=""; for a in "$@"; do grep -qx "$a" <<<"$have" && out+="${out:+,}$a"; done; echo "$out"; }
 KEX=$(pick kex mlkem768x25519-sha256 sntrup761x25519-sha512 sntrup761x25519-sha512@openssh.com curve25519-sha256 curve25519-sha256@libssh.org)
+# paranoid only: no classic curve25519 where a post-quantum hybrid exists (see below)
+# PQ=$(pick kex mlkem768x25519-sha256 sntrup761x25519-sha512 sntrup761x25519-sha512@openssh.com); [ -n "$PQ" ] && KEX=$PQ
 CIPH=$(pick cipher chacha20-poly1305@openssh.com aes256-gcm@openssh.com aes128-gcm@openssh.com aes256-ctr aes192-ctr aes128-ctr)
 MACS=$(pick mac hmac-sha2-512-etm@openssh.com hmac-sha2-256-etm@openssh.com umac-128-etm@openssh.com)
 cat > /etc/ssh/sshd_config.d/01-vps-forge-crypto.conf <<EOF
@@ -130,17 +140,19 @@ Ciphers $CIPH
 MACs $MACS
 EOF
 # OpenSSH 9.8+ penalises addresses with failed logins on its own (PerSourcePenalties), ignoring
-# fail2ban's ignoreip. Exempt the admin's IP, but only where sshd knows the option: an unknown
-# keyword stops sshd from starting. $SSH_CLIENT is empty under sudo; client-ip isn't.
-# An agent-session IP gets a `# agent session <date>` comment line above the entry.
-ADMIN_IP=$(vps-forge-deadman client-ip) && [[ $ADMIN_IP =~ ^[0-9A-Fa-f:.]+$ ]] || { echo "no admin IP: stop"; exit 1; }
-sshd -t -o "PerSourcePenaltyExemptList=$ADMIN_IP" 2>/dev/null &&
-  echo "PerSourcePenaltyExemptList $ADMIN_IP" >> /etc/ssh/sshd_config.d/01-vps-forge-crypto.conf
+# fail2ban's ignoreip. Exempt the admin's network, but only where sshd knows the option: an unknown
+# keyword stops sshd from starting. ADMIN_NET comes from firewall.md "The admin's IP" (an IPv6
+# address as its /64). An agent-session entry gets a `# agent session <date>` comment line above it.
+[[ $ADMIN_NET =~ ^[0-9A-Fa-f:.]+(/[0-9]+)?$ ]] || { echo "no ADMIN_NET (firewall.md): stop"; exit 1; }
+sshd -t -o "PerSourcePenaltyExemptList=$ADMIN_NET" 2>/dev/null &&
+  echo "PerSourcePenaltyExemptList $ADMIN_NET" >> /etc/ssh/sshd_config.d/01-vps-forge-crypto.conf
 sshd -t
 ```
-- `mlkem768x25519-sha256` (post-quantum hybrid) exists from OpenSSH 9.9 onward (Debian 13). Older versions fall back to `sntrup761x25519` (8.5+) and then `curve25519`.
+- `mlkem768x25519-sha256` (post-quantum hybrid) exists from OpenSSH 9.9 onward (Debian 13, Ubuntu 26.04). Older versions fall back to `sntrup761x25519` (8.5+) and then `curve25519`.
+- **ssh-audit 3.9+ warns about curve25519**: `does not provide protection against post-quantum attacks`, exit code 2. At `hardened` that warning is expected and the algorithm stays. The hybrids come first, so every current OpenSSH client negotiates them; curve25519 is there for clients without them: OpenSSH before 8.5, Kamal and other tools built on Ruby's net-ssh, and many SSH libraries. `external-check.sh --ssh-audit` reports that one warning as a pass and any other warning as a warning. At `paranoid`, use the commented `PQ` line: with only the hybrids left, ssh-audit is clean (checked with ssh-audit 3.9.0 on Debian 13 and Ubuntu 24.04 and 26.04; on 24.04 only `sntrup761x25519-sha512@openssh.com` remains), and clients older than OpenSSH 8.5 can no longer connect. Ask first if a deploy tool reaches the box.
 - `HostKey` lines **add up**: if the image has uncommented `HostKey` lines in the main `sshd_config`, RSA and ECDSA stay active. Comment those out, then check with `sshd -T | grep -i hostkey`.
-- `HostKey` limited to ed25519 means clients that pinned the RSA or ECDSA host key will be asked to accept the ed25519 key once. Give the user the fingerprint to compare: `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub`. The old key files stay on disk unused, so reverting is a one-line change. Deadman snapshots in `/var/lib/vps-forge/deadman/` hold root-only copies of `/etc/ssh`, host keys included: if you ever rotate or delete host keys, delete the older snapshots too.
+- `HostKey` limited to ed25519 breaks every client whose `known_hosts` holds only the RSA or ECDSA key: it prints `REMOTE HOST IDENTIFICATION HAS CHANGED` and refuses, even with `StrictHostKeyChecking accept-new`. A person fixes that with `ssh-keygen -R <host>` and one new connection, comparing the fingerprint from `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub`. The old key files stay on disk unused, so reverting is a one-line change.
+- **Pipelines and panels pin host keys too** (a `known_hosts` secret in CI, Kamal, Coolify and the other panels in paas.md), and nobody is there to answer the warning: the next deploy just fails. When the deploy-key check in "Admin user and sudo policy" had a hit, or a panel runs or is planned, leave the `HostKey` line out unless the user agrees, and note in SERVER.md why RSA and ECDSA stay. If they agree, give them the line for those `known_hosts` files, built on the server so nothing in between can swap it: `echo "<host> $(cut -d' ' -f1,2 /etc/ssh/ssh_host_ed25519_key.pub)"` (`[<host>]:<port>` instead of `<host>` on a port other than 22). Deadman snapshots in `/var/lib/vps-forge/deadman/` hold root-only copies of `/etc/ssh`, host keys included: if you ever rotate or delete host keys, delete the older snapshots too.
 - Leave `PubkeyAcceptedAlgorithms` at its default unless you know every client uses ed25519. Default OpenSSH already rejects `ssh-rsa` (SHA-1) signatures while accepting RSA keys with `rsa-sha2-*`.
 - `DiffieHellman group-exchange` isn't in the list, so `/etc/ssh/moduli` doesn't matter.
 - Check from the user's machine: `ssh-audit <host>` (`pipx run ssh-audit <host>`), or `external-check.sh --ssh-audit`. ssh-audit opens dozens of connections, so whitelist the user's IP in fail2ban first (firewall.md).
@@ -154,7 +166,7 @@ This is noise reduction, not security; offer it only if the user wants quieter l
 3. Add `Port <new>` to `00-vps-forge.conf`. `Port` lines add up, so comment out any active `Port` in the main file: `sed -i -E 's/^[[:space:]]*Port[[:space:]]/#&/' /etc/ssh/sshd_config`. Check with `sshd -t && [ "$(sshd -T | grep -c '^port ')" = 1 ]`.
 4. fail2ban: `sed -i -E 's/^port = .*/port = <new>/' /etc/fail2ban/jail.d/vps-forge.local` (sshd and recidive), then `systemctl reload fail2ban` (skip the reload while it is still masked: phase 5 starts it with the new port). Otherwise fail2ban keeps counting failures but bans them on the old port, which protects nothing. The deadman doesn't snapshot fail2ban: after a rollback, set the old port back by hand.
 5. Apply:
-   - **Socket-activated** (Ubuntu 22.10+, so 24.04; check with `systemctl is-enabled ssh.socket`): `sshd -t && systemctl daemon-reload && systemctl restart ssh.socket`. The port lives in the generated socket unit, not just sshd. Restarting the socket also restarts `ssh.service`, which runs `sshd -t` itself; a config error then leaves nothing listening until the deadman rolls back, so test first.
+   - **Socket-activated** (Ubuntu 22.10+, so 24.04 and 26.04; check with `systemctl is-enabled ssh.socket`): `sshd -t && systemctl daemon-reload && systemctl restart ssh.socket`. The port lives in the generated socket unit, not just sshd. Restarting the socket also restarts `ssh.service`, which runs `sshd -t` itself; a config error then leaves nothing listening until the deadman rolls back, so test first.
    - **Classic** (Debian): `sshd -t && systemctl restart ssh` (existing sessions survive; Debian's unit uses `KillMode=process`).
 6. Delete the old port's rules exactly as `ufw status` shows them: `ufw delete limit 22/tcp` (or `ufw delete allow OpenSSH`) and `ufw delete allow from <admin-ip> to any port 22 proto tcp`. The live session survives, because ufw keeps established connections.
 7. Test and disarm on the new port (`-p <new>`). If anything above broke, the new connection fails and the timer restores the old port and its rules.
@@ -175,9 +187,27 @@ Afterwards, `ss -Htlnp | grep -E 'sshd|systemd'` shows only the new port, and th
   - sshd: change the existing lines **in `00-vps-forge.conf` itself** to `KbdInteractiveAuthentication yes` and `AuthenticationMethods publickey,keyboard-interactive`. A new drop-in such as `10-2fa.conf` is silently ignored, because sshd keeps the first value it reads (see the drop-in trap above).
   - Do the PAM and sshd edits inside one deadman window: arm → edit both → `sshd -t` → `sshd -T | grep -Ei '^(kbdinteractiveauthentication|authenticationmethods) '` shows `yes` and `publickey,keyboard-interactive` → reload → the user logs in from a new terminal with `-o ControlPath=none` and gets the verification-code prompt → disarm. Scratch codes are printed once, and the user must store them offline.
 
+## Rotating a key
+
+A new laptop, a leaked key, a contractor leaving: add the new key first, prove it, and only then remove the old one. Swapping them in one step locks the user out if the new key has a typo.
+
+1. The user creates the new key locally (`ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519_new`) and sends only the `.pub` line.
+2. `vps-forge-deadman arm 5`, append it with `>>` (never `>`) to `/home/<admin>/.ssh/authorized_keys`, then test from a new connection **with only the new key**: `ssh -o ControlPath=none -o IdentitiesOnly=yes -i ~/.ssh/id_ed25519_new -p <port> <admin>@<host> 'sudo -n vps-forge-deadman disarm'` (password sudo: "Test and disarm").
+3. In a second deadman window, remove the old key by its fingerprint, test with the new key again, and disarm:
+   ```bash
+   OLD='SHA256:<fingerprint of the old key>'; K=/home/<admin>/.ssh/authorized_keys
+   while IFS= read -r l; do
+     [ "$(printf '%s\n' "$l" | ssh-keygen -lf - 2>/dev/null | awk '{print $2}')" = "$OLD" ] || printf '%s\n' "$l"
+   done < "$K" > /root/ak.new
+   grep -q . /root/ak.new && ssh-keygen -lf /root/ak.new && install -m 600 -o <admin> -g <admin> /root/ak.new "$K"; rm -f /root/ak.new
+   ```
+4. The user points `IdentityFile` in `~/.ssh/config` at the new key and deletes the old one.
+
+Suggest a **second key** in `authorized_keys` that lives somewhere else: a hardware key, or a key on another device kept offline. A lost or broken laptop then means using the other key, not a trip to the provider console. Rotate deploy keys the same way, and update the pipeline's secret before removing the old key.
+
 ## Cleaning up what the provider left
 
-- Review `/root/.ssh/authorized_keys` and every `/home/*/.ssh/authorized_keys`. Ask about any key the user doesn't recognise. Once root login is off, root's file is unused; empty it if the user agrees.
+- Review `/root/.ssh/authorized_keys` and every `/home/*/.ssh/authorized_keys`. Ask about any key the user doesn't recognise. Once root login is off, root's file is unused; empty it if the user agrees. Remove keys inside a deadman window and test the admin login from a new connection: the snapshot holds every `authorized_keys` file, so deleting the wrong key rolls back.
 - Default cloud users (`ubuntu`, `debian`, `admin`, `linuxuser`): once the new admin works, offer to lock (`usermod -L -e 1 <user>`) or remove them. Some providers' web consoles expect them, so ask first.
 - Root password: `passwd -S root`. If you set one for console use, keep it. Otherwise `passwd -l root` locks it, which is harmless with key-only SSH and NOPASSWD sudo. Under password sudo, lock root only after the user has proven the saved password works (`ssh -t <admin>@<host> sudo -v`): otherwise a lost password leaves no way to root but the provider's rescue mode.
 - `/etc/sudoers.d/90-cloud-init-users` often grants the cloud user NOPASSWD sudo. Remove it once that user is gone.
@@ -185,10 +215,10 @@ Afterwards, `ss -Htlnp | grep -E 'sshd|systemd'` shows only the new port, and th
 ## Hand-off cleanup (phase 12)
 
 Run these in this order. Under password sudo, removing the temporary grant takes away the agent's root, so it comes last:
-1. Agent-session entries (SKILL.md rule 1), in one deadman window: `ufw delete allow from <agent-ip> to any port <port> proto tcp`; the `ignoreip` entry and its `# agent session` comment, then `systemctl reload fail2ban`; the agent IP in `PerSourcePenaltyExemptList` (`01-vps-forge-crypto.conf`), then `sshd -t && systemctl reload ssh`. The user's real IP belongs in all three places instead. Test and disarm.
+1. Agent-session entries (SKILL.md rule 2), in one deadman window: `ufw delete allow from <agent-ip> to any port <port> proto tcp`; the `ignoreip` entry and its `# agent session` comment, then `systemctl reload fail2ban`; the agent IP in `PerSourcePenaltyExemptList` (`01-vps-forge-crypto.conf`), then `sshd -t && systemctl reload ssh`. The user's real IP belongs in all three places instead. Test and disarm.
 2. Password sudo: `test ! -e /home/<admin>/SUDO-PASSWORD` (if it's still there, tell the user; don't read it) and `passwd -S <admin>` shows `P`. While the file exists, a stolen key is enough for root again.
 3. `passwd -l root` only under the conditions in "Cleaning up what the provider left". Then write SERVER.md and make the final etckeeper commit.
-4. Last step, in one call, because afterwards you have no root: `sudo sh -c 'systemctl disable --now vps-forge-temp-sudo-expiry.timer; rm -f /etc/systemd/system/vps-forge-temp-sudo-expiry.* /etc/sudoers.d/90-vps-forge-temp && systemctl daemon-reload && etckeeper commit "vps-forge: remove temporary sudo grant"'`. Check that it is gone even after a rollback: the rollback deletes it only if it was created while the switch was armed. Then `ssh -o ControlPath=none -o BatchMode=yes -p <port> <admin>@<host> 'sudo -n -v'` must fail with `a password is required`. `audit.sh` flags a leftover grant.
+4. Last step, in one call, because afterwards you have no root: `sudo sh -c 'systemctl disable --now vps-forge-temp-sudo-expiry.timer; rm -f /etc/systemd/system/vps-forge-temp-sudo-expiry.* /etc/sudoers.d/90-vps-forge-temp && systemctl daemon-reload && etckeeper commit "vps-forge: remove temporary sudo grant"'`. Check that it is gone even after a rollback: the rollback deletes it only if it was created while the switch was armed. Then `ssh -o ControlPath=none -o BatchMode=yes -p <port> <admin>@<host> 'sudo -n -v'` must fail asking for a password (`a password is required`, or `interactive authentication is required` from sudo-rs). `audit.sh` flags a leftover grant.
 
 ## Verification and client config
 

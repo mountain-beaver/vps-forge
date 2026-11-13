@@ -74,6 +74,7 @@ expect late-dropin ssh.root_login FAIL
 rm -f /etc/ssh/sshd_config.d/99-hardening.conf
 run_audit cloud-init-only
 expect cloud-init-only ssh.password_auth FAIL
+msg_has cloud-init-only ssh.password_auth '00-vps-forge\.conf' "names the drop-in that wins"
 
 step "Match block re-enables passwords for outside clients"
 reset_ssh
@@ -315,6 +316,15 @@ expect cf-docker-user exposure.cloudflare absent
 rm -f "$STUB/ufw"
 PATH="$STUB:$PATH" run_audit no-cf
 expect no-cf exposure.cloudflare absent
+# nftables firewall backend: no DOCKER-USER chain, so rules left in an iptables one filter nothing.
+mkdir -p /etc/docker; printf '{\n  "firewall-backend": "nftables"\n}\n' > /etc/docker/daemon.json
+PATH="$STUB:$PATH" run_audit docker-nft
+dck nft-ignores-docker-user FAIL "'adminer' publishes 0\.0\.0\.0:8081->8080/tcp,:::8081->8080/tcp on all interfaces.*own nftables table"
+expect docker-nft exposure.docker_backend INFO
+rm -f /etc/docker/daemon.json
+PATH="$STUB:$PATH" run_audit docker-iptables
+dck iptables-backend-filtered WARN "'adminer' publishes 0\.0\.0\.0:8081->8080/tcp,:::8081->8080/tcp publicly"
+expect docker-iptables exposure.docker_backend absent
 unset DU_RULES4 DU_RULES6
 cat > "$STUB/docker" <<'STUBEOF'
 #!/bin/bash
@@ -377,6 +387,31 @@ expect f2b-ignore-admin intrusion.ignoreip absent
 unset F2B_ACT F2B_PORT F2B_ALLPORTS F2B_IGNORE
 rm -rf "$STUB"
 reset_ssh
+
+step "CrowdSec without a bouncer blocks nothing"
+# CS_ACTIVE lists the active units; CS_BOUNCERS is the JSON of 'cscli bouncers list -o json'.
+STUB=$(mktemp -d)
+cat > "$STUB/systemctl" <<'STUBEOF'
+#!/bin/bash
+[[ "$1 $2" == "is-active --quiet" && " $CS_ACTIVE " == *" $3 "* ]]
+STUBEOF
+cat > "$STUB/cscli" <<'STUBEOF'
+#!/bin/bash
+[[ "$*" == "bouncers list -o json" ]] && printf '%s\n' "${CS_BOUNCERS:-[]}"
+STUBEOF
+chmod +x "$STUB/systemctl" "$STUB/cscli"
+cs() { # scenario active-units bouncers-json STATUS
+  export CS_ACTIVE=$2 CS_BOUNCERS=$3
+  PATH="$STUB:$PATH" run_audit "$1"
+  expect "$1" intrusion.ips "$4"
+}
+cs cs-fw-bouncer 'crowdsec crowdsec-firewall-bouncer' '[]' PASS
+cs cs-registered 'crowdsec' '[{"name": "caddy-bouncer-1", "type": "caddy-bouncer"}]' PASS
+msg_has cs-registered intrusion.ips 'caddy-bouncer-1' "PASS names the bouncer"
+cs cs-no-bouncer 'crowdsec' '[]' WARN
+cs cs-null 'crowdsec' 'null' WARN
+unset CS_ACTIVE CS_BOUNCERS
+rm -rf "$STUB"
 
 step "firewall.host: default deny per address family"
 # No NET_ADMIN here: stubs print what nft / iptables / ip6tables would. The ip wrapper decides

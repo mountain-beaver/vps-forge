@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <b>简体中文</b> · <a href="README.ja.md">日本語</a> · <a href="README.ru.md">Русский</a></sub></p>
 
-<!-- translation of README.md, source sha256: cd214fcd1c0e -->
+<!-- translation of README.md, source sha256: 5a74157c2e5d -->
 
 <p align="center"><sub>本文是英文 README 的译文，两者如有出入，以英文版为准。翻译有误之处，欢迎提交 <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a> 指正。</sub></p>
 
@@ -117,13 +117,13 @@ npx skills add mountain-beaver/vps-forge -g -a codex
 gh skill install mountain-beaver/vps-forge vps-forge --agent cursor --scope user
 ```
 
-`--agent` 接受 `claude-code`、`codex`、`cursor`、`github-copilot`、`gemini-cli` 和 `opencode` 等名称；`gh skill install --help` 会列出全部可选值。用 `--pin v1.0.0` 可以固定到某个发布版本。
+`--agent` 接受 `claude-code`、`codex`、`cursor`、`github-copilot`、`gemini-cli` 和 `opencode` 等名称；`gh skill install --help` 会列出全部可选值。用 `--pin v1.2.0` 可以固定到某个发布版本，也可以写在技能名后面：`vps-forge@v1.2.0`。
 </details>
 
 <details>
 <summary><b>Claude.ai 和 Claude Desktop</b>：上传 zip 包</summary>
 
-从[最新发布](https://github.com/mountain-beaver/vps-forge/releases/latest)下载 `vps-forge-skill.zip`，然后在 Settings → Capabilities → Skills → "Upload skill" 中上传。需要开启代码执行（Code execution）。
+从[最新发布](https://github.com/mountain-beaver/vps-forge/releases/latest)下载 `vps-forge-skill.zip`，然后在 Customize → Skills 中上传：点击 "+"，再选 "Create skill" → "Upload a skill"。需要在 Settings → Capabilities 中开启代码执行（Code execution）。
 
 聊天应用无法 SSH 到你的服务器，所以在那里技能以**脚本模式**工作。它先给你一段只读的审计脚本，由你运行后把输出贴回来，然后每个阶段给你一段简短的脚本。每次修改 SSH 或防火墙之前，脚本都会停下来，请你从第二个终端登录；如果这次登录失败，服务器会自行撤销这一步。所有命令都由你自己运行，因此 Agent 只知道你贴回来的内容，而从外部进行的检查需要 Mac、Linux 或 WSL 终端。
 </details>
@@ -155,8 +155,8 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 
 | 方面 | 完成后的服务器上 |
 |---|---|
-| **访问** | 一个只持有你密钥的管理员用户。root 登录和密码登录均已关闭，设置了 `AllowGroups`，SSH 加密算法采用现代配置并会根据版本调整，因此能通过 `ssh-audit`。 |
-| **防火墙** | ufw 或 nftables，默认拒绝，IPv4 与 IPv6 规则保持一致。Docker 发布的端口也在管控范围内，你自己的 IP 总是最先放行。 |
+| **访问** | 一个只持有你密钥的管理员用户。root 登录和密码登录均已关闭，设置了 `AllowGroups`，SSH 加密算法采用现代配置并会根据版本调整，因此 `ssh-audit` 不会报告失败项。它唯一的警告是预期之内的：为了兼容旧客户端保留了经典的 curve25519，paranoid 级别会将其移除。 |
+| **防火墙** | ufw，默认拒绝，IPv4 与 IPv6 规则保持一致。Docker 发布的端口也在管控范围内，你自己的 IP 总是最先放行。 |
 | **入侵防护** | fail2ban 使用 systemd 后端并启用 recidive jail，在它首次启动之前就已把你的 IP 加入忽略列表。paranoid 级别使用 CrowdSec。 |
 | **更新** | 无人值守的安全更新，同样覆盖它添加的第三方软件源（Caddy、Tailscale、CrowdSec，以及经你同意后的 Docker），外加 needrestart 和可选的重启时间窗口。 |
 | **Web 与应用** | Docker 只绑定 localhost，Caddy 或 nginx 配置 TLS 和安全响应头，并提供数据库和 worker 配置档。 |
@@ -169,7 +169,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 
 | | **baseline** | **hardened**（默认） | **paranoid** |
 |---|---|---|---|
-| SSH | 仅限密钥，禁止 root，`AllowGroups` | + 现代 KEX 和加密算法（可用时启用后量子算法）、ed25519 主机密钥、`ssh-audit` 无问题 | + FIDO2 或 TOTP，SSH 只能经 VPN 访问 |
+| SSH | 仅限密钥，禁止 root，`AllowGroups` | + 现代 KEX 和加密算法（后量子算法优先）、ed25519 主机密钥、`ssh-audit` 无失败项 | + 仅后量子 KEX、FIDO2 或 TOTP，SSH 只能经 VPN 访问 |
 | 防火墙 | 默认拒绝 | + IPv6 规则一致、Docker 规则、服务商防火墙 | + Web 仅对 Cloudflare 开放、审查出站流量 |
 | 入侵防护 | fail2ban | + recidive | CrowdSec |
 | 更新 | 无人值守安全更新 | + needrestart、Livepatch | + 重启时间窗口 |
@@ -190,7 +190,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
   </picture>
 </p>
 
-1. `deadman.sh arm` 为配置做快照，并启动一个 5 分钟的 systemd 计时器。
+1. `deadman.sh arm` 为 SSH、防火墙、sudo 和 PAM 配置以及 `authorized_keys` 文件做快照，并启动一个 5 分钟的 systemd 计时器。
 2. Agent 进行改动并校验（`sshd -t`、`visudo -c`、`nft -c`）。
 3. 它通过一个**新**连接重新登录，这个连接无法复用旧连接。
 4. 只有这次登录成功，它才会撤防、关掉计时器。
@@ -209,7 +209,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 **不信？那就亲手弄坏它。** 这个开关只是一个普通的 bash 脚本，不需要任何 Agent 就能试。在一台用完即弃的服务器上，以有 sudo 权限的用户登录，保持当前会话不要断开，然后运行：
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/deadman.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.2.0/skills/vps-forge/scripts/deadman.sh
 less deadman.sh                                                       # 以 root 运行之前先通读一遍
 sudo install -m 755 deadman.sh /usr/local/sbin/vps-forge-deadman
 sudo vps-forge-deadman arm 1                                          # 一分钟后回滚
@@ -288,7 +288,7 @@ sudo sshd -t && sudo systemctl reload ssh                             # 配置�
   <img alt="GLM-5.3 抽查结果与 Claude Opus 5.5 在 Debian 13 上的对比。全新 VPS 到生产环境：Opus 不用技能为 84、89 和 89，使用技能三次均为 100；GLM-5.3 为 79 和 100。生产环境 Docker 服务器：Opus 为 73、80 和 87，之后三次均为 100；GLM-5.3 为 67 和 100。" src="docs/bench/chart-spot-light.svg" width="880">
 </picture>
 
-基准测试运行的是发布前版本的技能。1.0.1 版只改动了文字。1.1.0 版改变的行为，落在基准测试几乎没有或完全没有涉及的地方：范围很窄的请求、临时 sudo 授权的截止时间、检查应用数据的恢复演练，以及遇到 Kubernetes 节点和虚拟化宿主机时停止操作。1.1.1 版只改动了 README、其中的图片和打包方式。此后的改动列在 CHANGELOG 的 Unreleased 部分（部署面板、脚本模式、更安静的登录告警、`extend`），同样没有经过基准测试。[CHANGELOG.md](CHANGELOG.md) 列出了所有改动。场景、测试框架以及复现这些运行所需的一切都在 [`bench/`](bench/README.md) 中。每次运行的结果见 [`docs/bench/results.md`](docs/bench/results.md) 和 [`results.json`](docs/bench/results.json)。
+基准测试运行的是发布前版本的技能。1.0.1 版只改动了文字。1.1.0 版改变的行为，落在基准测试几乎没有或完全没有涉及的地方：范围很窄的请求、临时 sudo 授权的截止时间、检查应用数据的恢复演练，以及遇到 Kubernetes 节点和虚拟化宿主机时停止操作。1.1.1 版只改动了 README、其中的图片和打包方式。1.2.0 版（部署面板、脚本模式、更安静的登录告警、`extend`、死人开关快照包含 `authorized_keys`、CrowdSec 检查要求有 bouncer）同样没有经过基准测试。[CHANGELOG.md](CHANGELOG.md) 列出了所有改动。场景、测试框架以及复现这些运行所需的一切都在 [`bench/`](bench/README.md) 中。每次运行的结果见 [`docs/bench/results.md`](docs/bench/results.md) 和 [`results.json`](docs/bench/results.json)。
 
 ## 常见问题
 
@@ -331,14 +331,14 @@ sudo sshd -t && sudo systemctl reload ssh                             # 配置�
 - **安装到了别的项目里。** 不加 `-g` 时，`npx skills add` 只安装到当前目录。用 `-g` 重新安装，或者在那个目录中启动 Agent。
 - **会话在安装之前就已开始。** Agent 在会话开始时读取技能列表，所以请新开一个会话。
 - **Claude Code 插件：** 在 `/plugin` 中确认 `vps-forge` 已安装并已启用。
-- **Claude.ai 和 Claude Desktop：** 必须在 Settings → Capabilities → Skills 中启用该技能，并开启代码执行。
+- **Claude.ai 和 Claude Desktop：** 必须在 Customize → Skills 中启用该技能，并在 Settings → Capabilities 中开启代码执行。
 - **请求听起来不像是服务器相关的工作。** 直接点名：“用 vps-forge 技能加固 203.0.113.10”。
 </details>
 
 <details>
 <summary><b>支持哪些服务器？</b></summary>
 
-Debian 12 和 13，以及 Ubuntu 22.04、24.04 和 26.04，服务商不限：Hetzner、DigitalOcean、Vultr、Linode、OVH、AWS（EC2 和 Lightsail）、Oracle Cloud，或者你桌子底下的一台机器，x86 或 ARM 均可。它了解每家的坑，比如 Oracle Cloud 内置的 `iptables` reject 规则。Agent 在你的机器上通过 SSH 工作。对 RHEL 系发行版的支持已列入路线图。
+Debian 12 和 13，以及 Ubuntu 22.04、24.04 和 26.04，服务商不限：Hetzner、DigitalOcean、Vultr、Linode、OVH、AWS（EC2 和 Lightsail）、Oracle Cloud，或者你桌子底下的一台机器，x86 或 ARM 均可。它了解每家的坑，比如 Oracle Cloud 内置的 `iptables` reject 规则。Agent 在你的机器上通过 SSH 工作。RHEL 系服务器（Rocky、Alma、Fedora）不在本技能范围内：技能会停下来说明原因，而不会把 Debian 的工具套用到它们身上。
 </details>
 
 <details>
@@ -375,12 +375,12 @@ Debian 12 和 13，以及 Ubuntu 22.04、24.04 和 26.04，服务商不限：Het
 可以。`audit.sh` 是一个独立的只读审计脚本：
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/audit.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.2.0/skills/vps-forge/scripts/audit.sh
 less audit.sh          # 以 root 运行任何东西之前先通读一遍
 sudo bash audit.sh     # 只读；加 --json 输出机器可读的结果
 ```
 
-`deadman.sh`、`external-check.sh` 和 `install-alerts.sh` 也都能单独使用，每个脚本都有 `--help`。
+`deadman.sh`、`external-check.sh` 和 `install-alerts.sh` 也都能单独使用，每个脚本都有 `--help`。从 v1.2.0 起，每个发布版本都附带签名的构建来源证明：`gh attestation verify audit.sh -R mountain-beaver/vps-forge` 可以证明下载的脚本出自本仓库的发布工作流。
 </details>
 
 ## 包含内容
@@ -389,14 +389,13 @@ sudo bash audit.sh     # 只读；加 --json 输出机器可读的结果
 skills/vps-forge/
 ├── SKILL.md              工作流程、安全规则、级别、完成标准
 ├── references/           每个阶段一个文件，仅在需要时加载
-├── scripts/
-│   ├── audit.sh          只读审计：70+ 项检查、评分、JSON
-│   ├── deadman.sh        为 SSH、防火墙、sudo 和 PAM 做快照并自动回滚
-│   ├── external-check.sh 从你的机器进行外部检查：端口、SSH 认证、TLS、ssh-audit
-│   └── install-alerts.sh vps-notify：ntfy、Telegram 或 webhook 告警
 ├── assets/               经过校验的模板：sshd、sysctl、fail2ban、apt、Docker、Caddy、
 │                         restic、Cloudflare 同步、motd、SERVER.md、cloud-init
-└── evals/                行为测试用例
+└── scripts/
+    ├── audit.sh          只读审计：70+ 项检查、评分、JSON
+    ├── deadman.sh        为 SSH、密钥、防火墙、sudo 和 PAM 做快照并自动回滚
+    ├── external-check.sh 从你的机器进行外部检查：端口、SSH 认证、TLS、ssh-audit
+    └── install-alerts.sh vps-notify：ntfy、Telegram 或 webhook 告警
 ```
 
 每个模板都在 CI 中由读取它的工具检查（`sshd -t`、`fail2ban-client -t`、`caddy validate`、`cloud-init schema`、`systemd-analyze verify`、`dockerd --validate`），覆盖 Debian 12/13 和 Ubuntu 22.04/24.04/26.04。`audit.sh` 会针对已知良好和已知有问题的服务器进行测试，并用校验和证明它不做任何改动。失效保护开关的回滚在 CI 中用真实的 systemd 测试：布防，弄坏 SSH 或防火墙，等待，然后检查一切是否恢复原状，包括跨重启的情况。

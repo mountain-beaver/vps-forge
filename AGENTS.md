@@ -5,13 +5,14 @@ An [Agent Skill](https://agentskills.io) for hardening Debian/Ubuntu servers. Th
 - `references/`: one file per phase, loaded on demand.
 - `scripts/`: bash that runs as root on servers.
 - `assets/`: config templates.
-- `evals/`: behaviour evals in `claude plugin eval` format.
+
+Behaviour evals live in `evals/` at the repository root (`claude plugin eval` format), outside the skill, so installers that copy the skill folder don't ship them to users.
 
 ## Commands
 
 - `make test`: lint, manifests, version check, audit smoke test, deadman round trip. No sudo needed.
-- `make directory`: builds `dist/directory`, the plugin folder that Anthropic's directory reads from the `directory` branch (only `.claude-plugin/plugin.json`, the icon, `skills/vps-forge` without evals, LICENSE and `.github/directory/README.md`). `.github/workflows/directory.yml` commits it to that branch on every release tag.
-- `make ci`: every CI suite in podman/docker containers on Debian 12/13 and Ubuntu 22.04/24.04/26.04.
+- `make directory`: builds `dist/directory`, the plugin folder that Anthropic's directory reads from the `directory` branch (only `.claude-plugin/plugin.json`, the icon, `skills/vps-forge`, LICENSE and `.github/directory/README.md`). `.github/workflows/directory.yml` commits it to that branch on every release tag.
+- `make ci`: the per-distro CI suites (checks, templates, audit) in podman/docker containers on Debian 12/13 and Ubuntu 22.04/24.04/26.04. `make ci-all` adds the systemd suites (`audit-systemd`, `deadman-systemd`); only CI's macOS job for `external-check.sh` has no local target.
   - Narrow it with `DISTRO=debian:13 make templates` or `make audit`.
 - `make lint`: the static checks only (no containers, no network, no root).
 - Tools: bash, shellcheck, python3 with PyYAML, jq, zip, and podman or docker for the container suites.
@@ -22,8 +23,8 @@ An [Agent Skill](https://agentskills.io) for hardening Debian/Ubuntu servers. Th
 - `audit.sh` is read-only. `tests/audit-scenarios.sh` checksums the filesystem around it.
 - `external-check.sh` runs on users' Macs, so it must stay compatible with bash 3.2: no `mapfile`, no `${var,,}`, no associative arrays.
 - Every script passes `shellcheck -S warning`.
-- Versions must agree in three places: `.claude-plugin/plugin.json`, the first released `## x.y.z` heading in `CHANGELOG.md`, and `VERSION=` in `audit.sh`.
-  - Release: bump all three, then tag `vX.Y.Z`. The release workflow refuses a tag that doesn't match.
+- Versions must agree in four places: `.claude-plugin/plugin.json`, the first released `## x.y.z` heading in `CHANGELOG.md`, `VERSION=` in `audit.sh`, and `metadata.version` in the `SKILL.md` frontmatter (installers that copy only the skill folder keep it).
+  - Release: bump all four, then tag `vX.Y.Z`. The release workflow refuses a tag that doesn't match.
 - Templates use `<placeholder>` syntax.
   - A new placeholder needs a value in `fill()` in `tests/lib.sh`, otherwise `tests/templates.sh` fails.
   - The `write_files` in `assets/cloud-init.yaml` must stay consistent with the standalone templates. The test compares the effective sshd values.

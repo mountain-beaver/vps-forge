@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: russian-request
+expected_outcome: |
+  Answers in Russian (the user's language) while keeping commands, file names and config in their original form. Script mode with the full safety flow: key created on the user's machine, admin user, test from a new connection before passwords and root login go off, dead-man switch around SSH and firewall changes, Docker ports not published past ufw, bots as unprivileged systemd services or containers (worker profile).

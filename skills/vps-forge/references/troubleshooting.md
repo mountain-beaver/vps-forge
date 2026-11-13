@@ -2,12 +2,12 @@
 
 ## The skill didn't load
 
-An agent without the skill hardens a server with no dead-man switch. The sure sign: it changes SSH or the firewall without running `deadman.sh arm` first. It usually also skips the question about the provider's web console. Stop it there. The usual causes are a project install (`npx skills add` without `-g`) while the agent runs in another folder, a session that started before the install (open a new one), a plugin that isn't enabled (`/plugin` in Claude Code), the skill or code execution switched off in Claude.ai's Settings → Capabilities, or a request that didn't sound like server work (name the skill). If you're an agent reading this mid-task after a change made without the switch, tell the user, then arm before the next risky step and test access from a new connection.
+An agent without the skill hardens a server with no dead-man switch. The sure sign: it changes SSH or the firewall without running `deadman.sh arm` first. It usually also skips the question about the provider's web console. Stop it there. The usual causes are a project install (`npx skills add` without `-g`) while the agent runs in another folder, a session that started before the install (open a new one), a plugin that isn't enabled (`/plugin` in Claude Code), in Claude.ai the skill switched off under Customize → Skills or code execution off under Settings → Capabilities, or a request that didn't sound like server work (name the skill). If you're an agent reading this mid-task after a change made without the switch, tell the user, then arm before the next risky step and test access from a new connection.
 
 ## Locked out
 
 0. **Banned by fail2ban?** If SSH times out or is refused right after test logins, your IP is probably banned (the deadman doesn't touch fail2ban). From another IP (phone hotspot) or the console: `fail2ban-client banned` (`fail2ban-client status sshd` on 0.11, Ubuntu 22.04), then `fail2ban-client set sshd unbanip <ip>` and `fail2ban-client set recidive unbanip <ip>`. Then put it into `ignoreip` in `/etc/fail2ban/jail.d/vps-forge.local` and `systemctl reload fail2ban`, so the next test logins don't ban it again (firewall.md).
-1. **Wait for the deadman.** If it was armed, it restores the SSH, firewall, sudoers and PAM config, the ssh/firewall units' enabled state, and removes files created during the window when the timer fires (default 5 min). Then try again. Check later with `journalctl -t vps-forge-deadman`.
+1. **Wait for the deadman.** If it was armed, it restores the SSH, firewall, sudoers and PAM config, the `authorized_keys` of root and of every login account, the ssh/firewall units' enabled state, and removes files created during the window when the timer fires (default 5 min). Then try again. Check later with `journalctl -t vps-forge-deadman`.
 2. **Provider console** (VNC/serial): log in with a console password, or with root's password if one was set. Then:
    ```bash
    vps-forge-deadman restore          # if the snapshot exists
@@ -33,7 +33,7 @@ This is expected after restricting `HostKey` to ed25519. Verify the fingerprint 
 
 A file that sorts earlier in `sshd_config.d/` wins (cloud-init's `50-cloud-init.conf` vs a `99-` file), or a directive above the `Include` in `sshd_config` wins. Run `sshd -T | grep passwordauth` and `grep -rn PasswordAuthentication /etc/ssh/`. Name the file `00-vps-forge.conf`.
 
-## Port change didn't take effect (Ubuntu 24.04)
+## Port change didn't take effect (Ubuntu 24.04 and 26.04)
 
 SSH is socket-activated, so run `systemctl daemon-reload && systemctl restart ssh.socket`, then `ss -tlnp | grep ssh`.
 

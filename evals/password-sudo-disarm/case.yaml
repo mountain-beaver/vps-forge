@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: password-sudo-disarm
+expected_outcome: |
+  Script mode with password sudo: creates maria with only the user's key, sets her sudo password without it passing through the chat, and keeps root working until her login and sudo are proven. The test from the user's second terminal expects `sudo -n -v` to fail asking for a password (not refusing the user) and checks `passwd -S maria` shows P; the dead-man switch is then disarmed from the root session, because `sudo -n` can't disarm under password sudo. Root login goes off only after that.

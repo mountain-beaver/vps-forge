@@ -20,4 +20,4 @@ body:
     id: fix
     attributes:
       label: Suggested handling
-      description: What the skill should do instead, or what references/distro-notes.md should say.
+      description: What the skill should do instead, or what references/distro-notes.md (a distro) or references/providers.md (a provider) should say.

@@ -248,6 +248,11 @@ STUB
   cat > "$stub/ssh-audit" <<'STUB'
 #!/bin/sh
 case "$*" in *--help*) echo '  --skip-rate-test'; exit 0 ;; esac
+if [ "${STUB_SA_PQ:-0}" = 1 ]; then
+  echo '(kex) curve25519-sha256 -- [warn] does not provide protection against post-quantum attacks'
+  echo '(kex) curve25519-sha256@libssh.org -- [warn] does not provide protection against post-quantum attacks'
+  exit 2
+fi
 echo '(kex) diffie-hellman-group1-sha1 -- [fail] removed'; echo '(enc) aes128-cbc -- [warn] weak'
 exit "${STUB_SA_RC:-0}"
 STUB
@@ -260,6 +265,13 @@ STUB
       bad "external-check: ssh-audit exit ${want%%|*} (rc=$rc): $(grep -m1 -E 'PASS|FAIL|WARN' "$out" || true)"
     fi
   done
+  # ssh-audit 3.9+: the post-quantum warning for curve25519 alone is expected at the hardened level
+  STUB_SA_PQ=1 PATH="$stub:$PATH" "$BASH" "$ext" example.com --no-scan --no-login-tests --ssh-audit >"$out" 2>&1 && rc=0 || rc=$?
+  if grep -q 'PASS  ssh-audit: only the expected warning' "$out"; then
+    ok "external-check: only the curve25519 post-quantum warning -> PASS"
+  else
+    bad "external-check: curve25519 post-quantum warning only (rc=$rc): $(grep -m1 -E 'PASS|FAIL|WARN' "$out" || true)"
+  fi
   rm -f "$stub/ssh-audit"
 
   "$BASH" "$ext" --help >"$out" 2>&1 && rc=0 || rc=$?
@@ -286,15 +298,18 @@ while IFS= read -r f; do shells+=("$f"); done < <(find "$SKILL/scripts" "$SKILL/
 for f in "${shells[@]}"; do bash -n "$f" && ok "bash -n $f" || bad "bash -n $f"; done
 if command -v shellcheck >/dev/null; then
   shellcheck -S warning -s bash "${shells[@]}" && ok "shellcheck (${#shells[@]} files)" || bad "shellcheck"
+elif [[ "${VPS_FORGE_SKIP_SHELLCHECK:-0}" == 1 ]]; then
+  echo "  skip shellcheck (VPS_FORGE_SKIP_SHELLCHECK=1)"
 else
-  echo "  skip shellcheck not installed"
+  # A missing linter must not end in "ALL CHECKS PASSED": CI enforces shellcheck -S warning.
+  bad "shellcheck not installed (install it, or set VPS_FORGE_SKIP_SHELLCHECK=1 to skip on purpose)"
 fi
 
 echo "== external-check verdicts (stubbed ssh/curl/openssl)"
 external_check_tests
 
 echo "== JSON / YAML"
-for f in .claude-plugin/marketplace.json .claude-plugin/plugin.json "$SKILL/assets/docker/daemon.json" "$SKILL"/evals/*/files/*.json; do
+for f in .claude-plugin/marketplace.json .claude-plugin/plugin.json "$SKILL/assets/docker/daemon.json" evals/*/files/*.json; do
   python3 -m json.tool "$f" >/dev/null && ok "$f" || bad "$f"
 done
 python3 - "$SKILL" <<'PY' && ok "yaml + evals + SKILL.md frontmatter" || bad "yaml + evals + SKILL.md frontmatter"
@@ -327,10 +342,16 @@ def check_grader(path, fm, body):
         assert fm.get(key) not in (None, ""), f"{path}: {kind} grader needs {key}"
     if kind == "llm":
         assert fm.get("criteria") or body.strip(), f"{path}: llm grader needs criteria"
+    for key in ("pattern", "input_match"):
+        if isinstance(fm.get(key), str):
+            try:  # JS regex in the eval runner; the subset used here compiles the same in Python
+                re.compile(fm[key])
+            except re.error as e:
+                raise AssertionError(f"{path}: {key} is not a valid regex: {e}")
 
-for f in glob.glob(f"{skill}/evals/*/case.yaml") + [f"{skill}/assets/cloud-init.yaml"]:
+for f in glob.glob("evals/*/case.yaml") + [f"{skill}/assets/cloud-init.yaml"]:
     yaml.safe_load(open(f))
-for d in sorted(glob.glob(f"{skill}/evals/*")):
+for d in sorted(glob.glob("evals/*")):
     if not os.path.isdir(d):
         continue
     prompt = os.path.join(d, "prompt.md")
@@ -374,14 +395,19 @@ for ref in set(re.findall(r"`((?:references|scripts|assets)/[^`*{ ]+)`", text)):
 for f in glob.glob(".github/**/*.yml", recursive=True):
     yaml.safe_load(open(f))
 PY
-python3 - "$SKILL" <<'PY' && ok "versions agree (plugin.json, CHANGELOG, audit.sh)" || bad "version mismatch"
-import json, re, sys
+python3 - "$SKILL" <<'PY' && ok "versions agree (plugin.json, CHANGELOG, audit.sh, SKILL.md)" || bad "version mismatch"
+import json, re, sys, yaml
 skill = sys.argv[1]
 plugin = json.load(open(".claude-plugin/plugin.json"))["version"]
 released = re.findall(r"^## (\d+\.\d+\.\d+)", open("CHANGELOG.md").read(), re.M)
 audit = re.search(r'^VERSION="([^"]+)"', open(f"{skill}/scripts/audit.sh").read(), re.M).group(1)
-assert released and released[0] == plugin == audit, f"plugin.json {plugin}, CHANGELOG {released[:1]}, audit.sh {audit}"
+fm = re.match(r"^---\n(.*?)\n---\n", open(f"{skill}/SKILL.md").read(), re.S)
+meta = str((yaml.safe_load(fm.group(1)).get("metadata") or {}).get("version")) if fm else None
+assert released and released[0] == plugin == audit == meta, \
+    f"plugin.json {plugin}, CHANGELOG {released[:1]}, audit.sh {audit}, SKILL.md metadata.version {meta}"
 PY
+echo "== Markdown links"
+python3 tests/links.py || fail=1
 echo "== README translations"
 python3 tests/translations.py || fail=1
 if command -v claude >/dev/null; then

@@ -113,13 +113,13 @@ The full list of about 80 agents is in the installer's [agent table](https://git
 gh skill install mountain-beaver/vps-forge vps-forge --agent cursor --scope user
 ```
 
-`--agent` takes names such as `claude-code`, `codex`, `cursor`, `github-copilot`, `gemini-cli` and `opencode`; `gh skill install --help` lists them all. Pin a release with `--pin v1.0.0`.
+`--agent` takes names such as `claude-code`, `codex`, `cursor`, `github-copilot`, `gemini-cli` and `opencode`; `gh skill install --help` lists them all. Pin a release with `--pin v1.2.0`, or name it with the skill: `vps-forge@v1.2.0`.
 </details>
 
 <details>
 <summary><b>Claude.ai and Claude Desktop</b>: upload a zip</summary>
 
-Download `vps-forge-skill.zip` from the [latest release](https://github.com/mountain-beaver/vps-forge/releases/latest) and upload it under Settings → Capabilities → Skills → "Upload skill". Code execution has to be on.
+Download `vps-forge-skill.zip` from the [latest release](https://github.com/mountain-beaver/vps-forge/releases/latest) and upload it under Customize → Skills: "+", then "Create skill" → "Upload a skill". Code execution has to be on (Settings → Capabilities).
 
 A chat app can't SSH into your server, so there the skill works in **script mode**. It first gives you a read-only audit to run and paste back, then one short script per stage. Before every SSH or firewall change, the script stops and asks you to log in from a second terminal; if that login fails, the server undoes the step by itself. You run everything yourself, so the agent only knows what you paste back, and the outside-in check needs a Mac, Linux or WSL terminal.
 </details>
@@ -151,8 +151,8 @@ If your agent doesn't support skills at all, tell it to read `skills/vps-forge/S
 
 | Area | On the finished server |
 |---|---|
-| **Access** | An admin user that holds only your key. Root and password logins are off, `AllowGroups` is set, and SSH crypto is modern and version-aware, so it passes `ssh-audit`. |
-| **Firewall** | ufw or nftables, default deny, with IPv4 and IPv6 matched. Docker-published ports are covered too, and your own IP always gets through first. |
+| **Access** | An admin user that holds only your key. Root and password logins are off, `AllowGroups` is set, and SSH crypto is modern and version-aware, so `ssh-audit` finds no failures. Its one warning is expected: classic curve25519 stays for older clients, and the paranoid level removes it. |
+| **Firewall** | ufw, default deny, with IPv4 and IPv6 matched. Docker-published ports are covered too, and your own IP always gets through first. |
 | **Intrusion** | fail2ban with the systemd backend and a recidive jail, with your IP on its ignore list before it ever starts. CrowdSec at the paranoid level. |
 | **Updates** | Unattended security updates, also for the vendor repositories it adds (Caddy, Tailscale, CrowdSec, and Docker if you agree), needrestart, and an optional reboot window. |
 | **Web and apps** | Docker bound to localhost, Caddy or nginx with TLS and security headers, and database and worker profiles. |
@@ -165,7 +165,7 @@ If your agent doesn't support skills at all, tell it to read `skills/vps-forge/S
 
 | | **baseline** | **hardened** (default) | **paranoid** |
 |---|---|---|---|
-| SSH | keys only, no root, `AllowGroups` | + modern KEX and ciphers (post-quantum where available), ed25519 host key, clean `ssh-audit` | + FIDO2 or TOTP, SSH only through a VPN |
+| SSH | keys only, no root, `AllowGroups` | + modern KEX and ciphers (post-quantum first), ed25519 host key, `ssh-audit` without failures | + post-quantum KEX only, FIDO2 or TOTP, SSH only through a VPN |
 | Firewall | default deny | + IPv6 parity, Docker rules, provider firewall | + Cloudflare-only web, egress review |
 | Intrusion | fail2ban | + recidive | CrowdSec |
 | Updates | unattended security updates | + needrestart, Livepatch | + reboot window |
@@ -186,7 +186,7 @@ One wrong `sshd` or firewall change can make a server unreachable. So every SSH,
   </picture>
 </p>
 
-1. `deadman.sh arm` snapshots the config and starts a 5-minute systemd timer.
+1. `deadman.sh arm` snapshots the SSH, firewall, sudo and PAM config and the `authorized_keys` files, and starts a 5-minute systemd timer.
 2. The agent makes the change and validates it (`sshd -t`, `visudo -c`, `nft -c`).
 3. It logs in again over a **new** connection that can't reuse the old one.
 4. Only if that login works does it disarm the timer.
@@ -205,7 +205,7 @@ It can't undo what lives outside the server: a firewall in your provider's panel
 **Don't trust it? Break it.** The switch is a plain bash script, so you can try it without any agent. On a throwaway server, logged in as a user with sudo, keep this session open and run:
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/deadman.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.2.0/skills/vps-forge/scripts/deadman.sh
 less deadman.sh                                                       # read it before running it as root
 sudo install -m 755 deadman.sh /usr/local/sbin/vps-forge-deadman
 sudo vps-forge-deadman arm 1                                          # roll back in one minute
@@ -284,7 +284,7 @@ A lockout scores 0.
   <img alt="GLM-5.3 spot check next to Claude Opus 5.5 on Debian 13. Fresh VPS to production: Opus 84, 89 and 89 without the skill and 100 in all three runs with it, GLM-5.3 79 and 100. Production Docker box: Opus 73, 80 and 87, then 100 three times, GLM-5.3 67 and 100." src="docs/bench/chart-spot-light.svg" width="880">
 </picture>
 
-The benchmark ran on the pre-release skill. Version 1.0.1 changed only text. Version 1.1.0 changed behaviour where the benchmark says little or nothing: narrow requests, a deadline on the temporary sudo grant, a restore drill that checks the app's data, and a stop on Kubernetes nodes and hypervisor hosts. Version 1.1.1 changed only the README, its images and the packaging. The changes since then, listed under Unreleased in the CHANGELOG (deploy panels, script mode, quieter login alerts, `extend`), are not benchmarked either. [CHANGELOG.md](CHANGELOG.md) lists every change. The scenarios, the harness, and everything you need to reproduce the runs are in [`bench/`](bench/README.md). Per-run results are in [`docs/bench/results.md`](docs/bench/results.md) and [`results.json`](docs/bench/results.json).
+The benchmark ran on the pre-release skill. Version 1.0.1 changed only text. Version 1.1.0 changed behaviour where the benchmark says little or nothing: narrow requests, a deadline on the temporary sudo grant, a restore drill that checks the app's data, and a stop on Kubernetes nodes and hypervisor hosts. Version 1.1.1 changed only the README, its images and the packaging. Version 1.2.0 (deploy panels, script mode, quieter login alerts, `extend`, `authorized_keys` in the dead-man snapshot, a CrowdSec check that needs a bouncer) is not benchmarked either. [CHANGELOG.md](CHANGELOG.md) lists every change. The scenarios, the harness, and everything you need to reproduce the runs are in [`bench/`](bench/README.md). Per-run results are in [`docs/bench/results.md`](docs/bench/results.md) and [`results.json`](docs/bench/results.json).
 
 ## FAQ
 
@@ -327,14 +327,14 @@ Stop it before it changes SSH or the firewall: without the skill there is no dea
 - **It was installed into another project.** Without `-g`, `npx skills add` installs into the current folder only. Reinstall with `-g`, or start the agent in that folder.
 - **The session started before the install.** Agents read their skill list when a session starts, so open a new one.
 - **Claude Code plugin:** check that `vps-forge` is installed and enabled in `/plugin`.
-- **Claude.ai and Claude Desktop:** the skill must be switched on under Settings → Capabilities → Skills, and code execution must be on.
+- **Claude.ai and Claude Desktop:** the skill must be switched on under Customize → Skills, and code execution must be on under Settings → Capabilities.
 - **The request didn't sound like server work.** Name it: "use the vps-forge skill to harden 203.0.113.10".
 </details>
 
 <details>
 <summary><b>Which servers?</b></summary>
 
-Debian 12 and 13, and Ubuntu 22.04, 24.04 and 26.04, on any provider: Hetzner, DigitalOcean, Vultr, Linode, OVH, AWS (EC2 and Lightsail), Oracle Cloud, or a box under your desk, on x86 or ARM. It knows the traps of each, such as Oracle Cloud's built-in `iptables` reject rule. The agent works from your machine over SSH. RHEL-family support is on the roadmap.
+Debian 12 and 13, and Ubuntu 22.04, 24.04 and 26.04, on any provider: Hetzner, DigitalOcean, Vultr, Linode, OVH, AWS (EC2 and Lightsail), Oracle Cloud, or a box under your desk, on x86 or ARM. It knows the traps of each, such as Oracle Cloud's built-in `iptables` reject rule. The agent works from your machine over SSH. RHEL-family servers (Rocky, Alma, Fedora) are out of scope: the skill stops and says so rather than apply Debian tooling to them.
 </details>
 
 <details>
@@ -371,12 +371,12 @@ No. The skill and its scripts have no telemetry. Alerts go only to the ntfy topi
 Yes. `audit.sh` is a standalone, read-only audit:
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/audit.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.2.0/skills/vps-forge/scripts/audit.sh
 less audit.sh          # read it before running anything as root
 sudo bash audit.sh     # read-only; --json for machine output
 ```
 
-`deadman.sh`, `external-check.sh` and `install-alerts.sh` work on their own as well. Each one has a `--help`.
+`deadman.sh`, `external-check.sh` and `install-alerts.sh` work on their own as well. Each one has a `--help`. Releases from v1.2.0 on carry signed build provenance: `gh attestation verify audit.sh -R mountain-beaver/vps-forge` proves that a downloaded script came from this repository's release workflow.
 </details>
 
 ## What's inside
@@ -385,14 +385,13 @@ sudo bash audit.sh     # read-only; --json for machine output
 skills/vps-forge/
 ├── SKILL.md              workflow, safety rules, levels, definition of done
 ├── references/           one file per phase, loaded only when needed
-├── scripts/
-│   ├── audit.sh          read-only audit: 70+ checks, score, JSON
-│   ├── deadman.sh        snapshot and automatic rollback for SSH, firewall, sudo and PAM
-│   ├── external-check.sh outside-in check from your machine: ports, SSH auth, TLS, ssh-audit
-│   └── install-alerts.sh vps-notify: ntfy, Telegram or webhook alerts
 ├── assets/               validated templates: sshd, sysctl, fail2ban, apt, Docker, Caddy,
 │                         restic, Cloudflare sync, motd, SERVER.md, cloud-init
-└── evals/                behaviour test cases
+└── scripts/
+    ├── audit.sh          read-only audit: 70+ checks, score, JSON
+    ├── deadman.sh        snapshot and automatic rollback for SSH, keys, firewall, sudo and PAM
+    ├── external-check.sh outside-in check from your machine: ports, SSH auth, TLS, ssh-audit
+    └── install-alerts.sh vps-notify: ntfy, Telegram or webhook alerts
 ```
 
 Every template is checked in CI by the tool that reads it (`sshd -t`, `fail2ban-client -t`, `caddy validate`, `cloud-init schema`, `systemd-analyze verify`, `dockerd --validate`), on Debian 12/13 and Ubuntu 22.04/24.04/26.04. `audit.sh` is tested against known good and bad servers, with a checksum that proves it changes nothing. The dead-man rollback is tested in CI on a real systemd: arm, break SSH or the firewall, wait, and check that everything came back, also across a reboot.

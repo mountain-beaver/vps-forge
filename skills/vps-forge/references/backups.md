@@ -61,7 +61,7 @@ If an attacker gets root on the server, they hold the repo credentials and can d
 
 ## Maintenance
 
-`vps-forge-backup-maint.timer` (weekly) runs `restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --prune` and `restic check --read-data-subset=5%`. Adjust the retention to the user's needs and storage budget.
+`vps-forge-backup-maint.timer` (weekly) runs `restic forget --group-by host,tags --tag vps-forge --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --prune` and `restic check --read-data-subset=5%`. Adjust the retention to the user's needs and storage budget. Keep `--group-by host,tags`: restic groups by host and paths by default, and the script backs up only the paths that exist, so adding a directory would start a new group and the old one would never expire.
 
 restic exit codes: **1** is a failed backup (unit fails, "Backup FAILED"). **3** means the snapshot was created but restic could not read some files (permissions, I/O errors; files that vanish during the run are skipped silently). The script treats 3 as a warning: the unit stays green, it sends "Backup WARNING", and it writes `/var/lib/vps-forge/backup/last-partial` instead of `last-success`. Find the files in `journalctl -u vps-forge-backup`, then fix their permissions or exclude them. An unmounted fstab volume under an included path stops the run before restic starts, so an empty directory never becomes a green snapshot.
 
@@ -86,3 +86,14 @@ rm -rf /root/restore-test
 Then load that dump into a scratch database and count a few rows (databases.md). A restore of `/etc` alone proves that restic works, not that the app's data comes back.
 
 Write the full recovery procedure into SERVER.md: where the repo is, where the password is, how to install restic on a fresh box, and the exact restore command.
+
+**Changing the repository password.** A restic repository can have several keys, each with its own password, and any of them opens it. Rotate by adding first, removing last:
+```bash
+set -a; . /etc/restic/env; set +a
+( umask 077; openssl rand -base64 48 > /etc/restic/password.new )
+restic key add --new-password-file /etc/restic/password.new
+restic key list                                   # the key in use is marked with *
+mv /etc/restic/password.new /etc/restic/password && restic snapshots >/dev/null && echo "new key works"
+restic key remove <ID of the old key>             # restic refuses to remove the key in use
+```
+Do the last step only after the user has saved the new password offline. While the old key exists, anyone holding the old password (a leaked copy, a former admin) can still read every snapshot. A second key whose password only the user holds is a sensible extra: it opens the backups if the server's copy is lost.

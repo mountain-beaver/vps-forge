@@ -1,0 +1,8 @@
+== vps-forge audit 1.2.0 on vps1 (Debian GNU/Linux 13 (trixie))
+  PASS  ssh.root      root login disabled
+  PASS  ssh.password  password authentication disabled
+  PASS  firewall.host ufw active, default deny incoming
+  WARN  intrusion.ips no fail2ban or CrowdSec running (fail2ban is installed but masked)
+  WARN  backup.none   no restic timer
+  WARN  alerts.none   no vps-notify
+Score: 78

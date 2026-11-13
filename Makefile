@@ -6,7 +6,7 @@ VERSION := $(shell python3 -c 'import json;print(json.load(open(".claude-plugin/
 DIST    := dist
 DISTRO  ?= all
 
-.PHONY: help test lint templates audit audit-systemd deadman-systemd ci package directory eval clean
+.PHONY: help test lint templates audit audit-systemd deadman-systemd ci ci-all package directory eval clean
 
 help: ## list targets
 	@awk -F':.*## ' '/^[a-z-]+:.*## /{printf "  %-10s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -29,12 +29,14 @@ audit-systemd: ## audit.sh checks that need systemd (podman, localhost/u24sd)
 deadman-systemd: ## deadman with real systemd in podman (localhost/u24sd, ~6 min, needs network)
 	bash tests/deadman-systemd.sh
 
-ci: ## everything CI runs, locally, in containers
+ci: ## the per-distro container suites (checks, templates, audit), locally
 	bash tests/in-container.sh $(DISTRO)
+
+ci-all: ci audit-systemd deadman-systemd ## everything CI runs except the macOS job (external-check.sh)
 
 package: ## build dist/vps-forge-skill.zip for claude.ai upload (same as the release workflow)
 	@mkdir -p $(DIST) && rm -f $(DIST)/vps-forge-skill.zip
-	cd skills && zip -qr -X $(CURDIR)/$(DIST)/vps-forge-skill.zip vps-forge -x 'vps-forge/evals/*'
+	cd skills && zip -qr -X $(CURDIR)/$(DIST)/vps-forge-skill.zip vps-forge
 	@echo "$(DIST)/vps-forge-skill.zip ($(VERSION))"
 
 directory: ## build dist/directory: the plugin folder Anthropic's directory reads (same as the directory workflow)
@@ -42,7 +44,7 @@ directory: ## build dist/directory: the plugin folder Anthropic's directory read
 
 # Pin the judge and use a 0.85 threshold so llm grader noise is not a gate; see CONTRIBUTING.md.
 eval: ## behaviour evals with `claude plugin eval` (spends tokens)
-	cd $(SKILL) && claude plugin eval . --allow-tools Write,Edit,Bash --scaffold --threshold 0.85 --judge-model claude-haiku-4-5
+	claude plugin eval . --eval-dir evals --allow-tools Write,Edit,Bash --scaffold --threshold 0.85 --judge-model claude-haiku-5-5
 
 clean: ## remove build output
 	rm -rf $(DIST)

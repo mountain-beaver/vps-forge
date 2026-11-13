@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.ja.md">日本語</a> · <b>Русский</b></sub></p>
 
-<!-- translation of README.md, source sha256: cd214fcd1c0e -->
+<!-- translation of README.md, source sha256: 5a74157c2e5d -->
 
 <p align="center"><sub>Это перевод английского README. Если версии расходятся, верна английская. Нашли ошибку в переводе? Откройте <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a>.</sub></p>
 
@@ -117,13 +117,13 @@ npx skills add mountain-beaver/vps-forge -g -a codex
 gh skill install mountain-beaver/vps-forge vps-forge --agent cursor --scope user
 ```
 
-`--agent` принимает имена вроде `claude-code`, `codex`, `cursor`, `github-copilot`, `gemini-cli` и `opencode`; полный список выводит `gh skill install --help`. Закрепить конкретный релиз можно флагом `--pin v1.0.0`.
+`--agent` принимает имена вроде `claude-code`, `codex`, `cursor`, `github-copilot`, `gemini-cli` и `opencode`; полный список выводит `gh skill install --help`. Закрепить конкретный релиз можно флагом `--pin v1.2.0` или указав его вместе с навыком: `vps-forge@v1.2.0`.
 </details>
 
 <details>
 <summary><b>Claude.ai и Claude Desktop</b>: загрузка zip-архива</summary>
 
-Скачайте `vps-forge-skill.zip` из [последнего релиза](https://github.com/mountain-beaver/vps-forge/releases/latest) и загрузите его в Settings → Capabilities → Skills → «Upload skill». Должно быть включено выполнение кода.
+Скачайте `vps-forge-skill.zip` из [последнего релиза](https://github.com/mountain-beaver/vps-forge/releases/latest) и загрузите его в Customize → Skills: «+», затем «Create skill» → «Upload a skill». Должно быть включено выполнение кода (Settings → Capabilities).
 
 Чат-приложение не может зайти на сервер по SSH, поэтому там навык работает в **режиме скриптов**. Сначала он даёт аудит только для чтения: вы запускаете его и вставляете вывод обратно в чат. Потом — по одному короткому скрипту на этап. Перед каждым изменением SSH или файрвола скрипт останавливается и просит войти из второго терминала; если вход не удался, сервер сам отменит шаг. Всё запускаете вы, поэтому агент знает только то, что вы ему вставили, а для внешней проверки нужен терминал на Mac, Linux или в WSL.
 </details>
@@ -155,8 +155,8 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 
 | Область | На готовом сервере |
 |---|---|
-| **Доступ** | Администратор, у которого есть только ваш ключ. Вход под root и по паролю отключён, задан `AllowGroups`, а криптография SSH современная и подобрана под версию, поэтому сервер проходит `ssh-audit`. |
-| **Файрвол** | ufw или nftables, всё запрещено по умолчанию, правила для IPv4 и IPv6 совпадают. Порты, которые публикует Docker, тоже под контролем, а ваш собственный IP всегда пропускается первым. |
+| **Доступ** | Администратор, у которого есть только ваш ключ. Вход под root и по паролю отключён, задан `AllowGroups`, а криптография SSH современная и подобрана под версию, поэтому `ssh-audit` не находит ошибок. Его единственное предупреждение ожидаемо: классический curve25519 оставлен для старых клиентов, а уровень paranoid его убирает. |
+| **Файрвол** | ufw, всё запрещено по умолчанию, правила для IPv4 и IPv6 совпадают. Порты, которые публикует Docker, тоже под контролем, а ваш собственный IP всегда пропускается первым. |
 | **Защита от вторжений** | fail2ban с бэкендом systemd и jail recidive; ваш IP попадает в список исключений ещё до первого запуска. CrowdSec на уровне paranoid. |
 | **Обновления** | Автоматические обновления безопасности, в том числе для сторонних репозиториев, которые подключает навык (Caddy, Tailscale, CrowdSec и Docker, если вы согласитесь), needrestart и, по желанию, окно для перезагрузок. |
 | **Веб и приложения** | Docker, привязанный к localhost, Caddy или nginx с TLS и заголовками безопасности, профили для баз данных и воркеров. |
@@ -169,7 +169,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 
 | | **baseline** | **hardened** (по умолчанию) | **paranoid** |
 |---|---|---|---|
-| SSH | только ключи, без root, `AllowGroups` | + современные KEX и шифры (постквантовые, где доступны), host key ed25519, чистый `ssh-audit` | + FIDO2 или TOTP, SSH только через VPN |
+| SSH | только ключи, без root, `AllowGroups` | + современные KEX и шифры (постквантовые в начале списка), host key ed25519, `ssh-audit` без ошибок | + только постквантовые KEX, FIDO2 или TOTP, SSH только через VPN |
 | Файрвол | запрет по умолчанию | + паритет IPv6, правила для Docker, файрвол провайдера | + веб только через Cloudflare, ревизия исходящего трафика |
 | Вторжения | fail2ban | + recidive | CrowdSec |
 | Обновления | автоматические обновления безопасности | + needrestart, Livepatch | + окно перезагрузок |
@@ -190,7 +190,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
   </picture>
 </p>
 
-1. `deadman.sh arm` делает снапшот конфигурации и запускает 5-минутный таймер systemd.
+1. `deadman.sh arm` делает снапшот конфигурации SSH, файрвола, sudo и PAM и файлов `authorized_keys` и запускает 5-минутный таймер systemd.
 2. Агент вносит изменение и проверяет его (`sshd -t`, `visudo -c`, `nft -c`).
 3. Он заново входит по **новому** подключению, которое не может переиспользовать старое.
 4. Таймер снимается, только если этот вход удался.
@@ -209,7 +209,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 **Не доверяете? Попробуйте сломать.** Dead-man switch — обычный bash-скрипт, и его можно проверить без всякого агента. На сервере, который не жалко, войдите пользователем с sudo, оставьте эту сессию открытой и выполните:
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/deadman.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.2.0/skills/vps-forge/scripts/deadman.sh
 less deadman.sh                                                       # прочитайте, прежде чем запускать от root
 sudo install -m 755 deadman.sh /usr/local/sbin/vps-forge-deadman
 sudo vps-forge-deadman arm 1                                          # откат через минуту
@@ -288,7 +288,7 @@ sudo sshd -t && sudo systemctl reload ssh                             # конф
   <img alt="Выборочная проверка GLM-5.3 рядом с Claude Opus 5.5 на Debian 13. Новый VPS до продакшена: Opus — 84, 89 и 89 без навыка и 100 во всех трёх прогонах с ним, GLM-5.3 — 79 и 100. Продакшен-сервер с Docker: Opus — 73, 80 и 87, затем трижды 100, GLM-5.3 — 67 и 100." src="docs/bench/chart-spot-light.svg" width="880">
 </picture>
 
-Бенчмарк проводился на предрелизной версии навыка. Версия 1.0.1 изменила только текст. Версия 1.1.0 изменила поведение там, где бенчмарк почти ничего не говорит или молчит совсем: узкие запросы, срок действия временного права на sudo, учения по восстановлению с проверкой данных приложения и остановка на узлах Kubernetes и хостах гипервизоров. Версия 1.1.1 изменила только README, его изображения и упаковку. Изменения после неё, перечисленные в разделе Unreleased в CHANGELOG (панели деплоя, режим скриптов, более тихие оповещения о входе, `extend`), в бенчмарке тоже не проверялись. Все изменения перечислены в [CHANGELOG.md](CHANGELOG.md). Сценарии, стенд и всё, что нужно для воспроизведения прогонов, лежат в [`bench/`](bench/README.md). Результаты по каждому прогону — в [`docs/bench/results.md`](docs/bench/results.md) и [`results.json`](docs/bench/results.json).
+Бенчмарк проводился на предрелизной версии навыка. Версия 1.0.1 изменила только текст. Версия 1.1.0 изменила поведение там, где бенчмарк почти ничего не говорит или молчит совсем: узкие запросы, срок действия временного права на sudo, учения по восстановлению с проверкой данных приложения и остановка на узлах Kubernetes и хостах гипервизоров. Версия 1.1.1 изменила только README, его изображения и упаковку. Версия 1.2.0 (панели деплоя, режим скриптов, более тихие оповещения о входе, `extend`, `authorized_keys` в снимке dead-man switch, проверка CrowdSec, которой нужен bouncer) в бенчмарке тоже не проверялась. Все изменения перечислены в [CHANGELOG.md](CHANGELOG.md). Сценарии, стенд и всё, что нужно для воспроизведения прогонов, лежат в [`bench/`](bench/README.md). Результаты по каждому прогону — в [`docs/bench/results.md`](docs/bench/results.md) и [`results.json`](docs/bench/results.json).
 
 ## Частые вопросы
 
@@ -331,14 +331,14 @@ sudo sshd -t && sudo systemctl reload ssh                             # конф
 - **Навык установлен в другой проект.** Без `-g` команда `npx skills add` ставит его только в текущую папку. Переустановите с `-g` или запускайте агента в той папке.
 - **Сессия началась до установки.** Агенты читают список навыков при старте сессии, так что откройте новую.
 - **Плагин Claude Code:** проверьте в `/plugin`, что `vps-forge` установлен и включён.
-- **Claude.ai и Claude Desktop:** навык должен быть включён в Settings → Capabilities → Skills, и должно быть включено выполнение кода.
+- **Claude.ai и Claude Desktop:** навык должен быть включён в Customize → Skills, а выполнение кода — в Settings → Capabilities.
 - **Запрос не был похож на работу с сервером.** Скажите прямо: «используй навык vps-forge, чтобы защитить сервер 203.0.113.10».
 </details>
 
 <details>
 <summary><b>Какие серверы поддерживаются?</b></summary>
 
-Debian 12 и 13, Ubuntu 22.04, 24.04 и 26.04, у любого провайдера: Hetzner, DigitalOcean, Vultr, Linode, OVH, AWS (EC2 и Lightsail), Oracle Cloud или машина у вас под столом, на x86 или ARM. Навык знает ловушки каждого из них, например встроенное правило reject в `iptables` у Oracle Cloud. Агент работает с вашей машины по SSH. Поддержка семейства RHEL в планах.
+Debian 12 и 13, Ubuntu 22.04, 24.04 и 26.04, у любого провайдера: Hetzner, DigitalOcean, Vultr, Linode, OVH, AWS (EC2 и Lightsail), Oracle Cloud или машина у вас под столом, на x86 или ARM. Навык знает ловушки каждого из них, например встроенное правило reject в `iptables` у Oracle Cloud. Агент работает с вашей машины по SSH. Серверы семейства RHEL (Rocky, Alma, Fedora) вне рамок навыка: он останавливается и говорит об этом, а не применяет к ним инструменты Debian.
 </details>
 
 <details>
@@ -375,12 +375,12 @@ Debian 12 и 13, Ubuntu 22.04, 24.04 и 26.04, у любого провайде�
 Да. `audit.sh` — самостоятельный аудит только для чтения:
 
 ```bash
-curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.1.1/skills/vps-forge/scripts/audit.sh
+curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v1.2.0/skills/vps-forge/scripts/audit.sh
 less audit.sh          # прочитайте, прежде чем запускать что-либо от root
 sudo bash audit.sh     # только чтение; --json для машинного вывода
 ```
 
-`deadman.sh`, `external-check.sh` и `install-alerts.sh` тоже работают сами по себе. У каждого есть `--help`.
+`deadman.sh`, `external-check.sh` и `install-alerts.sh` тоже работают сами по себе. У каждого есть `--help`. Начиная с v1.2.0 у релизов есть подписанное происхождение сборки: `gh attestation verify audit.sh -R mountain-beaver/vps-forge` доказывает, что скачанный скрипт собран релизным workflow этого репозитория.
 </details>
 
 ## Что внутри
@@ -389,14 +389,13 @@ sudo bash audit.sh     # только чтение; --json для машинно
 skills/vps-forge/
 ├── SKILL.md              порядок работы, правила безопасности, уровни, критерии готовности
 ├── references/           по файлу на этап, загружаются только при необходимости
-├── scripts/
-│   ├── audit.sh          аудит только для чтения: 70+ проверок, оценка, JSON
-│   ├── deadman.sh        снапшот и автоматический откат для SSH, файрвола, sudo и PAM
-│   ├── external-check.sh внешняя проверка с вашей машины: порты, аутентификация SSH, TLS, ssh-audit
-│   └── install-alerts.sh vps-notify: оповещения через ntfy, Telegram или вебхук
 ├── assets/               проверенные шаблоны: sshd, sysctl, fail2ban, apt, Docker, Caddy,
 │                         restic, синхронизация с Cloudflare, motd, SERVER.md, cloud-init
-└── evals/                тест-кейсы поведения
+└── scripts/
+    ├── audit.sh          аудит только для чтения: 70+ проверок, оценка, JSON
+    ├── deadman.sh        снапшот и автоматический откат для SSH, ключей, файрвола, sudo и PAM
+    ├── external-check.sh внешняя проверка с вашей машины: порты, аутентификация SSH, TLS, ssh-audit
+    └── install-alerts.sh vps-notify: оповещения через ntfy, Telegram или вебхук
 ```
 
 Каждый шаблон проверяется в CI тем инструментом, который его читает (`sshd -t`, `fail2ban-client -t`, `caddy validate`, `cloud-init schema`, `systemd-analyze verify`, `dockerd --validate`), на Debian 12/13 и Ubuntu 22.04/24.04/26.04. `audit.sh` тестируется на заведомо исправных и проблемных серверах, а контрольная сумма доказывает, что он ничего не меняет. Откат dead-man switch тестируется в CI на настоящем systemd: взвести, сломать SSH или файрвол, подождать и убедиться, что всё вернулось, в том числе после перезагрузки.

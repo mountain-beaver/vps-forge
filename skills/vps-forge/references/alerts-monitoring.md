@@ -22,9 +22,10 @@ A good server tells its owner when something is wrong, before the owner has to n
 
 First write `/etc/vps-forge/notify.env` (mode 600) with the channel settings. See `assets/alerts/notify.env.example`. Write it over SSH via heredoc so secrets don't appear in command lines, and create it private from the start: `sudo sh -c 'umask 077; cat > /etc/vps-forge/notify.env'` (the installer also creates a missing file with `install -m 600`). Then:
 ```bash
-ssh host 'sudo bash -s -- --ssh-login --health' < scripts/install-alerts.sh
-ssh host 'vps-notify "Test" "Alerts from $(hostname) work" high'
+ssh host 'sudo vps-forge-deadman arm 5'
+ssh host 'sudo bash -s -- --ssh-login --health --test' < scripts/install-alerts.sh
 ```
+`--ssh-login` edits `/etc/pam.d/sshd`, so it runs inside a deadman window like any PAM change (SKILL.md rule 1): after the install, test and disarm from a new connection (ssh.md "Test and disarm"). That test login should also produce the first login alert. `--test` sends the test message from the installer itself, as root: `vps-notify` run by the admin without sudo can't read the root-only `notify.env`.
 **Ask the user to confirm the test message arrived.** That's part of the definition of done.
 
 What gets installed:

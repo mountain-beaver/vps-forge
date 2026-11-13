@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: agent-cloud-sandbox
+expected_outcome: |
+  Recognises that its own IP is the sandbox's, not the user's: whitelists it so its tests don't ban it, but marks every entry (ufw rule comment, the ignoreip comment line, sshd's PerSourcePenaltyExemptList) as `agent session <date>`, asks for the user's real IP or range (a dynamic home IP means a range or relying on keys plus fail2ban), and removes the agent-session entries in phase 12 inside a deadman window before handing off.

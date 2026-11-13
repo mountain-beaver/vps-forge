@@ -39,6 +39,8 @@ tar xzf vps-forge-stage1.tar.gz && cd vps-forge
 sudo bash 1-base.sh
 ```
 
+For one small change the user asked for (a port move, a single key or sudo change), the bundle can be `deadman.sh` alone. When you can't hand over a file, the user fetches it from the release this skill comes from (`metadata.version` in SKILL.md's frontmatter): `curl -fsSLO https://raw.githubusercontent.com/mountain-beaver/vps-forge/v<version>/skills/vps-forge/scripts/deadman.sh && sudo install -m 755 deadman.sh /usr/local/sbin/vps-forge-deadman`. Then arm, change, test from the second terminal, disarm, as below. Never swap in a home-made rollback (`systemd-run` plus a `cp` of `/etc/ssh`): it doesn't cover the firewall, sudoers or `authorized_keys`, and nothing proves that a fresh login disarmed it.
+
 On Windows without `scp`, PowerShell's built-in OpenSSH has it; otherwise `ssh <user>@<host> "cat > vps-forge-stage1.tar.gz" < vps-forge-stage1.tar.gz`. Don't ask the user to paste a long script into a terminal: one mangled line in a heredoc is a broken sshd config.
 
 Tell them to run the stages from their own SSH session, not from the provider's web console. The scripts need the SSH client address for fail2ban's `ignoreip` and for the deadman's unban, and a console session has none. If they must use the console, the script asks for the IP they connect from (rule 2) and refuses an empty answer.
@@ -75,6 +77,8 @@ esac
 ```
 
 The user's second terminal is the new connection: it can't reuse the session the script runs in. Under password sudo the test command is `ssh -t -o ControlPath=none -p ${PORT} ${ADMIN}@${HOST} 'sudo vps-forge-deadman disarm'`, and the user types their password there. Never let the script disarm itself: a disarm that didn't come from a new login proves nothing.
+
+When a later check runs `sudo -n -v` for a password-sudo user, tell the user both wordings of a pass: `a password is required` (sudo) and `interactive authentication is required` (sudo-rs, Ubuntu 26.04). A refusal (`may not run sudo`, `I'm afraid I can't do that`) means that user lost sudo.
 
 ## What script mode can't do
 

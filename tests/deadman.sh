@@ -34,6 +34,36 @@ grep -q 'ALL=(ALL) ALL' "$R/etc/sudoers.d/admin" && ok "sudoers restored" || bad
 rb=$(find "$R/var/lib/vps-forge/deadman/latest/" -maxdepth 1 -name 'rolled-back-*' | head -n 1)
 [[ -n "$rb" ]] && grep -q 'NOPASSWD' "$rb/etc/sudoers.d/admin" && ok "replaced config kept in $(basename "$rb")" || bad "rolled-back copy missing"
 
+# authorized_keys: root's file and every login-shell account's file are in the snapshot.
+mkdir -p "$R/root/.ssh" "$R/home/admin/.ssh" "$R/home/svc/.ssh" "$R/home/evil" "$R/elsewhere"
+printf 'root:x:0:0:root:/root:/bin/bash\nadmin:x:1000:1000::/home/admin:/bin/bash\nsvc:x:998:998::/home/svc:/usr/sbin/nologin\nevil:x:1001:1001::/home/evil:/bin/bash\nnew:x:1002:1002::/home/new:/bin/bash\n' > "$R/etc/passwd"
+echo "ssh-ed25519 AAAAroot user@laptop" > "$R/root/.ssh/authorized_keys"
+echo "ssh-ed25519 AAAAadmin user@laptop" > "$R/home/admin/.ssh/authorized_keys"
+echo "ssh-ed25519 AAAAsvc svc" > "$R/home/svc/.ssh/authorized_keys"
+chmod 600 "$R/root/.ssh/authorized_keys" "$R/home/admin/.ssh/authorized_keys"
+ln -s "$R/elsewhere" "$R/home/evil/.ssh"   # a symlinked ~/.ssh must never be followed
+echo "outside" > "$R/elsewhere/authorized_keys"
+bash "$DEADMAN" snapshot >/dev/null || bad "deadman snapshot with authorized_keys"
+P="$R/var/lib/vps-forge/deadman/latest/paths"
+grep -qxF root/.ssh/authorized_keys "$P" && grep -qxF home/admin/.ssh/authorized_keys "$P" \
+  && ok "root's and the admin's authorized_keys are in the snapshot" || bad "authorized_keys missing from the snapshot: $(tr '\n' ' ' < "$P")"
+! grep -q 'home/svc\|home/evil' "$P" && ok "nologin accounts and symlinked ~/.ssh are left out" || bad "snapshot has svc or evil: $(tr '\n' ' ' < "$P")"
+: > "$R/root/.ssh/authorized_keys"                                 # root's file emptied
+echo "ssh-ed25519 AAAAwrong typo" > "$R/home/admin/.ssh/authorized_keys"   # admin key overwritten
+echo "planted" > "$R/elsewhere/authorized_keys"
+bash "$DEADMAN" restore >/dev/null || bad "restore with authorized_keys exited non-zero"
+grep -q AAAAroot "$R/root/.ssh/authorized_keys" && ok "emptied root authorized_keys restored" || bad "root authorized_keys not restored"
+grep -q AAAAadmin "$R/home/admin/.ssh/authorized_keys" && ok "overwritten admin authorized_keys restored" || bad "admin authorized_keys not restored"
+[[ "$(stat -c %a "$R/home/admin/.ssh/authorized_keys")" == 600 ]] && ok "authorized_keys mode 600 kept" || bad "authorized_keys mode is $(stat -c %a "$R/home/admin/.ssh/authorized_keys")"
+grep -q planted "$R/elsewhere/authorized_keys" && ok "the target of a symlinked ~/.ssh is untouched" || bad "rollback wrote through a symlinked ~/.ssh"
+# a home whose ~/.ssh became a symlink after the snapshot is skipped, not written through
+bash "$DEADMAN" snapshot >/dev/null || bad "second snapshot"
+mv "$R/home/admin/.ssh" "$R/admin-ssh-real"; ln -s "$R/elsewhere" "$R/home/admin/.ssh"
+bash "$DEADMAN" restore >/dev/null 2>&1 && bad "restore through a symlinked ~/.ssh reported success" || ok "restore refuses a ~/.ssh that became a symlink"
+grep -q planted "$R/elsewhere/authorized_keys" && ok "nothing written through the new symlink" || bad "rollback wrote through the new symlink"
+rm -f "$R/home/admin/.ssh"; mv "$R/admin-ssh-real" "$R/home/admin/.ssh"
+rm -f "$R/var/lib/vps-forge/deadman/restore-partial"
+
 # disarm must tell "changes kept" apart from "already rolled back" (exit 3).
 S="$R/var/lib/vps-forge/deadman"
 bash "$DEADMAN" arm 5 >/dev/null 2>&1 || bad "arm (test mode) failed"
