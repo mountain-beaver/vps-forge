@@ -8,7 +8,7 @@
     {
       "name": "vps-forge",
       "source": "./",
-      "description": "Set up, harden, audit and polish a Debian/Ubuntu VPS without ever losing access"
+      "description": "Set up, harden, audit and polish a Debian/Ubuntu VPS without ever losing access; stops and explains on RHEL, Kubernetes nodes and hypervisors"
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "name": "vps-forge",
   "displayName": "vps-forge",
-  "description": "Set up, harden, audit and polish a Debian/Ubuntu VPS without ever losing access: SSH, firewall, fail2ban, updates, Docker, Caddy/TLS, VPN, restic backups, phone alerts and a verified score.",
+  "description": "Set up, harden, audit and polish a Debian/Ubuntu VPS without ever losing access: SSH, firewall, fail2ban, updates, Docker, Caddy/TLS, VPN, restic backups, phone alerts and a verified score. On RHEL-family servers, Kubernetes nodes and hypervisor hosts it stops and explains why.",
   "version": "1.1.1",
   "author": {
     "name": "Hung Up"
