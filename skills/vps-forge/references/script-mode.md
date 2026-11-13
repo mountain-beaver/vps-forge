@@ -76,6 +76,8 @@ esac
 
 The user's second terminal is the new connection: it can't reuse the session the script runs in. Under password sudo the test command is `ssh -t -o ControlPath=none -p ${PORT} ${ADMIN}@${HOST} 'sudo vps-forge-deadman disarm'`, and the user types their password there. Never let the script disarm itself: a disarm that didn't come from a new login proves nothing.
 
+When a later check runs `sudo -n -v` for a password-sudo user, tell the user both wordings of a pass: `a password is required` (sudo) and `interactive authentication is required` (sudo-rs, Ubuntu 26.04). A refusal (`may not run sudo`, `I'm afraid I can't do that`) means that user lost sudo.
+
 ## What script mode can't do
 
 Say these in the final report, not as fine print:

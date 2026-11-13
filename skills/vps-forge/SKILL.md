@@ -37,7 +37,7 @@ Pick the mode from what you can actually do in this session:
 | Mode | When | How |
 |---|---|---|
 | **Direct** | You have a shell that can `ssh` to the server | Run commands over SSH with multiplexing (below). This is the best mode. |
-| **Script** | No SSH access from here (a chat app) | Recon first, then one small script per stage that the user runs and pastes back; every risky step pauses for a test login from the user's second terminal. Follow `references/script-mode.md`. |
+| **Script** | No SSH access from here (a chat app), or the user asks for steps to run themselves | Recon first, then one small script per stage that the user runs and pastes back; every risky step pauses for a test login from the user's second terminal. Follow `references/script-mode.md`. |
 | **Audit** | The user wants a check, not changes, or the server is already in production | Run `scripts/audit.sh` read-only, then produce the findings report. Change nothing until asked. |
 
 **Direct-mode mechanics**

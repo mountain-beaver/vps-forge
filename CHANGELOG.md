@@ -30,6 +30,7 @@
 
 ### Script mode
 - **A real procedure for chat apps without SSH** (`references/script-mode.md`). The agent asks for a read-only audit first and writes nothing blind. Then it hands over one short script per stage, as a bundle to copy with `scp`, and reads the pasted output before the next one. Before every SSH, firewall, sudo or PAM change the script stops and asks the user to log in from a second terminal, which is what disarms the switch; the script never disarms itself. The final report says what script mode couldn't check.
+- Script mode also applies when the user asks for the steps to run themselves, not only when the agent has no SSH. A later `sudo -n -v` check lists both passing wordings (sudo and sudo-rs) and what a refusal means.
 
 ### Backups and updates
 - **SQLite databases are dumped, not copied live.** PocketBase, n8n, Uptime Kuma and similar apps keep their data in SQLite, and a file copy taken mid-write can restore as corrupt. The skill finds these files during recon, dumps each one with `sqlite3 .backup`, keeps the live file out of restic, and checks the restore with `PRAGMA integrity_check`.
