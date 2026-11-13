@@ -113,7 +113,7 @@ The full list of about 80 agents is in the installer's [agent table](https://git
 gh skill install mountain-beaver/vps-forge vps-forge --agent cursor --scope user
 ```
 
-`--agent` takes names such as `claude-code`, `codex`, `cursor`, `github-copilot`, `gemini-cli` and `opencode`; `gh skill install --help` lists them all. Pin a release with `--pin v1.0.0`.
+`--agent` takes names such as `claude-code`, `codex`, `cursor`, `github-copilot`, `gemini-cli` and `opencode`; `gh skill install --help` lists them all. Pin a release with `--pin v1.1.1`, or name it with the skill: `vps-forge@v1.1.1`.
 </details>
 
 <details>

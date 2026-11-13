@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <b>简体中文</b> · <a href="README.ja.md">日本語</a> · <a href="README.ru.md">Русский</a></sub></p>
 
-<!-- translation of README.md, source sha256: 73c383f80424 -->
+<!-- translation of README.md, source sha256: 638134b0250f -->
 
 <p align="center"><sub>本文是英文 README 的译文，两者如有出入，以英文版为准。翻译有误之处，欢迎提交 <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a> 指正。</sub></p>
 
@@ -117,7 +117,7 @@ npx skills add mountain-beaver/vps-forge -g -a codex
 gh skill install mountain-beaver/vps-forge vps-forge --agent cursor --scope user
 ```
 
-`--agent` 接受 `claude-code`、`codex`、`cursor`、`github-copilot`、`gemini-cli` 和 `opencode` 等名称；`gh skill install --help` 会列出全部可选值。用 `--pin v1.0.0` 可以固定到某个发布版本。
+`--agent` 接受 `claude-code`、`codex`、`cursor`、`github-copilot`、`gemini-cli` 和 `opencode` 等名称；`gh skill install --help` 会列出全部可选值。用 `--pin v1.1.1` 可以固定到某个发布版本，也可以写在技能名后面：`vps-forge@v1.1.1`。
 </details>
 
 <details>
