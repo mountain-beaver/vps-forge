@@ -17,7 +17,7 @@ make ci                  # + templates and audit.sh scenarios on all five distro
 make ci-all              # + the systemd suites (deadman rollback, systemd-only audit checks)
 ```
 You need bash, shellcheck, python3 with PyYAML, jq, zip, and podman or docker for the container suites. The `claude` CLI is optional: with it, `make test` also runs `claude plugin validate --strict`.
-Scripts must pass `shellcheck -S warning`. `audit.sh` must stay read-only. `external-check.sh` must stay compatible with macOS bash 3.2.
+Scripts must pass `shellcheck -S warning`; without shellcheck installed `make test` fails (set `VPS_FORGE_SKIP_SHELLCHECK=1` to skip it on purpose). `audit.sh` must stay read-only. `external-check.sh` must stay compatible with macOS bash 3.2.
 
 If you add a template, teach `tests/templates.sh` to validate it (and `fill()` in `tests/lib.sh` any new `<placeholder>`). If you add or change an `audit.sh` check, add a scenario to `tests/audit-scenarios.sh` that proves both its PASS and its FAIL.
 

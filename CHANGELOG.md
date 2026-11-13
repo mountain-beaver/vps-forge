@@ -36,6 +36,7 @@
 ### Tests
 - **The dead-man rollback and the systemd-only audit checks run in CI**, in a podman container that boots systemd: a broken sshd and a drop-all firewall rolled back by the timer, the rollback at boot after a reboot while armed, concurrent arms, `extend`, and ufw and fail2ban: a `ufw enable` during the window is undone, a deleted ufw rule is loaded again, and the address recorded at arm is unbanned. Both suites build their image when it's missing, and in CI a missing podman is a failure instead of a skip.
 - **`make ci-all`** runs `make ci` plus the systemd suites (`audit-systemd`, `deadman-systemd`). `make ci` and AGENTS.md no longer claim that `make ci` is everything CI runs.
+- **`make test` fails without shellcheck** instead of skipping the lint and still printing ALL CHECKS PASSED; `VPS_FORGE_SKIP_SHELLCHECK=1` skips it on purpose. **Every relative link and image in every Markdown file is checked** (`tests/links.py`), not only the README's.
 
 ### Docs
 - **Quick start:** `npx skills add … -g` is the default, so the agent finds the skill in any folder; the Node.js version it needs; how to check the skill loaded, and the sign that it didn't (the agent changes SSH or the firewall without arming the dead-man switch); which key the agent uses, on the first screen.

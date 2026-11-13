@@ -286,8 +286,11 @@ while IFS= read -r f; do shells+=("$f"); done < <(find "$SKILL/scripts" "$SKILL/
 for f in "${shells[@]}"; do bash -n "$f" && ok "bash -n $f" || bad "bash -n $f"; done
 if command -v shellcheck >/dev/null; then
   shellcheck -S warning -s bash "${shells[@]}" && ok "shellcheck (${#shells[@]} files)" || bad "shellcheck"
+elif [[ "${VPS_FORGE_SKIP_SHELLCHECK:-0}" == 1 ]]; then
+  echo "  skip shellcheck (VPS_FORGE_SKIP_SHELLCHECK=1)"
 else
-  echo "  skip shellcheck not installed"
+  # A missing linter must not end in "ALL CHECKS PASSED": CI enforces shellcheck -S warning.
+  bad "shellcheck not installed (install it, or set VPS_FORGE_SKIP_SHELLCHECK=1 to skip on purpose)"
 fi
 
 echo "== external-check verdicts (stubbed ssh/curl/openssl)"
@@ -382,6 +385,8 @@ released = re.findall(r"^## (\d+\.\d+\.\d+)", open("CHANGELOG.md").read(), re.M)
 audit = re.search(r'^VERSION="([^"]+)"', open(f"{skill}/scripts/audit.sh").read(), re.M).group(1)
 assert released and released[0] == plugin == audit, f"plugin.json {plugin}, CHANGELOG {released[:1]}, audit.sh {audit}"
 PY
+echo "== Markdown links"
+python3 tests/links.py || fail=1
 echo "== README translations"
 python3 tests/translations.py || fail=1
 if command -v claude >/dev/null; then
