@@ -1,7 +1,7 @@
 ---
-type: llm
-focus: trace
+# On Ubuntu 24.04 the port change restarts ssh.socket (socket activation), not only ssh.service. Deterministic: matches only the agent's own messages and tool inputs (assistant lines of the trace), not the skill text it read.
+type: regex
+target: trace
 weight: 1
+pattern: '"(?:type|role)"\s*:\s*"assistant"[^\n]*systemctl[^\n]{0,80}restart ssh\.socket'
 ---
-
-The response handles Ubuntu 24.04's socket-activated SSH (ssh.socket / ListenStream) when changing the port, instead of only editing Port in sshd_config.

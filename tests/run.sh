@@ -342,6 +342,12 @@ def check_grader(path, fm, body):
         assert fm.get(key) not in (None, ""), f"{path}: {kind} grader needs {key}"
     if kind == "llm":
         assert fm.get("criteria") or body.strip(), f"{path}: llm grader needs criteria"
+    for key in ("pattern", "input_match"):
+        if isinstance(fm.get(key), str):
+            try:  # JS regex in the eval runner; the subset used here compiles the same in Python
+                re.compile(fm[key])
+            except re.error as e:
+                raise AssertionError(f"{path}: {key} is not a valid regex: {e}")
 
 for f in glob.glob("evals/*/case.yaml") + [f"{skill}/assets/cloud-init.yaml"]:
     yaml.safe_load(open(f))
