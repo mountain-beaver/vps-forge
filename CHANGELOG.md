@@ -54,6 +54,7 @@
 - **Claude.ai paths updated:** skills are uploaded and switched on under Customize → Skills; Settings → Capabilities only holds the code execution switch (README and `troubleshooting.md`).
 - The `gh skill install` pin example names the current release and shows both forms, `--pin <tag>` and `vps-forge@<tag>`.
 - **`references/providers.md`:** for Hetzner, DigitalOcean, Vultr, Linode, OVHcloud, AWS EC2 and Lightsail, and Oracle Cloud: where the web console is and what it needs, how to take a snapshot, and how to add one firewall rule in the panel and the CLI, with the commands that would replace a whole rule set named so the agent never uses them. Checked against each provider's documentation. The provider details from `base.md` and `distro-notes.md` moved there.
+- **`references/standards.md`:** where the defaults differ on purpose from Lynis, CIS and ssh-audit (MaxAuthTries 5, MaxSessions 10, SSH tunnels allowed, no banner, curve25519 at hardened, ed25519-only host key, port and log level) and why, so an agent or auditor explains these findings instead of "fixing" them. Lynis values are from its SSH-7408 test; no CIS control numbers are quoted.
 
 ### Audit
 - **`intrusion.ips` checks the CrowdSec bouncer.** A running CrowdSec engine only detects attacks; the bouncer blocks them. The check passes with an active `crowdsec-firewall-bouncer` or a bouncer registered in `cscli bouncers list`, and warns otherwise instead of passing on the engine alone.

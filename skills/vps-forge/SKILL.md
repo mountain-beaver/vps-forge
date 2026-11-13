@@ -145,7 +145,7 @@ Read only what the current phase needs.
 - `references/backups.md`: restic, DB dumps, deletion-resistant repos, restore drills
 - `references/alerts-monitoring.md`: phone alerts, heartbeats, uptime checks, metrics
 - `references/comfort.md`: motd, shell, tools
-- `references/audit-mode.md`: read-only audits, severity rubric, findings format, compromise response
+- `references/audit-mode.md`: read-only audits, severity rubric, findings format, compromise response; `references/standards.md`: why some defaults differ from CIS, Lynis and ssh-audit
 - `references/reproducibility.md`: SERVER.md, cloud-init and Ansible export
 - `references/distro-notes.md`: Ubuntu 22.04/24.04/26.04, Debian 12/13 differences, containers (OpenVZ/LXC), ARM; `references/providers.md`: each provider's console, snapshot and additive firewall commands
 - `references/script-mode.md`: no SSH from here: recon, stage scripts, the test-and-disarm pause
