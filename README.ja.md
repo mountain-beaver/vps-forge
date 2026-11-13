@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <b>日本語</b> · <a href="README.ru.md">Русский</a></sub></p>
 
-<!-- translation of README.md, source sha256: 638134b0250f -->
+<!-- translation of README.md, source sha256: 81137792cb12 -->
 
 <p align="center"><sub>これは英語版 README の翻訳です。内容が異なる場合は英語版が正しいものとします。誤りに気づいたら <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a> でお知らせください。</sub></p>
 
@@ -155,7 +155,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 
 | 領域 | 完成したサーバーでは |
 |---|---|
-| **アクセス** | あなたの鍵だけを登録した管理ユーザー。root ログインとパスワードログインは無効で、`AllowGroups` も設定済みです。SSH の暗号設定はモダンかつバージョンに応じたものなので、`ssh-audit` に合格します。 |
+| **アクセス** | あなたの鍵だけを登録した管理ユーザー。root ログインとパスワードログインは無効で、`AllowGroups` も設定済みです。SSH の暗号設定はモダンかつバージョンに応じたものなので、`ssh-audit` で failure は出ません。唯一の warning は想定どおりのもので、古いクライアントのために従来の curve25519 を残しているためです。paranoid レベルではこれも外します。 |
 | **ファイアウォール** | ufw で、デフォルト拒否、IPv4 と IPv6 で同じルール。Docker が公開するポートもカバーし、あなた自身の IP は常に最初に通します。 |
 | **侵入対策** | systemd バックエンドと recidive jail を使う fail2ban。起動する前に、あなたの IP を除外リストに入れておきます。paranoid レベルでは CrowdSec。 |
 | **アップデート** | 無人セキュリティアップデート。スキルが追加するベンダーリポジトリ（Caddy、Tailscale、CrowdSec、同意すれば Docker）も対象です。needrestart と、任意の再起動ウィンドウ。 |
@@ -169,7 +169,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 
 | | **baseline** | **hardened**（デフォルト） | **paranoid** |
 |---|---|---|---|
-| SSH | 鍵認証のみ、root 不可、`AllowGroups` | + モダンな KEX と暗号（利用可能なら耐量子）、ed25519 ホスト鍵、`ssh-audit` で問題なし | + FIDO2 または TOTP、SSH は VPN 経由のみ |
+| SSH | 鍵認証のみ、root 不可、`AllowGroups` | + モダンな KEX と暗号（耐量子を優先）、ed25519 ホスト鍵、`ssh-audit` で failure なし | + 耐量子 KEX のみ、FIDO2 または TOTP、SSH は VPN 経由のみ |
 | ファイアウォール | デフォルト拒否 | + IPv6 も同等に、Docker 用ルール、プロバイダーのファイアウォール | + Web は Cloudflare 経由のみ、送信通信の見直し |
 | 侵入対策 | fail2ban | + recidive | CrowdSec |
 | アップデート | 無人セキュリティアップデート | + needrestart、Livepatch | + 再起動ウィンドウ |

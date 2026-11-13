@@ -67,6 +67,9 @@
 ### Distributions
 - **Ubuntu 26.04 in `distro-notes.md`:** OpenSSH 10.2 with socket activation, sudo-rs and the Rust core utilities by default, fail2ban 1.1.0 enabled and started on install (checked in ubuntu:26.04 containers and the release notes). Debian 12 is listed as LTS-only until 30 June 2028. Which releases start fail2ban on install (all supported ones except Ubuntu 22.04) is described once, in `firewall.md` "Start order", and the other places point there.
 
+### SSH
+- **ssh-audit 3.9+ and post-quantum key exchange.** ssh-audit now warns about every KEX without post-quantum protection. The `hardened` level keeps `curve25519-sha256` after the post-quantum hybrids for older clients and Kamal, so that one warning is expected, and `external-check.sh --ssh-audit` reports it as a pass while still warning about anything else. The `paranoid` level drops curve25519 where `mlkem768x25519` or `sntrup761x25519` exists; ssh-audit 3.9.0 is then clean on Debian 13 and Ubuntu 24.04 and 26.04.
+
 ## 1.1.1 (2026-10-25)
 
 The skill and its scripts behave exactly as in 1.1.0. This release changes the README, its images and the packaging.

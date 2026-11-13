@@ -127,6 +127,8 @@ This is part of the SSH step at `hardened` (the default), not an optional extra:
 ```bash
 pick() { local have; have=$(ssh -Q "$1"); shift; local out=""; for a in "$@"; do grep -qx "$a" <<<"$have" && out+="${out:+,}$a"; done; echo "$out"; }
 KEX=$(pick kex mlkem768x25519-sha256 sntrup761x25519-sha512 sntrup761x25519-sha512@openssh.com curve25519-sha256 curve25519-sha256@libssh.org)
+# paranoid only: no classic curve25519 where a post-quantum hybrid exists (see below)
+# PQ=$(pick kex mlkem768x25519-sha256 sntrup761x25519-sha512 sntrup761x25519-sha512@openssh.com); [ -n "$PQ" ] && KEX=$PQ
 CIPH=$(pick cipher chacha20-poly1305@openssh.com aes256-gcm@openssh.com aes128-gcm@openssh.com aes256-ctr aes192-ctr aes128-ctr)
 MACS=$(pick mac hmac-sha2-512-etm@openssh.com hmac-sha2-256-etm@openssh.com umac-128-etm@openssh.com)
 cat > /etc/ssh/sshd_config.d/01-vps-forge-crypto.conf <<EOF
@@ -145,7 +147,8 @@ sshd -t -o "PerSourcePenaltyExemptList=$ADMIN_NET" 2>/dev/null &&
   echo "PerSourcePenaltyExemptList $ADMIN_NET" >> /etc/ssh/sshd_config.d/01-vps-forge-crypto.conf
 sshd -t
 ```
-- `mlkem768x25519-sha256` (post-quantum hybrid) exists from OpenSSH 9.9 onward (Debian 13). Older versions fall back to `sntrup761x25519` (8.5+) and then `curve25519`.
+- `mlkem768x25519-sha256` (post-quantum hybrid) exists from OpenSSH 9.9 onward (Debian 13, Ubuntu 26.04). Older versions fall back to `sntrup761x25519` (8.5+) and then `curve25519`.
+- **ssh-audit 3.9+ warns about curve25519**: `does not provide protection against post-quantum attacks`, exit code 2. At `hardened` that warning is expected and the algorithm stays. The hybrids come first, so every current OpenSSH client negotiates them; curve25519 is there for clients without them: OpenSSH before 8.5, Kamal and other tools built on Ruby's net-ssh, and many SSH libraries. `external-check.sh --ssh-audit` reports that one warning as a pass and any other warning as a warning. At `paranoid`, use the commented `PQ` line: with only the hybrids left, ssh-audit is clean (checked with ssh-audit 3.9.0 on Debian 13 and Ubuntu 24.04 and 26.04; on 24.04 only `sntrup761x25519-sha512@openssh.com` remains), and clients older than OpenSSH 8.5 can no longer connect. Ask first if a deploy tool reaches the box.
 - `HostKey` lines **add up**: if the image has uncommented `HostKey` lines in the main `sshd_config`, RSA and ECDSA stay active. Comment those out, then check with `sshd -T | grep -i hostkey`.
 - `HostKey` limited to ed25519 breaks every client whose `known_hosts` holds only the RSA or ECDSA key: it prints `REMOTE HOST IDENTIFICATION HAS CHANGED` and refuses, even with `StrictHostKeyChecking accept-new`. A person fixes that with `ssh-keygen -R <host>` and one new connection, comparing the fingerprint from `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub`. The old key files stay on disk unused, so reverting is a one-line change.
 - **Pipelines and panels pin host keys too** (a `known_hosts` secret in CI, Kamal, Coolify and the other panels in paas.md), and nobody is there to answer the warning: the next deploy just fails. When the deploy-key check in "Admin user and sudo policy" had a hit, or a panel runs or is planned, leave the `HostKey` line out unless the user agrees, and note in SERVER.md why RSA and ECDSA stay. If they agree, give them the line for those `known_hosts` files, built on the server so nothing in between can swap it: `echo "<host> $(cut -d' ' -f1,2 /etc/ssh/ssh_host_ed25519_key.pub)"` (`[<host>]:<port>` instead of `<host>` on a port other than 22). Deadman snapshots in `/var/lib/vps-forge/deadman/` hold root-only copies of `/etc/ssh`, host keys included: if you ever rotate or delete host keys, delete the older snapshots too.

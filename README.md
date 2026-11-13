@@ -151,7 +151,7 @@ If your agent doesn't support skills at all, tell it to read `skills/vps-forge/S
 
 | Area | On the finished server |
 |---|---|
-| **Access** | An admin user that holds only your key. Root and password logins are off, `AllowGroups` is set, and SSH crypto is modern and version-aware, so it passes `ssh-audit`. |
+| **Access** | An admin user that holds only your key. Root and password logins are off, `AllowGroups` is set, and SSH crypto is modern and version-aware, so `ssh-audit` finds no failures. Its one warning is expected: classic curve25519 stays for older clients, and the paranoid level removes it. |
 | **Firewall** | ufw, default deny, with IPv4 and IPv6 matched. Docker-published ports are covered too, and your own IP always gets through first. |
 | **Intrusion** | fail2ban with the systemd backend and a recidive jail, with your IP on its ignore list before it ever starts. CrowdSec at the paranoid level. |
 | **Updates** | Unattended security updates, also for the vendor repositories it adds (Caddy, Tailscale, CrowdSec, and Docker if you agree), needrestart, and an optional reboot window. |
@@ -165,7 +165,7 @@ If your agent doesn't support skills at all, tell it to read `skills/vps-forge/S
 
 | | **baseline** | **hardened** (default) | **paranoid** |
 |---|---|---|---|
-| SSH | keys only, no root, `AllowGroups` | + modern KEX and ciphers (post-quantum where available), ed25519 host key, clean `ssh-audit` | + FIDO2 or TOTP, SSH only through a VPN |
+| SSH | keys only, no root, `AllowGroups` | + modern KEX and ciphers (post-quantum first), ed25519 host key, `ssh-audit` without failures | + post-quantum KEX only, FIDO2 or TOTP, SSH only through a VPN |
 | Firewall | default deny | + IPv6 parity, Docker rules, provider firewall | + Cloudflare-only web, egress review |
 | Intrusion | fail2ban | + recidive | CrowdSec |
 | Updates | unattended security updates | + needrestart, Livepatch | + reboot window |

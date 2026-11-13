@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <b>简体中文</b> · <a href="README.ja.md">日本語</a> · <a href="README.ru.md">Русский</a></sub></p>
 
-<!-- translation of README.md, source sha256: 638134b0250f -->
+<!-- translation of README.md, source sha256: 81137792cb12 -->
 
 <p align="center"><sub>本文是英文 README 的译文，两者如有出入，以英文版为准。翻译有误之处，欢迎提交 <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a> 指正。</sub></p>
 
@@ -155,7 +155,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 
 | 方面 | 完成后的服务器上 |
 |---|---|
-| **访问** | 一个只持有你密钥的管理员用户。root 登录和密码登录均已关闭，设置了 `AllowGroups`，SSH 加密算法采用现代配置并会根据版本调整，因此能通过 `ssh-audit`。 |
+| **访问** | 一个只持有你密钥的管理员用户。root 登录和密码登录均已关闭，设置了 `AllowGroups`，SSH 加密算法采用现代配置并会根据版本调整，因此 `ssh-audit` 不会报告失败项。它唯一的警告是预期之内的：为了兼容旧客户端保留了经典的 curve25519，paranoid 级别会将其移除。 |
 | **防火墙** | ufw，默认拒绝，IPv4 与 IPv6 规则保持一致。Docker 发布的端口也在管控范围内，你自己的 IP 总是最先放行。 |
 | **入侵防护** | fail2ban 使用 systemd 后端并启用 recidive jail，在它首次启动之前就已把你的 IP 加入忽略列表。paranoid 级别使用 CrowdSec。 |
 | **更新** | 无人值守的安全更新，同样覆盖它添加的第三方软件源（Caddy、Tailscale、CrowdSec，以及经你同意后的 Docker），外加 needrestart 和可选的重启时间窗口。 |
@@ -169,7 +169,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 
 | | **baseline** | **hardened**（默认） | **paranoid** |
 |---|---|---|---|
-| SSH | 仅限密钥，禁止 root，`AllowGroups` | + 现代 KEX 和加密算法（可用时启用后量子算法）、ed25519 主机密钥、`ssh-audit` 无问题 | + FIDO2 或 TOTP，SSH 只能经 VPN 访问 |
+| SSH | 仅限密钥，禁止 root，`AllowGroups` | + 现代 KEX 和加密算法（后量子算法优先）、ed25519 主机密钥、`ssh-audit` 无失败项 | + 仅后量子 KEX、FIDO2 或 TOTP，SSH 只能经 VPN 访问 |
 | 防火墙 | 默认拒绝 | + IPv6 规则一致、Docker 规则、服务商防火墙 | + Web 仅对 Cloudflare 开放、审查出站流量 |
 | 入侵防护 | fail2ban | + recidive | CrowdSec |
 | 更新 | 无人值守安全更新 | + needrestart、Livepatch | + 重启时间窗口 |

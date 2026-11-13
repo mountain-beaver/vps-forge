@@ -251,10 +251,17 @@ if [ "$SSHAUDIT" = 1 ]; then
     # shellcheck disable=SC2086
     sa=$(ssh-audit $sa_opts -t 10 -p "$PORT" "$HOST" 2>&1); rc=$?
     nf=$(printf '%s\n' "$sa" | grep -c '\[fail\]'); nw=$(printf '%s\n' "$sa" | grep -c '\[warn\]')
+    # ssh-audit 3.9+ warns about every KEX without post-quantum protection. The hardened level keeps
+    # curve25519 on purpose (older clients, Kamal); only the paranoid level drops it.
+    npq=$(printf '%s\n' "$sa" | grep '\[warn\]' | grep -c 'post-quantum')
     # ssh-audit 3.x exit codes: 0 good, 1 connection error, 2 warnings, 3 failures
     case $rc in
       0) pass "ssh-audit: no warnings or failures" ;;
-      2) warn "ssh-audit: $nw warning(s). Run 'ssh-audit -p $PORT $HOST' for details" ;;
+      2) if [ "$npq" -gt 0 ] && [ "$npq" -eq "$nw" ]; then
+           pass "ssh-audit: only the expected warning: curve25519 has no post-quantum protection (kept at the hardened level for older clients; paranoid removes it)"
+         else
+           warn "ssh-audit: $nw warning(s)$( [ "$npq" -gt 0 ] && printf ', %s of them the expected curve25519 post-quantum one' "$npq"). Run 'ssh-audit -p $PORT $HOST' for details"
+         fi ;;
       3) fail "ssh-audit: $nf failure(s), $nw warning(s). Run 'ssh-audit -p $PORT $HOST' for details" ;;
       1) warn "ssh-audit could not connect. If earlier probes worked, your IP is likely banned: from the console or another IP run 'fail2ban-client set sshd unbanip <your-ip>' (and 'set recidive unbanip <your-ip>'), then whitelist it" ;;
       *) warn "ssh-audit returned exit $rc ($nf fail, $nw warn)" ;;

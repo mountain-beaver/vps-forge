@@ -248,6 +248,11 @@ STUB
   cat > "$stub/ssh-audit" <<'STUB'
 #!/bin/sh
 case "$*" in *--help*) echo '  --skip-rate-test'; exit 0 ;; esac
+if [ "${STUB_SA_PQ:-0}" = 1 ]; then
+  echo '(kex) curve25519-sha256 -- [warn] does not provide protection against post-quantum attacks'
+  echo '(kex) curve25519-sha256@libssh.org -- [warn] does not provide protection against post-quantum attacks'
+  exit 2
+fi
 echo '(kex) diffie-hellman-group1-sha1 -- [fail] removed'; echo '(enc) aes128-cbc -- [warn] weak'
 exit "${STUB_SA_RC:-0}"
 STUB
@@ -260,6 +265,13 @@ STUB
       bad "external-check: ssh-audit exit ${want%%|*} (rc=$rc): $(grep -m1 -E 'PASS|FAIL|WARN' "$out" || true)"
     fi
   done
+  # ssh-audit 3.9+: the post-quantum warning for curve25519 alone is expected at the hardened level
+  STUB_SA_PQ=1 PATH="$stub:$PATH" "$BASH" "$ext" example.com --no-scan --no-login-tests --ssh-audit >"$out" 2>&1 && rc=0 || rc=$?
+  if grep -q 'PASS  ssh-audit: only the expected warning' "$out"; then
+    ok "external-check: only the curve25519 post-quantum warning -> PASS"
+  else
+    bad "external-check: curve25519 post-quantum warning only (rc=$rc): $(grep -m1 -E 'PASS|FAIL|WARN' "$out" || true)"
+  fi
   rm -f "$stub/ssh-audit"
 
   "$BASH" "$ext" --help >"$out" 2>&1 && rc=0 || rc=$?

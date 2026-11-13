@@ -95,7 +95,7 @@ Never merge deadman windows across unrelated changes: when a combined change fai
 
 | | baseline | hardened (default) | paranoid |
 |---|---|---|---|
-| SSH | keys only, no root, `AllowGroups`, MaxAuthTries 5 | + modern KEX/ciphers/MACs, ed25519 host key only, ssh-audit clean | + FIDO2 keys or TOTP, SSH reachable only via WireGuard/Tailscale |
+| SSH | keys only, no root, `AllowGroups`, MaxAuthTries 5 | + modern KEX/ciphers/MACs, ed25519 host key only, ssh-audit clean but for the expected curve25519 post-quantum warning | + post-quantum KEX only, FIDO2 keys or TOTP, SSH reachable only via WireGuard/Tailscale |
 | Firewall | ufw default deny, needed ports only | + IPv6 parity, Docker DOCKER-USER rules, provider firewall as a second layer | + Cloudflare-only 80/443 or Cloudflare Tunnel, egress review |
 | Intrusion | fail2ban sshd, incremental bans | + recidive jail (SSH port, 1 day) | CrowdSec with a firewall bouncer |
 | Updates | unattended security updates | + needrestart auto, Livepatch (Ubuntu Pro) where supported | + scheduled auto-reboot window |
