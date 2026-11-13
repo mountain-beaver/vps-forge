@@ -13,7 +13,8 @@ Thanks for helping make servers safer.
 
 ```bash
 make test                # shellcheck, JSON/YAML, frontmatter, versions, audit smoke test, deadman restore
-make ci                  # + templates and audit.sh scenarios on all four distros, in containers
+make ci                  # + templates and audit.sh scenarios on all five distros, in containers
+make ci-all              # + the systemd suites (deadman rollback, systemd-only audit checks)
 ```
 You need bash, shellcheck, python3 with PyYAML, jq, zip, and podman or docker for the container suites. The `claude` CLI is optional: with it, `make test` also runs `claude plugin validate --strict`.
 Scripts must pass `shellcheck -S warning`. `audit.sh` must stay read-only. `external-check.sh` must stay compatible with macOS bash 3.2.

@@ -6,7 +6,7 @@ VERSION := $(shell python3 -c 'import json;print(json.load(open(".claude-plugin/
 DIST    := dist
 DISTRO  ?= all
 
-.PHONY: help test lint templates audit audit-systemd deadman-systemd ci package directory eval clean
+.PHONY: help test lint templates audit audit-systemd deadman-systemd ci ci-all package directory eval clean
 
 help: ## list targets
 	@awk -F':.*## ' '/^[a-z-]+:.*## /{printf "  %-10s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -29,8 +29,10 @@ audit-systemd: ## audit.sh checks that need systemd (podman, localhost/u24sd)
 deadman-systemd: ## deadman with real systemd in podman (localhost/u24sd, ~6 min, needs network)
 	bash tests/deadman-systemd.sh
 
-ci: ## everything CI runs, locally, in containers
+ci: ## the per-distro container suites (checks, templates, audit), locally
 	bash tests/in-container.sh $(DISTRO)
+
+ci-all: ci audit-systemd deadman-systemd ## everything CI runs except the macOS job (external-check.sh)
 
 package: ## build dist/vps-forge-skill.zip for claude.ai upload (same as the release workflow)
 	@mkdir -p $(DIST) && rm -f $(DIST)/vps-forge-skill.zip

@@ -1,6 +1,6 @@
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <b>日本語</b> · <a href="README.ru.md">Русский</a></sub></p>
 
-<!-- translation of README.md, source sha256: 3f990cc4595d -->
+<!-- translation of README.md, source sha256: e30d862511b3 -->
 
 <p align="center"><sub>これは英語版 README の翻訳です。内容が異なる場合は英語版が正しいものとします。誤りに気づいたら <a href="https://github.com/mountain-beaver/vps-forge/issues">issue</a> でお知らせください。</sub></p>
 
@@ -156,7 +156,7 @@ mkdir -p ~/.agents/skills && cp -r vps-forge/skills/vps-forge ~/.agents/skills/ 
 | 領域 | 完成したサーバーでは |
 |---|---|
 | **アクセス** | あなたの鍵だけを登録した管理ユーザー。root ログインとパスワードログインは無効で、`AllowGroups` も設定済みです。SSH の暗号設定はモダンかつバージョンに応じたものなので、`ssh-audit` に合格します。 |
-| **ファイアウォール** | ufw または nftables で、デフォルト拒否、IPv4 と IPv6 で同じルール。Docker が公開するポートもカバーし、あなた自身の IP は常に最初に通します。 |
+| **ファイアウォール** | ufw で、デフォルト拒否、IPv4 と IPv6 で同じルール。Docker が公開するポートもカバーし、あなた自身の IP は常に最初に通します。 |
 | **侵入対策** | systemd バックエンドと recidive jail を使う fail2ban。起動する前に、あなたの IP を除外リストに入れておきます。paranoid レベルでは CrowdSec。 |
 | **アップデート** | 無人セキュリティアップデート。スキルが追加するベンダーリポジトリ（Caddy、Tailscale、CrowdSec、同意すれば Docker）も対象です。needrestart と、任意の再起動ウィンドウ。 |
 | **Web とアプリ** | localhost にバインドした Docker、TLS とセキュリティヘッダー付きの Caddy または nginx、データベースとワーカー用のプロファイル。 |

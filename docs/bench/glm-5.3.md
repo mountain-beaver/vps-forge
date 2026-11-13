@@ -5,8 +5,8 @@ Opus benchmark ([how to reproduce it from `v1.0.0`](../../bench/README.md#publis
 with the scenario's prompt and approved ZCode's permission prompts. See [`bench/README.md`](../../bench/README.md#manual-runs).
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="spot-glm-5.3-dark.svg">
-  <img alt="GLM-5.3 spot check next to Claude Opus 5.5 on Debian 13. Production Docker box: Opus 80 without the skill and 100 with it, GLM-5.3 67 and 100. Fresh VPS to production: Opus 87 and 100, GLM-5.3 79 and 100." src="spot-glm-5.3.svg" width="880">
+  <source media="(prefers-color-scheme: dark)" srcset="chart-spot-dark.svg">
+  <img alt="GLM-5.3 spot check next to Claude Opus 5.5 on Debian 13. Production Docker box: Opus 80 without the skill and 100 with it, GLM-5.3 67 and 100. Fresh VPS to production: Opus 87 and 100, GLM-5.3 79 and 100." src="chart-spot-light.svg" width="880">
 </picture>
 
 ## fresh-docker-web

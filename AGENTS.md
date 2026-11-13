@@ -11,7 +11,7 @@ An [Agent Skill](https://agentskills.io) for hardening Debian/Ubuntu servers. Th
 
 - `make test`: lint, manifests, version check, audit smoke test, deadman round trip. No sudo needed.
 - `make directory`: builds `dist/directory`, the plugin folder that Anthropic's directory reads from the `directory` branch (only `.claude-plugin/plugin.json`, the icon, `skills/vps-forge` without evals, LICENSE and `.github/directory/README.md`). `.github/workflows/directory.yml` commits it to that branch on every release tag.
-- `make ci`: every CI suite in podman/docker containers on Debian 12/13 and Ubuntu 22.04/24.04/26.04.
+- `make ci`: the per-distro CI suites (checks, templates, audit) in podman/docker containers on Debian 12/13 and Ubuntu 22.04/24.04/26.04. `make ci-all` adds the systemd suites (`audit-systemd`, `deadman-systemd`); only CI's macOS job for `external-check.sh` has no local target.
   - Narrow it with `DISTRO=debian:13 make templates` or `make audit`.
 - `make lint`: the static checks only (no containers, no network, no root).
 - Tools: bash, shellcheck, python3 with PyYAML, jq, zip, and podman or docker for the container suites.

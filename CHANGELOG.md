@@ -35,6 +35,7 @@
 
 ### Tests
 - **The dead-man rollback and the systemd-only audit checks run in CI**, in a podman container that boots systemd: a broken sshd and a drop-all firewall rolled back by the timer, the rollback at boot after a reboot while armed, concurrent arms, `extend`, and ufw and fail2ban: a `ufw enable` during the window is undone, a deleted ufw rule is loaded again, and the address recorded at arm is unbanned. Both suites build their image when it's missing, and in CI a missing podman is a failure instead of a skip.
+- **`make ci-all`** runs `make ci` plus the systemd suites (`audit-systemd`, `deadman-systemd`). `make ci` and AGENTS.md no longer claim that `make ci` is everything CI runs.
 
 ### Docs
 - **Quick start:** `npx skills add … -g` is the default, so the agent finds the skill in any folder; the Node.js version it needs; how to check the skill loaded, and the sign that it didn't (the agent changes SSH or the firewall without arming the dead-man switch); which key the agent uses, on the first screen.
@@ -44,6 +45,7 @@
 - **Skill description:** Oracle Cloud, AWS EC2 and ARM, so agents pick the skill up for those servers.
 - **The README in Chinese, Japanese and Russian** (`README.zh-CN.md`, `README.ja.md`, `README.ru.md`), with a language switcher on top. English stays authoritative, and `make test` checks that each translation keeps every link, command and table of the English file and warns when one falls behind. The skill itself stays in English; it already talks to you in your language.
 - **Benchmark:** the hero chart marks the SSH port move, whose 100 comes from behaviour 1.1.0 removed; the caption under it is one line; `bench/README.md` says how to reproduce the benchmarked pre-release skill from the `v1.0.0` tag.
+- Small fixes: the README no longer promises nftables (the skill configures ufw); `paas.md` no longer mentions a `userland-proxy` change that `docker.md` never makes; the hand-off cleanup cites the right SKILL.md rule; the GLM-5.3 spot check shows its chart again; CONTRIBUTING counts five distros.
 
 ### Audit
 - **`intrusion.ips` checks the CrowdSec bouncer.** A running CrowdSec engine only detects attacks; the bouncer blocks them. The check passes with an active `crowdsec-firewall-bouncer` or a bouncer registered in `cscli bouncers list`, and warns otherwise instead of passing on the engine alone.

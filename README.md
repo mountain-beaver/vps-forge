@@ -152,7 +152,7 @@ If your agent doesn't support skills at all, tell it to read `skills/vps-forge/S
 | Area | On the finished server |
 |---|---|
 | **Access** | An admin user that holds only your key. Root and password logins are off, `AllowGroups` is set, and SSH crypto is modern and version-aware, so it passes `ssh-audit`. |
-| **Firewall** | ufw or nftables, default deny, with IPv4 and IPv6 matched. Docker-published ports are covered too, and your own IP always gets through first. |
+| **Firewall** | ufw, default deny, with IPv4 and IPv6 matched. Docker-published ports are covered too, and your own IP always gets through first. |
 | **Intrusion** | fail2ban with the systemd backend and a recidive jail, with your IP on its ignore list before it ever starts. CrowdSec at the paranoid level. |
 | **Updates** | Unattended security updates, also for the vendor repositories it adds (Caddy, Tailscale, CrowdSec, and Docker if you agree), needrestart, and an optional reboot window. |
 | **Web and apps** | Docker bound to localhost, Caddy or nginx with TLS and security headers, and database and worker profiles. |
