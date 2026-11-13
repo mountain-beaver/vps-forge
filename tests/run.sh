@@ -395,13 +395,16 @@ for ref in set(re.findall(r"`((?:references|scripts|assets)/[^`*{ ]+)`", text)):
 for f in glob.glob(".github/**/*.yml", recursive=True):
     yaml.safe_load(open(f))
 PY
-python3 - "$SKILL" <<'PY' && ok "versions agree (plugin.json, CHANGELOG, audit.sh)" || bad "version mismatch"
-import json, re, sys
+python3 - "$SKILL" <<'PY' && ok "versions agree (plugin.json, CHANGELOG, audit.sh, SKILL.md)" || bad "version mismatch"
+import json, re, sys, yaml
 skill = sys.argv[1]
 plugin = json.load(open(".claude-plugin/plugin.json"))["version"]
 released = re.findall(r"^## (\d+\.\d+\.\d+)", open("CHANGELOG.md").read(), re.M)
 audit = re.search(r'^VERSION="([^"]+)"', open(f"{skill}/scripts/audit.sh").read(), re.M).group(1)
-assert released and released[0] == plugin == audit, f"plugin.json {plugin}, CHANGELOG {released[:1]}, audit.sh {audit}"
+fm = re.match(r"^---\n(.*?)\n---\n", open(f"{skill}/SKILL.md").read(), re.S)
+meta = str((yaml.safe_load(fm.group(1)).get("metadata") or {}).get("version")) if fm else None
+assert released and released[0] == plugin == audit == meta, \
+    f"plugin.json {plugin}, CHANGELOG {released[:1]}, audit.sh {audit}, SKILL.md metadata.version {meta}"
 PY
 echo "== Markdown links"
 python3 tests/links.py || fail=1

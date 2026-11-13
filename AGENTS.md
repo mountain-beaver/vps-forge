@@ -23,8 +23,8 @@ Behaviour evals live in `evals/` at the repository root (`claude plugin eval` fo
 - `audit.sh` is read-only. `tests/audit-scenarios.sh` checksums the filesystem around it.
 - `external-check.sh` runs on users' Macs, so it must stay compatible with bash 3.2: no `mapfile`, no `${var,,}`, no associative arrays.
 - Every script passes `shellcheck -S warning`.
-- Versions must agree in three places: `.claude-plugin/plugin.json`, the first released `## x.y.z` heading in `CHANGELOG.md`, and `VERSION=` in `audit.sh`.
-  - Release: bump all three, then tag `vX.Y.Z`. The release workflow refuses a tag that doesn't match.
+- Versions must agree in four places: `.claude-plugin/plugin.json`, the first released `## x.y.z` heading in `CHANGELOG.md`, `VERSION=` in `audit.sh`, and `metadata.version` in the `SKILL.md` frontmatter (installers that copy only the skill folder keep it).
+  - Release: bump all four, then tag `vX.Y.Z`. The release workflow refuses a tag that doesn't match.
 - Templates use `<placeholder>` syntax.
   - A new placeholder needs a value in `fill()` in `tests/lib.sh`, otherwise `tests/templates.sh` fails.
   - The `write_files` in `assets/cloud-init.yaml` must stay consistent with the standalone templates. The test compares the effective sshd values.

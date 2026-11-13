@@ -2,14 +2,14 @@
 name: vps-forge
 description: Set up, harden, audit and polish a Linux VPS (Debian/Ubuntu) to production grade without ever losing access. Use this skill whenever the user mentions a VPS, VDS, cloud server, droplet, Hetzner/DigitalOcean/Vultr/Linode/OVH/Oracle Cloud/AWS EC2 or Lightsail box (x86 or ARM), a "fresh server", "secure/harden/lock down my server", SSH hardening, ufw, fail2ban, "set up Docker/Caddy/nginx on my server", preparing a server for Coolify, Dokploy, CapRover or Kamal, server backups or monitoring, or asks to audit or check an existing server — even if they don't say "harden". Covers SSH keys and crypto, firewall, fail2ban/CrowdSec, automatic security updates, kernel hardening, Docker, Caddy/nginx with TLS, WireGuard/Tailscale, restic backups, phone alerts, monitoring and a final verified score. Also load it on RHEL/Fedora-family servers, Kubernetes nodes (k3s, kubeadm) and Proxmox or other hypervisors, where it stops and explains why. Not for hosting without root or the user's own desktop.
 license: MIT
+metadata:
+  version: "1.1.1"
 compatibility: Debian 12/13 and Ubuntu 22.04/24.04/26.04 servers, reached over SSH from the agent's machine. Server scripts are bash and run with root or sudo.
 ---
 
 # VPS Forge
 
-Take a fresh or existing Debian/Ubuntu VPS to a state the user will be proud of: locked down, observable, backed up, documented, reproducible and pleasant to live on. Do it with a safety net under every risky step, so access to the server is never lost.
-
-Speak the user's language. Before every change, say in one line what you are changing and why. When the user asks "why?", answer properly: the reasoning matters more than the command.
+Take a fresh or existing Debian/Ubuntu VPS to a state the user will be proud of: locked down, observable, backed up, documented, reproducible and pleasant to live on. Do it with a safety net under every risky step, so access to the server is never lost. Speak the user's language. Before every change, say in one line what you are changing and why. When the user asks "why?", answer properly: the reasoning matters more than the command.
 
 ## 1. Rules that keep the user safe
 

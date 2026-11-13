@@ -15,10 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-      - name: Tag matches plugin.json
+      - name: Tag matches plugin.json and SKILL.md
         run: |
           v=$(python3 -c 'import json;print(json.load(open(".claude-plugin/plugin.json"))["version"])')
           [ "v$v" = "$GITHUB_REF_NAME" ] || { echo "tag $GITHUB_REF_NAME does not match plugin.json version $v"; exit 1; }
+          s=$(sed -n '/^metadata:/,/^[^ ]/s/^  version: *"\{0,1\}\([^"]*\)"\{0,1\}$/\1/p' skills/vps-forge/SKILL.md)
+          [ "v$s" = "$GITHUB_REF_NAME" ] || { echo "tag $GITHUB_REF_NAME does not match SKILL.md metadata.version $s"; exit 1; }
       - name: Checks
         run: sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck python3-yaml && sudo bash tests/run.sh
       - name: Build skill zip (for claude.ai upload)
