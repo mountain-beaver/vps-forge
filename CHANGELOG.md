@@ -40,6 +40,7 @@
 - **`make ci-all`** runs `make ci` plus the systemd suites (`audit-systemd`, `deadman-systemd`). `make ci` and AGENTS.md no longer claim that `make ci` is everything CI runs.
 - **`make test` fails without shellcheck** instead of skipping the lint and still printing ALL CHECKS PASSED; `VPS_FORGE_SKIP_SHELLCHECK=1` skips it on purpose. **Every relative link and image in every Markdown file is checked** (`tests/links.py`), not only the README's.
 - `make eval` pins the judge to `claude-haiku-5-5`, the current Haiku (was `claude-haiku-4-5`).
+- The `audit-production-shop` eval's `audit.json` matches what `audit.sh` prints today: Debian 12 is a WARN (LTS since 2026-07-11), and the version, counts and score agree with the script's formula.
 
 ### Docs
 - **Quick start:** `npx skills add … -g` is the default, so the agent finds the skill in any folder; the Node.js version it needs; how to check the skill loaded, and the sign that it didn't (the agent changes SSH or the firewall without arming the dead-man switch); which key the agent uses, on the first screen.
