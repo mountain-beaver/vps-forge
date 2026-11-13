@@ -9,6 +9,7 @@
 
 ### Safety
 - **Provider firewalls are named as outside the dead-man switch.** The switch only snapshots files on the server, so a rule in the provider's panel or API can't roll back. The skill now changes those additively (add the new rule, prove a new login, remove the old rule last) and never replaces a whole rule set in one call. The README no longer says that every change that could cut you off rolls itself back.
+- **Copying the admin's key from root's file can't empty or overwrite it any more** (`references/ssh.md`). The extracted key goes to a temporary file first; it is appended only when it was found, passes `ssh-keygen -lf` and isn't there already, so a typo no longer leaves the admin with an empty `authorized_keys` and a second run no longer drops the keys the admin already had.
 
 ### Dead-man switch
 - **`vps-forge-deadman extend MINUTES`** moves a pending rollback to MINUTES from now and keeps the same snapshot, for a change that takes longer than the window. It refuses once the rollback has fired or while it runs, and if it can't schedule the new timer it rolls back at once instead of leaving the change unguarded. The skill arms 10 minutes for multi-step changes and never extends after a failed test login.

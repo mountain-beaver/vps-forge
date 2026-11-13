@@ -48,10 +48,17 @@ chmod 600 /home/$U/.ssh/authorized_keys && chown "$U:$U" /home/$U/.ssh/authorize
 If root already has the user's key, copy **only that key**, never the whole file. Old contractors' keys and provider keys often sit in root's file, and copying the file would hand them the new sudo account. List the keys with `ssh-keygen -lf /root/.ssh/authorized_keys`. The key the user connects with right now is the one in `journalctl -u ssh -g 'Accepted publickey' -n 5` (match the fingerprint). Copy just `type base64 comment` from that line. Cloud images prefix root's keys with options such as `no-port-forwarding,…,command="echo 'Please login as…';exit 142"`, and a copied prefix breaks the admin login:
 ```bash
 B='<base64 body of that key>'
+K=/home/$U/.ssh/authorized_keys; T=$(mktemp)
 awk -v b="$B" '{ for (i = 2; i <= NF; i++) if ($i == b) { s = $(i-1) " " $i; for (j = i+1; j <= NF; j++) s = s " " $j; print s; exit } }' \
-  /root/.ssh/authorized_keys > /home/$U/.ssh/authorized_keys
-ssh-keygen -lf /home/$U/.ssh/authorized_keys   # same fingerprint as the journal line
+  /root/.ssh/authorized_keys > "$T"
+if [ -s "$T" ] && ssh-keygen -lf "$T"; then   # same fingerprint as the journal line
+  touch "$K"; [ -s "$K" ] && [ -n "$(tail -c 1 "$K")" ] && echo >> "$K"
+  grep -qF -- "$B" "$K" || cat "$T" >> "$K"
+  chmod 600 "$K" && chown "$U:$U" "$K"
+else echo "key not found in root's file: nothing written"; fi
+rm -f "$T"
 ```
+The key goes through a temporary file and is appended only if it isn't there yet, so a typo in `B` can't empty the admin's file and a second run can't wipe keys the admin already has.
 Ask about every other key (see "Cleaning up what the provider left").
 
 **The user logs in as root today?** At `hardened` and above, still create an admin user and move them off root. Use the name they asked for, otherwise `admin`. Copy only their key as above, prove the admin login and sudo from a new connection, and only then set `PermitRootLogin no`. A root login is one stolen key away from the whole box, and root's `authorized_keys` is exactly where forgotten keys pile up. Don't do this when the user explicitly says root must stay, for example for a deploy tool, or when Coolify, Dokploy, CapRover or Kamal manages the server as root (paas.md). Then keep `PermitRootLogin prohibit-password`, add root to `sshusers` (`usermod -aG sshusers root`; `AllowGroups` refuses root otherwise, whatever `PermitRootLogin` says), and say why in SERVER.md. Put the new login command at the top of the final report: `ssh <admin>@<host>`.
