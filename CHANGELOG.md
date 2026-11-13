@@ -75,6 +75,9 @@
 ### Hardening
 - **An auditd rules template for the paranoid level** (`assets/auditd/50-vps-forge.rules`): watches the identity files, sudoers, the sshd config and root's `~/.ssh`, and logs every program a logged-in person runs as root, for both syscall ABIs. `kernel.md` used to say only "load a rules file". `tests/templates.sh` checks the rule grammar, the syscall names against `ausyscall` on each distro, and the watched paths (`auditctl` itself can't load rules inside a test container).
 
+### VPN
+- **WireGuard covers IPv6.** The server gets an IPv6 tunnel address next to the IPv4 one, the client config is shown with `AllowedIPs = 0.0.0.0/0, ::/0`, and NAT66 goes into `before6.rules` when the VPS has IPv6. With only `0.0.0.0/0`, a client on a dual-stack network sent its IPv6 traffic around the tunnel from its real address; `::/0` is now required even when the VPS has no IPv6, so that traffic is dropped instead. IPv6 forwarding comes with `accept_ra = 2` on the WAN interface, because forwarding makes the kernel ignore the router advertisements most VPS get their IPv6 route from.
+
 ## 1.1.1 (2026-10-25)
 
 The skill and its scripts behave exactly as in 1.1.0. This release changes the README, its images and the packaging.

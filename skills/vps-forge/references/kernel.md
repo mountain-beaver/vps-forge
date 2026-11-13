@@ -41,7 +41,7 @@ To relax one setting, never delete the whole file. troubleshooting.md "A tool br
 
 - **VPN gateway, Tailscale exit node or subnet router, or multi-homed host:** use `rp_filter = 2` (loose). Strict mode drops legitimate asymmetric traffic, and Tailscale warns about it.
 - **Docker or VPN:** never set `net.ipv4.ip_forward = 0`. Docker and WireGuard need forwarding. Docker turns it on itself; vpn.md covers WireGuard.
-- **IPv6 via router advertisements:** don't touch `accept_ra`. Most VPS get their IPv6 default route from RAs, and disabling them silently kills IPv6.
+- **IPv6 via router advertisements:** never set `accept_ra` to 0. Most VPS get their IPv6 default route from RAs, and disabling them silently kills IPv6. The one change is the other way: a VPN gateway that forwards IPv6 sets `accept_ra = 2` on its WAN interface, because forwarding makes the kernel ignore RAs otherwise (vpn.md).
 - **Container VPS (OpenVZ/LXC):** most sysctls are read-only. Errors from `sysctl --system` are expected there. Report what couldn't be applied, and don't fight it.
 
 ## BBR
