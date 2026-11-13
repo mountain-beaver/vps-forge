@@ -62,6 +62,8 @@ Docker writes its own iptables/nftables rules for published ports, and they are 
 2. **Filter in the DOCKER-USER chain** when a container must be reachable directly. The maintained helper is [`ufw-docker`](https://github.com/chaifeng/ufw-docker). Show the user what it does, get their OK to download it, review it, then run `ufw-docker install && systemctl restart ufw`. After that, expose with `ufw route allow proto tcp from any to any port 8080`.
 3. Do **not** set `"iptables": false` in daemon.json. It breaks container networking in subtle ways.
 
+**Docker's nftables backend** (`"firewall-backend": "nftables"` in daemon.json, experimental since Docker 29) has **no DOCKER-USER chain**: Docker never jumps to one, so ufw-docker and any rules left in DOCKER-USER filter nothing. There, filter published ports in your own nftables table with a `type filter hook forward priority filter` chain (https://docs.docker.com/engine/network/firewall-nftables/), or stay on the default iptables backend. `audit.sh` notes the backend and treats DOCKER-USER rules as absent under it.
+
 `audit.sh` reports any container port published on `0.0.0.0` or `[::]` as FAIL.
 
 ## Provider firewall (second layer, hardened+)

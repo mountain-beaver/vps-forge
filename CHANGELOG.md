@@ -57,6 +57,10 @@
 ### Workflow
 - **Resuming an interrupted run.** Phase 0 now reads `/var/lib/vps-forge/progress.log` when it exists, re-checks that every phase listed as done really is, and resumes at the first phase that isn't. The log was written before, but nothing told the agent to read it.
 
+### Docker
+- **Docker's apt repository is written as a deb822 `docker.sources` file**, as in Docker's current install guide, and an old one-line `docker.list` is removed so apt doesn't warn about a duplicate source. The repository origin (`Docker`) is unchanged, so the unattended-upgrades line stays.
+- **Docker's nftables firewall backend has no DOCKER-USER chain.** `firewall.md` says so and shows where filtering goes instead (an own nftables table with a forward-hook chain). `audit.sh` reads `"firewall-backend": "nftables"` from `daemon.json`, notes it (`exposure.docker_backend`), no longer counts rules left in DOCKER-USER as filtering, and its hint names the nftables way.
+
 ## 1.1.1 (2026-10-25)
 
 The skill and its scripts behave exactly as in 1.1.0. This release changes the README, its images and the packaging.

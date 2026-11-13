@@ -315,6 +315,15 @@ expect cf-docker-user exposure.cloudflare absent
 rm -f "$STUB/ufw"
 PATH="$STUB:$PATH" run_audit no-cf
 expect no-cf exposure.cloudflare absent
+# nftables firewall backend: no DOCKER-USER chain, so rules left in an iptables one filter nothing.
+mkdir -p /etc/docker; printf '{\n  "firewall-backend": "nftables"\n}\n' > /etc/docker/daemon.json
+PATH="$STUB:$PATH" run_audit docker-nft
+dck nft-ignores-docker-user FAIL "'adminer' publishes 0\.0\.0\.0:8081->8080/tcp,:::8081->8080/tcp on all interfaces.*own nftables table"
+expect docker-nft exposure.docker_backend INFO
+rm -f /etc/docker/daemon.json
+PATH="$STUB:$PATH" run_audit docker-iptables
+dck iptables-backend-filtered WARN "'adminer' publishes 0\.0\.0\.0:8081->8080/tcp,:::8081->8080/tcp publicly"
+expect docker-iptables exposure.docker_backend absent
 unset DU_RULES4 DU_RULES6
 cat > "$STUB/docker" <<'STUBEOF'
 #!/bin/bash

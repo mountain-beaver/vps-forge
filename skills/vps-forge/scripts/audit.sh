@@ -787,9 +787,16 @@ if have docker && docker info >/dev/null 2>&1; then
       sed '1,/chain DOCKER-USER/d' <<<"$out" | grep -vE '^[[:space:]]*(\}|$|(counter packets [0-9]+ bytes [0-9]+ )?return$)'
     fi
   }
-  DU4=0; DU6=0
-  (( IS_ROOT )) && [[ -n "$(du_rules 4)" ]] && DU4=1
-  (( IS_ROOT )) && [[ -n "$(du_rules 6)" ]] && DU6=1
+  DU4=0; DU6=0; DU_HINT="filter in DOCKER-USER"
+  # Docker's nftables backend has no DOCKER-USER chain and never jumps to one, so rules left in it
+  # filter nothing; filtering then belongs in an own nftables table with a forward-hook chain.
+  if grep -qsE '"firewall-backend"[[:space:]]*:[[:space:]]*"nftables"' /etc/docker/daemon.json; then
+    DU_HINT="filter in an own nftables table (hook forward): Docker's nftables firewall backend has no DOCKER-USER chain"
+    info exposure.docker_backend "Docker uses its nftables firewall backend: there is no DOCKER-USER chain, so audit.sh can't see filtering of published ports"
+  else
+    (( IS_ROOT )) && [[ -n "$(du_rules 4)" ]] && DU4=1
+    (( IS_ROOT )) && [[ -n "$(du_rules 6)" ]] && DU6=1
+  fi
   # Every published mapping "HostIp:HostPort->Port/proto"; any non-loopback host IP bypasses ufw.
   while IFS='|' read -r cname cports; do
     [[ -n "$cname" ]] || continue
@@ -829,10 +836,10 @@ if have docker && docker info >/dev/null 2>&1; then
       warn exposure.docker "container '$cname' publishes ${filtered%,} publicly; Docker bypasses ufw, but DOCKER-USER has filtering rules: verify they restrict these ports (iptables -S DOCKER-USER)"
     fi
     if [[ -n "$all" ]]; then dock_flag=1
-      fail exposure.docker "container '$cname' publishes ${all%,} on all interfaces; Docker bypasses ufw. Bind to 127.0.0.1 or filter in DOCKER-USER"
+      fail exposure.docker "container '$cname' publishes ${all%,} on all interfaces; Docker bypasses ufw. Bind to 127.0.0.1 or $DU_HINT"
     fi
     if [[ -n "$public" ]]; then dock_flag=1
-      fail exposure.docker "container '$cname' publishes ${public%,} on a public address; Docker bypasses ufw. Bind to 127.0.0.1 or filter in DOCKER-USER"
+      fail exposure.docker "container '$cname' publishes ${public%,} on a public address; Docker bypasses ufw. Bind to 127.0.0.1 or $DU_HINT"
     fi
     if [[ -n "$private" ]]; then dock_flag=1
       warn exposure.docker "container '$cname' publishes ${private%,} on a private address; Docker bypasses ufw, so everyone on that network reaches it"
