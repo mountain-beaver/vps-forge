@@ -34,7 +34,7 @@ ufw status verbose
 ```
 - The admin rule comes first because ufw matches in order: `limit` knows nothing about fail2ban's `ignoreip`, and verification runs (`external-check.sh`, test logins with `ControlPath=none`) easily open 6 connections in 30 s. With key-only SSH the exemption costs nothing.
 - Always use `ufw prepend` for it. `ufw allow` appends, and behind an existing `limit` rule it never matches. `prepend` puts the v4 rule first and the v6 rule before the v6 `limit`. `ufw insert 1` fails for IPv6.
-- `<admin-ip>` is the validated `ADMIN_IP` from "The admin's IP" below, never an empty string: `ufw allow from  to …` fails, and an empty `ignoreip` entry protects nobody.
+- `<admin-ip>` is the validated `ADMIN_NET` from "The admin's IP" below, never an empty string: `ufw allow from  to …` fails, and an empty `ignoreip` entry protects nobody.
 - `ufw limit` is fine with SSH multiplexing (ControlMaster). Tools that open many parallel connections (Ansible without pipelining, some CI) can trip it. In that case use `allow` and let fail2ban do the work.
 - Add a `comment` to every rule. SERVER.md is built from `ufw status`.
 - Admin panels, databases, Redis, metrics: **never** open these to the world. Bind them to `127.0.0.1` and reach them via an SSH tunnel or the VPN interface (`ufw allow in on wg0 to any port 5432` / `ufw allow in on tailscale0`).
@@ -75,8 +75,15 @@ The dead-man switch can't roll back a provider firewall, so change it additively
 ```bash
 ADMIN_IP=$(sudo vps-forge-deadman client-ip)   # without sudo when root
 [[ $ADMIN_IP =~ ^[0-9A-Fa-f:.]+$ ]] || { echo "no admin IP: stop"; exit 1; }
+# What goes on the exemption lists: an IPv4 address as is, an IPv6 address as its /64
+if [[ $ADMIN_IP == *:* ]]; then
+  ADMIN_NET=$(python3 -c 'import ipaddress,sys; print(ipaddress.ip_network(sys.argv[1] + "/64", strict=False))' "$ADMIN_IP") || ADMIN_NET=$ADMIN_IP
+else ADMIN_NET=$ADMIN_IP; fi
+echo "$ADMIN_NET"
 ```
 `${SSH_CLIENT%% *}` is empty under sudo (`env_reset`), on every supported distro. `client-ip` finds the address of the calling SSH client even through sudo, and exits 1 when there is none. Stop if the result is empty or not an IP, before writing any file.
+
+`ADMIN_NET` is the value for all three exemptions: the ufw allow rule, fail2ban's `ignoreip` and sshd's `PerSourcePenaltyExemptList`. All three accept a CIDR range. An IPv6 client usually changes its low 64 bits over time (privacy extensions), so a single IPv6 address would stop matching within a day and the user's next test logins would count again. The `/64` is the user's own network; nobody else shares it. Wherever this guide writes `<admin-ip>`, fill in `ADMIN_NET`. If the user's machine has both IPv4 and IPv6, ask for (or look up) the other family's address as well and exempt both, since `external-check.sh` may connect over either one.
 
 **Is it really the user's IP?** It's the address *this session* comes from. If you aren't running on the user's own machine (a cloud sandbox, CI, a jump host), it's your address, not theirs. Whitelist it anyway, so your own tests don't ban you, but mark it: a comment line `# agent session <date>: <ip>` right above `ignoreip`, and `comment 'agent session <date>'` on the ufw rule. Ask the user for their real IP or range and add that too. Remove the agent entries in phase 12 (ssh.md "Hand-off cleanup").
 
@@ -111,7 +118,7 @@ findtime = 1d
 maxretry = 5
 ```
 - Set both `port` lines to the real SSH port. Change them again whenever the SSH port moves (ssh.md). `audit.sh` warns when the jail and sshd disagree.
-- Set `<admin-ip>` to `ADMIN_IP` (above) **before fail2ban starts for the first time** (see "Start order"). If that is an IPv6 address, whitelist its `/64`: privacy extensions rotate the low bits. If the user's machine has both IPv4 and IPv6, ask for (or look up) the other family's address as well, since `external-check.sh` may connect over either one.
+- Set `<admin-ip>` to `ADMIN_NET` ("The admin's IP": an IPv6 address becomes its `/64`) **before fail2ban starts for the first time** (see "Start order").
 - `mode = normal` is enough on a key-only box with `AllowGroups`: scanners show up as `Invalid user` or `not allowed because none of user's groups`, and both count. `aggressive` also counts the surplus keys a real user's agent offers.
 - recidive bans repeat offenders from SSH for a day; bans still grow up to a week (`bantime.increment`). An all-ports recidive (`banaction = %(banaction_allports)s`) suits only boxes without a public website (worker, vpn): on a web server it locks everyone behind the same CGNAT address out of the site.
 - `backend = systemd` needs `python3-systemd`. Debian 12+ has no `/var/log/auth.log`, so the default file backend finds nothing and fail2ban may refuse to start.

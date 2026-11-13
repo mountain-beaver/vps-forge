@@ -1,6 +1,7 @@
 # /etc/fail2ban/jail.d/vps-forge.local: managed by vps-forge
 # Requires: python3-systemd (systemd backend) and nftables (ban actions).
-# Fill:     <ssh-port> = the port sshd really listens on (ss -tlnp | grep sshd), <admin-ip> below.
+# Fill:     <ssh-port> = the port sshd really listens on (ss -tlnp | grep sshd), <admin-ip> below = ADMIN_NET
+#           (firewall.md "The admin's IP": IPv4 as is, IPv6 as its /64).
 # Order:    on a fresh box `systemctl mask fail2ban` and write this file BEFORE apt-get install
 #           (Debian 13 / Ubuntu 24.04 start fail2ban on install); unmask + enable --now in phase 5.
 # Check:    fail2ban-client -t && systemctl restart fail2ban && fail2ban-client status sshd

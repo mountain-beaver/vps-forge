@@ -137,12 +137,12 @@ Ciphers $CIPH
 MACs $MACS
 EOF
 # OpenSSH 9.8+ penalises addresses with failed logins on its own (PerSourcePenalties), ignoring
-# fail2ban's ignoreip. Exempt the admin's IP, but only where sshd knows the option: an unknown
-# keyword stops sshd from starting. $SSH_CLIENT is empty under sudo; client-ip isn't.
-# An agent-session IP gets a `# agent session <date>` comment line above the entry.
-ADMIN_IP=$(vps-forge-deadman client-ip) && [[ $ADMIN_IP =~ ^[0-9A-Fa-f:.]+$ ]] || { echo "no admin IP: stop"; exit 1; }
-sshd -t -o "PerSourcePenaltyExemptList=$ADMIN_IP" 2>/dev/null &&
-  echo "PerSourcePenaltyExemptList $ADMIN_IP" >> /etc/ssh/sshd_config.d/01-vps-forge-crypto.conf
+# fail2ban's ignoreip. Exempt the admin's network, but only where sshd knows the option: an unknown
+# keyword stops sshd from starting. ADMIN_NET comes from firewall.md "The admin's IP" (an IPv6
+# address as its /64). An agent-session entry gets a `# agent session <date>` comment line above it.
+[[ $ADMIN_NET =~ ^[0-9A-Fa-f:.]+(/[0-9]+)?$ ]] || { echo "no ADMIN_NET (firewall.md): stop"; exit 1; }
+sshd -t -o "PerSourcePenaltyExemptList=$ADMIN_NET" 2>/dev/null &&
+  echo "PerSourcePenaltyExemptList $ADMIN_NET" >> /etc/ssh/sshd_config.d/01-vps-forge-crypto.conf
 sshd -t
 ```
 - `mlkem768x25519-sha256` (post-quantum hybrid) exists from OpenSSH 9.9 onward (Debian 13). Older versions fall back to `sntrup761x25519` (8.5+) and then `curve25519`.

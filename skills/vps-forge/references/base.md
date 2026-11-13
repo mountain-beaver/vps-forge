@@ -47,10 +47,10 @@ If the upgrade installed a new kernel (`/var/run/reboot-required` exists), plan 
 
 fail2ban starts the moment it is installed on Debian 13 and Ubuntu 24.04, with the stock sshd jail and without the admin's IP. On start it re-reads recent journal lines, so your earlier test logins ban the user at once. Mask it first and write its jail (`sudo` before each command when not root):
 ```bash
-ADMIN_IP=$(vps-forge-deadman client-ip) && [[ $ADMIN_IP =~ ^[0-9A-Fa-f:.]+$ ]] || { echo "no admin IP: stop"; exit 1; }
+# ADMIN_NET: firewall.md "The admin's IP" (client-ip, an IPv6 address widened to its /64); stop if empty
 systemctl is-active --quiet fail2ban || systemctl mask fail2ban
 install -d -m 755 /etc/fail2ban/jail.d
-# write assets/fail2ban/vps-forge.local to /etc/fail2ban/jail.d/ with <admin-ip> = $ADMIN_IP
+# write assets/fail2ban/vps-forge.local to /etc/fail2ban/jail.d/ with <admin-ip> = $ADMIN_NET
 # and <ssh-port> = the port sshd listens on now
 ```
 Phase 5 unmasks and starts it (firewall.md "Start order"). If fail2ban is already running, don't mask it: write the jail, then `fail2ban-client -t && systemctl restart fail2ban`.

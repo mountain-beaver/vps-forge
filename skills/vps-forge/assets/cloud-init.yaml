@@ -2,6 +2,7 @@
 # vps-forge first-boot template. Fill the <placeholders> from the server you hardened.
 # NO SECRETS in here: user-data is stored by the provider and readable via the metadata service.
 # Validate: cloud-init schema --config-file cloud-init.yaml
+# <admin-ip> is the owner's address, an IPv6 one as its /64 (firewall.md "The admin's IP").
 
 preserve_hostname: false
 hostname: <hostname>
