@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: ubuntu-2604
+expected_outcome: |
+  Treats 26.04 as its own release: version-driven SSH crypto (mlkem768x25519 is available on OpenSSH 10.2), socket-activated ssh (ssh.socket) for any port change, fail2ban masked before install because it starts on install, and a password-sudo test that accepts sudo-rs's wording (`interactive authentication is required`) as well as classic sudo's.

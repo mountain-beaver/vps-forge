@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: rhel-out-of-scope
+expected_outcome: |
+  Loads the skill, recognises a RHEL-family system and stops: explains that the skill's tools and templates (ufw, apt, unattended-upgrades, the ssh service name, no SELinux handling) are written and tested for Debian and Ubuntu only, and makes no changes. It may point to the general direction (firewalld, dnf-automatic, SELinux port labels) without running anything.

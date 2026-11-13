@@ -1,0 +1,5 @@
+2026-11-12T18:02:11+00:00 phase=recon status=done
+2026-11-12T18:09:40+00:00 phase=safety-net status=done
+2026-11-12T18:31:05+00:00 phase=base status=done
+2026-11-12T18:52:47+00:00 phase=ssh status=done
+2026-11-12T19:05:12+00:00 phase=firewall status=done

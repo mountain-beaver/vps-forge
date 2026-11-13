@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: proxmox-out-of-scope
+expected_outcome: |
+  Loads the skill and recognises a hypervisor host (Proxmox, pve-cluster): stops and explains that the skill's defaults (ufw default deny routed, strict rp_filter) break VM networking and that hypervisor hosts are out of scope, and makes no changes.
