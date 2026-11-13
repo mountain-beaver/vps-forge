@@ -75,7 +75,7 @@ Disable with `systemctl disable --now <unit>`. Purge only with the user's OK.
 
 Each of these has a real cost. Offer them, explain the cost, and apply only what the user accepts.
 
-- **auditd:** `apt-get install auditd`, then load a rules file that watches identity and privilege files (`/etc/passwd`, `/etc/shadow`, `/etc/sudoers*`, `/etc/ssh/sshd_config*`) and `execve` by uid 0. Cost: log volume. Query with `ausearch -k <key>`.
+- **auditd:** `apt-get install auditd`, copy `assets/auditd/50-vps-forge.rules` to `/etc/audit/rules.d/`, then `augenrules --load && auditctl -l`. It watches the identity files (`/etc/passwd`, `/etc/shadow`, groups), sudoers, the sshd config and root's `~/.ssh`, and logs every program a logged-in person runs as root (`execve` with euid 0 and a login UID; services are left out). Cost: log volume. Query with `ausearch -i -k <key>` (`identity`, `sudoers`, `sshd`, `ssh-keys`, `root-cmd`). On a container VPS (OpenVZ, LXC) the kernel's audit system is usually not available.
 - **AIDE** (file integrity): `apt-get install aide && aideinit` (takes minutes), then copy the new database into place as the installer prints. A daily check runs via `dailyaidecheck`. Pipe its output to `vps-notify`. Cost: you must re-baseline after every legitimate change. Run `aide --update` after upgrades.
 - **/dev/shm noexec:** the fstab line `tmpfs /dev/shm tmpfs defaults,nodev,nosuid,noexec 0 0`, then `mount -o remount /dev/shm`. Cost: rare apps break, mostly browsers or JITs in containers.
 - **Core dumps off:** `/etc/systemd/coredump.conf.d/vps-forge.conf` with `[Coredump]` `Storage=none` and `ProcessSizeMax=0`, plus `/etc/security/limits.d/vps-forge.conf` with `* hard core 0`.

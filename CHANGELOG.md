@@ -71,6 +71,9 @@
 - **ssh-audit 3.9+ and post-quantum key exchange.** ssh-audit now warns about every KEX without post-quantum protection. The `hardened` level keeps `curve25519-sha256` after the post-quantum hybrids for older clients and Kamal, so that one warning is expected, and `external-check.sh --ssh-audit` reports it as a pass while still warning about anything else. The `paranoid` level drops curve25519 where `mlkem768x25519` or `sntrup761x25519` exists; ssh-audit 3.9.0 is then clean on Debian 13 and Ubuntu 24.04 and 26.04.
 - **Key rotation** (`ssh.md` "Rotating a key"): add the new key, prove a login with only that key from a new connection, then remove the old key by fingerprint in a second deadman window; plus the advice to keep a second key on another device. `backups.md` shows the same add-first, remove-last rotation for the restic repository password (`restic key add`, `key list`, `key remove`).
 
+### Hardening
+- **An auditd rules template for the paranoid level** (`assets/auditd/50-vps-forge.rules`): watches the identity files, sudoers, the sshd config and root's `~/.ssh`, and logs every program a logged-in person runs as root, for both syscall ABIs. `kernel.md` used to say only "load a rules file". `tests/templates.sh` checks the rule grammar, the syscall names against `ausyscall` on each distro, and the watched paths (`auditctl` itself can't load rules inside a test container).
+
 ## 1.1.1 (2026-10-25)
 
 The skill and its scripts behave exactly as in 1.1.0. This release changes the README, its images and the packaging.

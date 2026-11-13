@@ -13,7 +13,7 @@ echo "templates on $PRETTY_NAME"
 step "install validators"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq >/dev/null
-apt_install openssh-server fail2ban python3-systemd nftables cloud-init systemd apt-utils perl python3-yaml caddy docker.io
+apt_install openssh-server fail2ban python3-systemd nftables cloud-init systemd apt-utils perl python3-yaml caddy docker.io auditd
 ok "packages installed"
 
 ssh-keygen -q -t ed25519 -N '' -C test -f "$WORK/id" && TEST_PUBKEY=$(cat "$WORK/id.pub")
@@ -97,6 +97,47 @@ c = configparser.ConfigParser(); c.optionxform = str; c.read(sys.argv[1])
 assert c.sections() == ["Journal"], c.sections()
 bad = set(c["Journal"]) - known
 assert not bad, f"unknown keys: {bad}"
+PY
+
+# ------------------------------------------------------------------ auditd
+# auditctl needs CAP_AUDIT_CONTROL on the host kernel, which a test container doesn't get, so
+# check what auditctl would reject: the rule grammar, syscall names for this distro's ABIs
+# (ausyscall), permission letters, fields, and a parent directory for every watched path.
+step "auditd rules"
+python3 -I - "$ASSETS/auditd/50-vps-forge.rules" <<'PY' && ok "auditd rules: grammar, syscalls, watched paths" || bad "auditd rules"
+import os, shlex, subprocess, sys
+abi = {"b64": "x86_64", "b32": "i386"}
+fields = {"arch", "euid", "auid", "uid", "gid", "success", "exit", "perm", "dir", "path"}
+rules = 0
+for n, line in enumerate(open(sys.argv[1]), 1):
+    line = line.strip()
+    if not line or line.startswith("#"):
+        continue
+    t = shlex.split(line); rules += 1
+    where = f"line {n}: {line}"
+    if t[0] == "-w":
+        assert len(t) == 6 and t[2] == "-p" and t[4] == "-k", where
+        assert set(t[3]) <= set("rwxa"), where
+        assert os.path.isdir(os.path.dirname(t[1].rstrip("/")) or "/"), f"{where}: no parent directory"
+    elif t[0] == "-a":
+        assert t[1] in ("always,exit", "exit,always"), where
+        assert t[-2] == "-k" and len(t[-1]) <= 31, where
+        arch = None
+        for i in range(2, len(t) - 2, 2):
+            opt, val = t[i], t[i + 1]
+            if opt == "-F":
+                name = val.split("!=")[0].split(">=")[0].split("<=")[0].split("=")[0].split(">")[0].split("<")[0]
+                assert name in fields, f"{where}: unknown field {name}"
+                if name == "arch": arch = val.split("=", 1)[1]
+            elif opt == "-S":
+                assert arch in abi, f"{where}: -S before -F arch="
+                r = subprocess.run(["ausyscall", abi[arch], val, "--exact"], capture_output=True, text=True)
+                assert r.returncode == 0 and r.stdout.strip().isdigit(), f"{where}: unknown syscall {val} for {arch}"
+            else:
+                raise AssertionError(f"{where}: unexpected {opt}")
+    else:
+        raise AssertionError(f"{where}: only -w and -a rules belong in a rules.d fragment")
+assert rules >= 10, rules
 PY
 
 # ----------------------------------------------------------- systemd units

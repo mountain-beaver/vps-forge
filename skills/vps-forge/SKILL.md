@@ -157,4 +157,4 @@ Read only what the current phase needs.
 - `scripts/external-check.sh`: runs on the **user's machine**. Checks open ports, offered SSH auth methods, admin login, TLS and headers for a domain; `--root-test` and `--ssh-audit` are opt-in because they add failed logins. They are harmless when the user's IP is in fail2ban's `ignoreip` (firewall.md); if it isn't, add it first.
 - `scripts/install-alerts.sh`: installs `vps-notify` (ntfy/Telegram/webhook), SSH-login alerts, and a 5-minute health timer (failed units, disk, inodes, reboot-required, heartbeat).
 
-**Assets:** config templates in `assets/` (sshd, sysctl, fail2ban, unattended-upgrades, needrestart, journald, docker, Caddyfile, restic units, motd, SERVER.md, cloud-init). Copy a template, fill in the `<placeholders>`, then validate it.
+**Assets:** config templates in `assets/` (sshd, sysctl, fail2ban, unattended-upgrades, needrestart, journald, docker, Caddyfile, restic units, auditd rules, motd, SERVER.md, cloud-init). Copy a template, fill in the `<placeholders>`, then validate it.
