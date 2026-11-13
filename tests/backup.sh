@@ -46,9 +46,10 @@ reset() {
   printf '%s\n' "$T/srv" > "$T/include"
   : > "$T/fstab"
 }
-run() { # restic-exit-code
-  STUB_RESTIC_RC=$1 RESTIC_ENV_FILE=$T/env RESTIC_CACHE_DIR=$T/cache LOCK_WAIT=5 PATH="$T/bin:$PATH" \
-    bash "$T/backup.sh" >"$T/out.log" 2>&1 && rc=0 || rc=$?
+run() { # restic-exit-code [script args]
+  local code=$1; shift
+  STUB_RESTIC_RC=$code RESTIC_ENV_FILE=$T/env RESTIC_CACHE_DIR=$T/cache LOCK_WAIT=5 PATH="$T/bin:$PATH" \
+    bash "$T/backup.sh" "$@" >"$T/out.log" 2>&1 && rc=0 || rc=$?
 }
 restic_backups() { grep -c '^restic backup' "$T/calls.log" || true; }
 
@@ -107,6 +108,16 @@ if [[ $rc -eq 0 && $(restic_backups) -eq 1 ]]; then
   ok "a noauto child mount that is not mounted is not an error"
 else
   bad "noauto child (rc=$rc): $(head -n 3 "$T/out.log" | tr '\n' '/')"
+fi
+
+# Maintenance groups snapshots by tag: restic's default (host,paths) starts a new group whenever
+# the set of existing paths changes, and the old group would then never expire.
+reset
+run 0 --maintenance
+if [[ $rc -eq 0 ]] && grep -qE '^restic forget --prune --group-by host,tags --tag vps-forge ' "$T/calls.log"; then
+  ok "maintenance: forget groups by host,tags and filters on the vps-forge tag"
+else
+  bad "maintenance forget (rc=$rc): $(grep '^restic forget' "$T/calls.log" | head -n 1)"
 fi
 
 echo

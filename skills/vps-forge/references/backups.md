@@ -61,7 +61,7 @@ If an attacker gets root on the server, they hold the repo credentials and can d
 
 ## Maintenance
 
-`vps-forge-backup-maint.timer` (weekly) runs `restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --prune` and `restic check --read-data-subset=5%`. Adjust the retention to the user's needs and storage budget.
+`vps-forge-backup-maint.timer` (weekly) runs `restic forget --group-by host,tags --tag vps-forge --keep-daily 7 --keep-weekly 4 --keep-monthly 12 --prune` and `restic check --read-data-subset=5%`. Adjust the retention to the user's needs and storage budget. Keep `--group-by host,tags`: restic groups by host and paths by default, and the script backs up only the paths that exist, so adding a directory would start a new group and the old one would never expire.
 
 restic exit codes: **1** is a failed backup (unit fails, "Backup FAILED"). **3** means the snapshot was created but restic could not read some files (permissions, I/O errors; files that vanish during the run are skipped silently). The script treats 3 as a warning: the unit stays green, it sends "Backup WARNING", and it writes `/var/lib/vps-forge/backup/last-partial` instead of `last-success`. Find the files in `journalctl -u vps-forge-backup`, then fix their permissions or exclude them. An unmounted fstab volume under an included path stops the run before restic starts, so an empty directory never becomes a green snapshot.
 
