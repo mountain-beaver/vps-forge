@@ -68,7 +68,7 @@ Docker writes its own iptables/nftables rules for published ports, and they are 
 
 ## Provider firewall (second layer, hardened+)
 
-Hetzner Cloud Firewall, DigitalOcean Cloud Firewall, Vultr Firewall, AWS Security Groups and similar filter traffic **before** it reaches the VM. Mirror the ufw policy there (SSH, 80/443, VPN port). Benefits: Docker can't bypass it, it survives a broken ufw config, and it absorbs scan noise. Tell the user exactly which rules to create in the panel. If they use a provider API/CLI (`hcloud`), you can do it from their machine with their consent.
+Hetzner Cloud Firewall, DigitalOcean Cloud Firewall, Vultr Firewall, AWS Security Groups and similar filter traffic **before** it reaches the VM. Mirror the ufw policy there (SSH, 80/443, VPN port). Benefits: Docker can't bypass it, it survives a broken ufw config, and it absorbs scan noise. Tell the user exactly which rules to create in the panel. If they use a provider API/CLI (`hcloud`, `doctl`, `aws`), you can do it from their machine with their consent. providers.md has the panel path and the command that adds one rule for each provider.
 
 The dead-man switch can't roll back a provider firewall, so change it additively: add the new rule, prove a login over a new connection, and only then remove the old rule. Never replace a rule set in one call (`hcloud firewall replace-rules`, a Security Group rewrite): one wrong list locks the user out with nothing on the server to undo it. Before an SSH port change, the new port must be open here first (ssh.md).
 

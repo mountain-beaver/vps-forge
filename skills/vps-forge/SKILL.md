@@ -27,7 +27,7 @@ These exist because one wrong `sshd` or `ufw` change can make a server unreachab
 4. **Every change is recoverable.** Install `etckeeper` early so `/etc` is under git with an auto-commit per change, and commit after each phase with a message (`etckeeper commit "vps-forge: ssh hardening"`). Prefer drop-in files over editing main configs.
 5. **Ask before anything irreversible or disruptive**: deleting data or users, removing packages, rebooting, changing the SSH port, disabling password login, enabling auto-reboots, restricting SSH to a VPN. If the user said they are offline or told you to decide yourself, their request is the approval for the standard steps of the chosen level, including turning off password and root login once the admin key login is proven (not root login when root holds deploy keys, ssh.md). Still never delete data or users. Leave anything you skipped as a clear item in the final report.
 6. **Secrets never travel through chat.** Generate passwords, keys and tokens on the server, store them with mode 600, and tell the user where they are. If the user pastes a secret anyway, use it, don't repeat it back, and suggest rotating it later.
-7. **Don't guess versions.** Behaviour differs between Ubuntu 22.04/24.04 and Debian 12/13 (socket-activated SSH, OpenSSH algorithms, fail2ban backends). Check `/etc/os-release`, `ssh -V`, `ssh -Q kex` and `systemd-detect-virt`, and read `references/distro-notes.md` when anything is unusual.
+7. **Don't guess versions.** Behaviour differs between Ubuntu 22.04/24.04/26.04 and Debian 12/13 (socket-activated SSH, OpenSSH algorithms, fail2ban backends). Check `/etc/os-release`, `ssh -V`, `ssh -Q kex` and `systemd-detect-virt`, and read `references/distro-notes.md` when anything is unusual.
 8. **Stop if the box looks compromised.** Unknown UID-0 accounts, unknown `authorized_keys`, `/etc/ld.so.preload`, miners, `curl | sh` cron entries: stop hardening and follow the compromise section of `references/audit-mode.md`. You can't harden your way out of a breach.
 
 ## 2. Operating modes
@@ -69,7 +69,7 @@ Create a task list from the phases below, trimmed to the chosen profile and leve
 | # | Phase | Read | Key outcome |
 |---|---|---|---|
 | 0 | Recon | `scripts/audit.sh` | Facts, a baseline score, and red flags spotted before any change. `/var/lib/vps-forge/progress.log` exists: an earlier run stopped. Re-check that each phase it lists as done really is (audit, `sshd -T`, `ufw status`), then resume at the first phase not done. Stop on a Kubernetes node, a hypervisor host or a non-Debian/Ubuntu system (distro-notes.md). Coolify, Dokploy, CapRover, Kamal or Dokku found or planned: read `references/paas.md` before phase 3 |
-| 1 | Safety net | `references/base.md` §Safety net | Provider snapshot, console known, etckeeper on, deadman installed |
+| 1 | Safety net | `references/base.md` §Safety net, `references/providers.md` | Provider snapshot, console known, etckeeper on, deadman installed |
 | 2 | Base system | `references/base.md` | Non-interactive full upgrade, unattended security updates, time sync, swap, journald limits, hostname that survives reboots |
 | 3 | Admin user & SSH | `references/ssh.md` | Admin user with a key, sudo policy chosen, root login and passwords off, modern crypto, verified from a new session |
 | 4 | Firewall | `references/firewall.md` | Default deny, only explained ports open, IPv6 matched, Docker gap closed, provider firewall considered |
@@ -147,7 +147,7 @@ Read only what the current phase needs.
 - `references/comfort.md`: motd, shell, tools
 - `references/audit-mode.md`: read-only audits, severity rubric, findings format, compromise response
 - `references/reproducibility.md`: SERVER.md, cloud-init and Ansible export
-- `references/distro-notes.md`: Ubuntu 22.04/24.04/26.04, Debian 12/13 differences, containers (OpenVZ/LXC), ARM
+- `references/distro-notes.md`: Ubuntu 22.04/24.04/26.04, Debian 12/13 differences, containers (OpenVZ/LXC), ARM; `references/providers.md`: each provider's console, snapshot and additive firewall commands
 - `references/script-mode.md`: no SSH from here: recon, stage scripts, the test-and-disarm pause
 - `references/troubleshooting.md`: locked out, cloud-init overrides, fail2ban won't start, Docker ignores ufw, and more
 

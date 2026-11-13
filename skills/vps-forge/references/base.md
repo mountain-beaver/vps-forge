@@ -15,8 +15,8 @@
 
 ## Safety net (do this first)
 
-1. **Provider snapshot.** Ask the user to take one now if the provider supports it (Hetzner, DigitalOcean, Vultr and Linode all do). It's the cheapest undo button there is.
-2. **Console access.** Confirm the user can open the provider's web console (VNC/serial). On Hetzner it's Cloud Console → server → `>_`; on DigitalOcean it's Droplet → Access → Recovery Console. The console needs a password for an account. If root has no password and you are about to disable password SSH, decide with the user whether to set a strong root password for console-only use. A password-based PermitRootLogin over the network stays off either way; the console doesn't go through sshd.
+1. **Provider snapshot.** Ask the user to take one now if the provider supports it. It's the cheapest undo button there is. Where to find it, per provider: providers.md.
+2. **Console access.** Confirm the user can open the provider's web console (VNC/serial; providers.md says where it is). Most consoles need a password for an account. If root has no password and you are about to disable password SSH, decide with the user whether to set a strong root password for console-only use. A password-based PermitRootLogin over the network stays off either way; the console doesn't go through sshd.
 3. **etckeeper** (section below) before the first config change.
 4. **deadman:** install the helper once, then use it around every risky change:
    ```bash

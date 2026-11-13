@@ -61,10 +61,10 @@ Tell the user these limits early. A KVM VPS is usually the same price and has no
 
 Everything here works. Use `dpkg --print-architecture` in apt repo lines (already in docker.md), and check that the user's container images have `arm64` variants.
 
-## Cloud providers with their own rules
+## Cloud providers and IPv6-only servers
 
-- **Oracle Cloud (OCI).** Ubuntu images ship `iptables-persistent` rules (`/etc/iptables/rules.v4`) that end in a catch-all `REJECT`, so ufw's rules land after it and never match. Oracle also warns that ufw can remove the platform rules, which breaks the boot and block volume (iSCSI) connections on the next reboot. Keep the `169.254.0.0/16` rules. Open ports by inserting `ACCEPT` lines **before** the final `REJECT` in `/etc/iptables/rules.v4` (apply with `iptables-restore < /etc/iptables/rules.v4`; test it from a second session), or rely on the VCN security list and leave ufw off. Don't run `ufw enable` here without the user's explicit OK, and never `firewall-cmd --reload` on Oracle Linux.
-- **AWS EC2.** There is no host-firewall tradition: access is controlled by Security Groups, so check them first when a port "doesn't work" (`ufw` is optional defense in depth, and changing the SSH port needs the Security Group updated too). EC2 Instance Connect injects a temporary key through `AuthorizedKeysCommand /usr/share/ec2-instance-connect/eic_run_authorized_keys` (user `ec2-instance-connect`). Keep those directives, and keep the default user (`ubuntu`, `admin`, `ec2-user`) in the `AllowGroups` group; otherwise `AllowGroups` refuses Instance Connect logins. Don't override `AuthorizedKeysCommand` in the vps-forge drop-in.
+Provider quirks (Oracle Cloud's iptables rules, AWS Instance Connect, consoles, snapshots and firewall commands) are in providers.md.
+
 - **IPv6-only servers.** `github.com` has no AAAA record, so `git clone`, release downloads and anything else on GitHub fail without NAT64/DNS64 (the provider's DNS64 resolvers, or a public DNS64 service). Check `getent ahostsv6 github.com`; ::ffff: results are IPv4-mapped, not IPv6. apt mirrors, Docker's repository and Let's Encrypt do have IPv6.
 
 ## RHEL family (Rocky, Alma, CentOS Stream, Fedora)

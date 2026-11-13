@@ -53,6 +53,7 @@
 - Small fixes: the README no longer promises nftables (the skill configures ufw); `paas.md` no longer mentions a `userland-proxy` change that `docker.md` never makes; the hand-off cleanup cites the right SKILL.md rule; the GLM-5.3 spot check shows its chart again; CONTRIBUTING counts five distros.
 - **Claude.ai paths updated:** skills are uploaded and switched on under Customize → Skills; Settings → Capabilities only holds the code execution switch (README and `troubleshooting.md`).
 - The `gh skill install` pin example names the current release and shows both forms, `--pin <tag>` and `vps-forge@<tag>`.
+- **`references/providers.md`:** for Hetzner, DigitalOcean, Vultr, Linode, OVHcloud, AWS EC2 and Lightsail, and Oracle Cloud: where the web console is and what it needs, how to take a snapshot, and how to add one firewall rule in the panel and the CLI, with the commands that would replace a whole rule set named so the agent never uses them. Checked against each provider's documentation. The provider details from `base.md` and `distro-notes.md` moved there.
 
 ### Audit
 - **`intrusion.ips` checks the CrowdSec bouncer.** A running CrowdSec engine only detects attacks; the bouncer blocks them. The check passes with an active `crowdsec-firewall-bouncer` or a bouncer registered in `cscli bouncers list`, and warns otherwise instead of passing on the engine alone.
