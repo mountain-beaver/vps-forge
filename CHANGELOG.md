@@ -65,6 +65,7 @@
 ### Docker
 - **Docker's apt repository is written as a deb822 `docker.sources` file**, as in Docker's current install guide, and an old one-line `docker.list` is removed so apt doesn't warn about a duplicate source. The repository origin (`Docker`) is unchanged, so the unattended-upgrades line stays.
 - **Docker's nftables firewall backend has no DOCKER-USER chain.** `firewall.md` says so and shows where filtering goes instead (an own nftables table with a forward-hook chain). `audit.sh` reads `"firewall-backend": "nftables"` from `daemon.json`, notes it (`exposure.docker_backend`), no longer counts rules left in DOCKER-USER as filtering, and its hint names the nftables way.
+- **ufw-docker is pinned.** `firewall.md` downloads it from a fixed commit and checks its sha256 before installing it, instead of fetching whatever `master` holds and running it as root, and says how to move to a newer reviewed commit. `ufw-docker install` now runs inside a deadman window, like any firewall change.
 
 ### Distributions
 - **Ubuntu 26.04 in `distro-notes.md`:** OpenSSH 10.2 with socket activation, sudo-rs and the Rust core utilities by default, fail2ban 1.1.0 enabled and started on install (checked in ubuntu:26.04 containers and the release notes). Debian 12 is listed as LTS-only until 30 June 2028. Which releases start fail2ban on install (all supported ones except Ubuntu 22.04) is described once, in `firewall.md` "Start order", and the other places point there.

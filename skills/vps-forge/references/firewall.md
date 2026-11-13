@@ -59,7 +59,14 @@ Real client IPs: configure the proxy's trusted proxies to the same ranges (see w
 Docker writes its own iptables/nftables rules for published ports, and they are evaluated **before** ufw's. `-p 8080:8080` is open to the internet even if `ufw status` doesn't show it. This is one of the most common real-world exposures. In order of preference:
 
 1. **Publish to localhost only** and put a reverse proxy in front: `ports: ["127.0.0.1:8080:8080"]`. Services that only talk to each other need no `ports:` at all; use a compose network.
-2. **Filter in the DOCKER-USER chain** when a container must be reachable directly. The maintained helper is [`ufw-docker`](https://github.com/chaifeng/ufw-docker). Show the user what it does, get their OK to download it, review it, then run `ufw-docker install && systemctl restart ufw`. After that, expose with `ufw route allow proto tcp from any to any port 8080`.
+2. **Filter in the DOCKER-USER chain** when a container must be reachable directly. The maintained helper is [`ufw-docker`](https://github.com/chaifeng/ufw-docker). Show the user what it does and get their OK. Download it pinned to a commit, never from the moving `master`, and check the hash before it runs as root:
+   ```bash
+   C=020a8699f95592561f254d8d4ad1bb40d401dfc7   # master on 2026-05-12
+   curl -fsSL -o /root/ufw-docker "https://raw.githubusercontent.com/chaifeng/ufw-docker/$C/ufw-docker"
+   echo "643e56b080567c567b4aa28650196849b2a2da5dd0473fd3e5216b0886035ab0  /root/ufw-docker" | sha256sum -c - &&
+     install -m 755 /root/ufw-docker /usr/local/bin/ufw-docker; rm -f /root/ufw-docker
+   ```
+   A newer commit is fine once reviewed: take its SHA from `git ls-remote https://github.com/chaifeng/ufw-docker HEAD`, read the diff, and put its hash in place of the one above. Then, inside a deadman window, `ufw-docker install && systemctl restart ufw`. After that, expose with `ufw route allow proto tcp from any to any port 8080`.
 3. Do **not** set `"iptables": false` in daemon.json. It breaks container networking in subtle ways.
 
 **Docker's nftables backend** (`"firewall-backend": "nftables"` in daemon.json, experimental since Docker 29) has **no DOCKER-USER chain**: Docker never jumps to one, so ufw-docker and any rules left in DOCKER-USER filter nothing. There, filter published ports in your own nftables table with a `type filter hook forward priority filter` chain (https://docs.docker.com/engine/network/firewall-nftables/), or stay on the default iptables backend. `audit.sh` notes the backend and treats DOCKER-USER rules as absent under it.
