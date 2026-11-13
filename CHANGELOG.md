@@ -43,6 +43,9 @@
 - **The README in Chinese, Japanese and Russian** (`README.zh-CN.md`, `README.ja.md`, `README.ru.md`), with a language switcher on top. English stays authoritative, and `make test` checks that each translation keeps every link, command and table of the English file and warns when one falls behind. The skill itself stays in English; it already talks to you in your language.
 - **Benchmark:** the hero chart marks the SSH port move, whose 100 comes from behaviour 1.1.0 removed; the caption under it is one line; `bench/README.md` says how to reproduce the benchmarked pre-release skill from the `v1.0.0` tag.
 
+### Audit
+- **`intrusion.ips` checks the CrowdSec bouncer.** A running CrowdSec engine only detects attacks; the bouncer blocks them. The check passes with an active `crowdsec-firewall-bouncer` or a bouncer registered in `cscli bouncers list`, and warns otherwise instead of passing on the engine alone.
+
 ## 1.1.1 (2026-10-25)
 
 The skill and its scripts behave exactly as in 1.1.0. This release changes the README, its images and the packaging.

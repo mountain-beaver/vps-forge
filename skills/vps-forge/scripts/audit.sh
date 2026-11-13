@@ -877,7 +877,15 @@ f2b_port_covers() { # spec port -> 0 covered, 1 not covered, 2 unknown name in s
 agent_f2b=$(grep -lsi 'agent session' /etc/fail2ban/jail.local /etc/fail2ban/jail.d/* 2>/dev/null | paste -sd, -)
 [[ -n "$agent_f2b" ]] && warn intrusion.agent_ip "fail2ban config still has an entry for a temporary agent session ($(untrusted "$agent_f2b" 200)): remove that ignoreip address and reload fail2ban"
 if systemctl is-active --quiet crowdsec 2>/dev/null; then
-  pass intrusion.ips "CrowdSec running"
+  # The engine only detects; a bouncer does the blocking. Without one CrowdSec bans nothing.
+  if systemctl is-active --quiet crowdsec-firewall-bouncer 2>/dev/null; then
+    pass intrusion.ips "CrowdSec running with crowdsec-firewall-bouncer"
+  elif (( IS_ROOT )) && have cscli && cs_b=$(cscli bouncers list -o json 2>/dev/null) \
+       && cs_names=$(grep -oE '"name": *"[^"]*"' <<<"$cs_b" | sed -E 's/.*: *"(.*)"/\1/' | paste -sd, -) && [[ -n "$cs_names" ]]; then
+    pass intrusion.ips "CrowdSec running with bouncer(s): $(untrusted "$cs_names" 120)"
+  else
+    warn intrusion.ips "CrowdSec running but no active bouncer: it detects attacks and blocks nothing. Install crowdsec-firewall-bouncer-nftables (or -iptables), or check 'cscli bouncers list'"
+  fi
 elif systemctl is-active --quiet fail2ban 2>/dev/null; then
   if (( IS_ROOT )) && have fail2ban-client; then
     st=$(fail2ban-client status sshd 2>/dev/null || true)

@@ -378,6 +378,31 @@ unset F2B_ACT F2B_PORT F2B_ALLPORTS F2B_IGNORE
 rm -rf "$STUB"
 reset_ssh
 
+step "CrowdSec without a bouncer blocks nothing"
+# CS_ACTIVE lists the active units; CS_BOUNCERS is the JSON of 'cscli bouncers list -o json'.
+STUB=$(mktemp -d)
+cat > "$STUB/systemctl" <<'STUBEOF'
+#!/bin/bash
+[[ "$1 $2" == "is-active --quiet" && " $CS_ACTIVE " == *" $3 "* ]]
+STUBEOF
+cat > "$STUB/cscli" <<'STUBEOF'
+#!/bin/bash
+[[ "$*" == "bouncers list -o json" ]] && printf '%s\n' "${CS_BOUNCERS:-[]}"
+STUBEOF
+chmod +x "$STUB/systemctl" "$STUB/cscli"
+cs() { # scenario active-units bouncers-json STATUS
+  export CS_ACTIVE=$2 CS_BOUNCERS=$3
+  PATH="$STUB:$PATH" run_audit "$1"
+  expect "$1" intrusion.ips "$4"
+}
+cs cs-fw-bouncer 'crowdsec crowdsec-firewall-bouncer' '[]' PASS
+cs cs-registered 'crowdsec' '[{"name": "caddy-bouncer-1", "type": "caddy-bouncer"}]' PASS
+msg_has cs-registered intrusion.ips 'caddy-bouncer-1' "PASS names the bouncer"
+cs cs-no-bouncer 'crowdsec' '[]' WARN
+cs cs-null 'crowdsec' 'null' WARN
+unset CS_ACTIVE CS_BOUNCERS
+rm -rf "$STUB"
+
 step "firewall.host: default deny per address family"
 # No NET_ADMIN here: stubs print what nft / iptables / ip6tables would. The ip wrapper decides
 # whether the box has a public IPv6 address and passes every other call to the real ip.
