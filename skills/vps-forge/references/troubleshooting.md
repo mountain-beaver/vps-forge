@@ -33,7 +33,7 @@ This is expected after restricting `HostKey` to ed25519. Verify the fingerprint 
 
 A file that sorts earlier in `sshd_config.d/` wins (cloud-init's `50-cloud-init.conf` vs a `99-` file), or a directive above the `Include` in `sshd_config` wins. Run `sshd -T | grep passwordauth` and `grep -rn PasswordAuthentication /etc/ssh/`. Name the file `00-vps-forge.conf`.
 
-## Port change didn't take effect (Ubuntu 24.04)
+## Port change didn't take effect (Ubuntu 24.04 and 26.04)
 
 SSH is socket-activated, so run `systemctl daemon-reload && systemctl restart ssh.socket`, then `ss -tlnp | grep ssh`.
 

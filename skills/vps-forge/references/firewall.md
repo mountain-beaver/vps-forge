@@ -127,7 +127,7 @@ maxretry = 5
 - The nftables actions keep bans in their own table (`f2b-table`), separate from ufw. `ufw status` stays clean.
 - Debian 13 / OpenSSH 9.8+ logs from `sshd-session`. Debian's own fail2ban package (1.1.0-6 and later) carries the fix. A stock upstream 1.1.0 (pip, older backports) does not match `sshd-session`, so verify detection as described next.
 
-**Start order.** Debian 13 and Ubuntu 24.04 start fail2ban the moment it is installed, with the stock sshd jail and no admin IP. So on a fresh box (base.md, phase 2): `systemctl mask fail2ban`, write `vps-forge.local` with the admin IP and SSH port filled in, and only then run the big `apt-get install`. In phase 5:
+**Start order.** On Debian 12 and 13 and Ubuntu 24.04 and 26.04, installing fail2ban enables it and starts it at once, with the stock sshd jail and no admin IP. (Debian 12's stock jail usually fails to start for lack of `/var/log/auth.log`, but it is enabled and starts as soon as a working jail appears.) Ubuntu 22.04 doesn't enable it. Mask it on every release anyway, so the order is the same everywhere: on a fresh box (base.md, phase 2): `systemctl mask fail2ban`, write `vps-forge.local` with the admin IP and SSH port filled in, and only then run the big `apt-get install`. In phase 5:
 ```bash
 fail2ban-client -t && systemctl unmask fail2ban && systemctl enable --now fail2ban
 fail2ban-client get sshd ignoreip; fail2ban-client get recidive ignoreip   # both list the admin IP

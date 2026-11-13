@@ -45,7 +45,7 @@ If the upgrade installed a new kernel (`/var/run/reboot-required` exists), plan 
 
 ## Packages
 
-fail2ban starts the moment it is installed on Debian 13 and Ubuntu 24.04, with the stock sshd jail and without the admin's IP. On start it re-reads recent journal lines, so your earlier test logins ban the user at once. Mask it first and write its jail (`sudo` before each command when not root):
+fail2ban starts the moment it is installed on most supported releases (firewall.md "Start order"), with the stock sshd jail and without the admin's IP. On start it re-reads recent journal lines, so your earlier test logins ban the user at once. Mask it first and write its jail (`sudo` before each command when not root):
 ```bash
 # ADMIN_NET: firewall.md "The admin's IP" (client-ip, an IPv6 address widened to its /64); stop if empty
 systemctl is-active --quiet fail2ban || systemctl mask fail2ban
