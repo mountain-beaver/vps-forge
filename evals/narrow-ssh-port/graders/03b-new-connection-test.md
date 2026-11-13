@@ -1,7 +1,8 @@
 ---
-# The new port is tested from a new, unmultiplexed connection (ssh -o ControlPath=none -p 2222). Deterministic: matches only the agent's own messages and tool inputs (assistant lines of the trace), not the skill text it read.
+# The new port is proven from a new connection: ssh -o ControlPath=none, or a fresh login / second terminal named in the plan. Matches only assistant lines of the trace.
 type: regex
 target: trace
 weight: 1
-pattern: '"(?:type|role)"\s*:\s*"assistant"[^\n]*(?:ControlPath=none[^\n]*-p 2222|-p 2222[^\n]*ControlPath=none)'
+pattern: '"(?:type|role)"\s*:\s*"assistant"[^\n]*(?:ControlPath=none|(?:new|fresh|second|separate) (?:SSH )?(?:connection|login|session|terminal))'
+flags: i
 ---

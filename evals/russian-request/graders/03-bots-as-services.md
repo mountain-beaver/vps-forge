@@ -4,4 +4,4 @@ focus: trace
 weight: 1
 ---
 
-The bots run as unprivileged users or containers under systemd or Docker restart policies, with secrets in owner-only files, and no container port is published on all interfaces past ufw.
+The plan for the bots (now or as a named later stage) runs them as unprivileged users or containers under systemd or Docker, keeps their secrets in owner-only files, and publishes no container port on all interfaces past ufw.

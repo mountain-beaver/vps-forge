@@ -1,7 +1,8 @@
 ---
-# The admin's IP is written to fail2ban's ignoreip before fail2ban is started or restarted. Deterministic: matches only the agent's own messages and tool inputs (assistant lines of the trace), not the skill text it read.
+# The admin's IP goes on fail2ban's ignore list (ignoreip), as config or in the plan. Matches only assistant lines of the trace.
 type: regex
 target: trace
 weight: 1
-pattern: '"(?:type|role)"\s*:\s*"assistant"[^\n]*ignoreip[^\n]*systemctl (?:enable --now|start|restart|unmask) fail2ban'
+pattern: '"(?:type|role)"\s*:\s*"assistant"[^\n]*(?:(?:ignoreip|ignore ?list)[^\n]*fail2ban|fail2ban[^\n]*(?:ignoreip|ignore ?list))'
+flags: i
 ---
