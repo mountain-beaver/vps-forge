@@ -28,8 +28,9 @@ Use logical dumps in a restic pre-hook (backups.md):
 - MySQL/MariaDB: `mysqldump --single-transaction --routines --triggers --databases <db> > /var/backups/db/<db>.sql`.
 - Redis: `redis-cli --rdb /var/backups/db/redis.rdb` if its data matters. Often it's a cache that doesn't need a backup.
 - In Docker: `docker compose exec -T db pg_dump -U <user> -Fc <db> > /var/backups/db/<db>.dump`.
+- SQLite (PocketBase's `pb_data/`, n8n, Uptime Kuma, many small apps): a file copy of a live database can catch a write halfway and restore as corrupt. Find them during recon (`find /opt /srv /home /var/lib/docker/volumes -name '*.db' -o -name '*.sqlite' -o -name '*.sqlite3' 2>/dev/null`, then `file` on each hit), install `sqlite3`, and dump each one with the online backup API, which is safe while the app writes: `sqlite3 <path> ".backup '/var/backups/db/<app>.sqlite'"`. For a database inside a Docker volume, run it on the host against the volume path. Then add the live file and its `-wal` and `-shm` files to `/etc/restic/exclude`, so the dump is the only copy and nobody restores the torn one.
 
-Restore test: load the dump into a scratch database (`createdb restore_test && pg_restore -d restore_test <file>`), count rows in a key table, then drop it.
+Restore test: load the dump into a scratch database (`createdb restore_test && pg_restore -d restore_test <file>`), count rows in a key table, then drop it. For SQLite, `sqlite3 <restored file> 'PRAGMA integrity_check'` must print `ok`, and a row count of a key table must match the source.
 
 ## Sizing hints
 

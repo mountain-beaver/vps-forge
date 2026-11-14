@@ -23,7 +23,7 @@ tailscale status --json | jq -r .BackendState         # must print Running befor
 tailscale ip -4
 ufw allow in on tailscale0 comment 'tailnet'
 ```
-- Exit node: needs `net.ipv4.ip_forward=1` (and `net.ipv6.conf.all.forwarding=1`), `rp_filter=2` (kernel.md), `tailscale up --advertise-exit-node`, and approval in the admin console.
+- Exit node: needs `net.ipv4.ip_forward=1` (and `net.ipv6.conf.all.forwarding=1` with `accept_ra=2` on the WAN interface, see "WireGuard server"), `rp_filter=2` (kernel.md), `tailscale up --advertise-exit-node`, and approval in the admin console.
 - Subnet router: same forwarding and `rp_filter`, `tailscale up --advertise-routes=10.0.0.0/24`, approve the route in the admin console, and clients run `tailscale up --accept-routes`.
 - `tailscale up --ssh` lets Tailscale handle SSH auth through tailnet ACLs. It's a valid alternative to keys, but it moves trust to the Tailscale account. Make sure the user understands that before enabling it.
 - Turn on key expiry and MFA on the identity provider. The tailnet is now part of the server's perimeter.
@@ -37,15 +37,29 @@ umask 077; wg genkey | tee /etc/wireguard/server.key | wg pubkey > /etc/wireguar
 `/etc/wireguard/wg0.conf`:
 ```ini
 [Interface]
-Address = 10.8.0.1/24
+Address = 10.8.0.1/24, fd42:8::1/64
 ListenPort = 51820
 PrivateKey = <contents of server.key>
 
 [Peer]
 # laptop
 PublicKey = <client public key>
-AllowedIPs = 10.8.0.2/32
+AllowedIPs = 10.8.0.2/32, fd42:8::2/128
 ```
+The client's config, for "route all my traffic through the VPS":
+```ini
+[Interface]
+PrivateKey = <client private key, on the client>
+Address = 10.8.0.2/32, fd42:8::2/128
+DNS = 1.1.1.1, 2606:4700:4700::1111
+
+[Peer]
+PublicKey = <contents of server.pub>
+Endpoint = <server-ip>:51820
+AllowedIPs = 0.0.0.0/0, ::/0
+PersistentKeepalive = 25
+```
+**Always put `::/0` in the client's `AllowedIPs`**, even when the VPS has no IPv6. With only `0.0.0.0/0`, a client on a dual-stack network (most phone networks, many home lines) sends all its IPv6 traffic around the tunnel, from its real address. With `::/0` and no IPv6 on the VPS, that traffic enters the tunnel and is dropped, and apps fall back to IPv4. For access to the server only, the client's `AllowedIPs` is just `10.8.0.1/32, fd42:8::1/128`.
 - **Client keys belong on the client.** Have the user run `wg genkey | tee c.key | wg pubkey` on their device and send you only the public key. For phones, where that's awkward, generate on the server, show the QR (`qrencode -t ansiutf8 < client.conf`), then **delete** the client's private key from the server.
 - Firewall and forwarding for "route all my traffic through the VPS":
   ```bash
@@ -56,9 +70,15 @@ AllowedIPs = 10.8.0.2/32
   #   :POSTROUTING ACCEPT [0:0]
   #   -A POSTROUTING -s 10.8.0.0/24 -o <wan-if> -j MASQUERADE
   #   COMMIT
+  # and, if the VPS has a public IPv6 address, the same at the top of /etc/ufw/before6.rules:
+  #   *nat
+  #   :POSTROUTING ACCEPT [0:0]
+  #   -A POSTROUTING -s fd42:8::/64 -o <wan-if> -j MASQUERADE
+  #   COMMIT
   ```
-  Also set `net.ipv4.ip_forward = 1` and `rp_filter = 2` in the sysctl file. Find `<wan-if>` with `ip route show default`.
-- Start it: `systemctl enable --now wg-quick@wg0`. A recent handshake in `wg show` only proves the keys and the UDP path, not routing: from the client, `ping 10.8.0.1` and `curl -s https://ifconfig.me` must return the VPS IP; on the server, `sysctl net.ipv4.ip_forward` is 1 and `iptables -t nat -L POSTROUTING -n -v` shows the MASQUERADE rule. Only then call it working. For server-only access, the ping is the test.
+  Also set `net.ipv4.ip_forward = 1` and `rp_filter = 2` in the sysctl file. Find `<wan-if>` with `ip route show default`. The `ufw route allow` rule covers IPv6 too.
+- **IPv6 forwarding turns off router advertisements.** For IPv6 egress set `net.ipv6.conf.all.forwarding = 1`, and in the same file `net.ipv6.conf.<wan-if>.accept_ra = 2`. With forwarding on, the kernel ignores router advertisements unless `accept_ra` is 2, and most VPS get their IPv6 default route from them: without that line, the server's own IPv6 dies at the next route expiry. Check `ip -6 route show default` after `sysctl --system`. The same applies to a Tailscale exit node. NAT66 to the server's address keeps the setup independent of the provider's prefix; routing a real /64 to clients needs the provider to route it to you.
+- Start it: `systemctl enable --now wg-quick@wg0`. A recent handshake in `wg show` only proves the keys and the UDP path, not routing: from the client, `ping 10.8.0.1` and `curl -s https://ifconfig.me` must return the VPS IP (and `curl -6 -s https://ifconfig.me` the VPS's IPv6 address, or fail when the VPS has none, but never show the client's own); on the server, `sysctl net.ipv4.ip_forward` is 1 and `iptables -t nat -L POSTROUTING -n -v` shows the MASQUERADE rule. Only then call it working. For server-only access, the ping is the test.
 - For access to the server only (no traffic routing), skip NAT and forwarding and just `ufw allow in on wg0`.
 
 ## SSH only over the VPN (paranoid)

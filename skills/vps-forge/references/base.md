@@ -15,8 +15,8 @@
 
 ## Safety net (do this first)
 
-1. **Provider snapshot.** Ask the user to take one now if the provider supports it (Hetzner, DigitalOcean, Vultr and Linode all do). It's the cheapest undo button there is.
-2. **Console access.** Confirm the user can open the provider's web console (VNC/serial). On Hetzner it's Cloud Console → server → `>_`; on DigitalOcean it's Droplet → Access → Recovery Console. The console needs a password for an account. If root has no password and you are about to disable password SSH, decide with the user whether to set a strong root password for console-only use. A password-based PermitRootLogin over the network stays off either way; the console doesn't go through sshd.
+1. **Provider snapshot.** Ask the user to take one now if the provider supports it. It's the cheapest undo button there is. Where to find it, per provider: providers.md.
+2. **Console access.** Confirm the user can open the provider's web console (VNC/serial; providers.md says where it is). Most consoles need a password for an account. If root has no password and you are about to disable password SSH, decide with the user whether to set a strong root password for console-only use. A password-based PermitRootLogin over the network stays off either way; the console doesn't go through sshd.
 3. **etckeeper** (section below) before the first config change.
 4. **deadman:** install the helper once, then use it around every risky change:
    ```bash
@@ -45,12 +45,12 @@ If the upgrade installed a new kernel (`/var/run/reboot-required` exists), plan 
 
 ## Packages
 
-fail2ban starts the moment it is installed on Debian 13 and Ubuntu 24.04, with the stock sshd jail and without the admin's IP. On start it re-reads recent journal lines, so your earlier test logins ban the user at once. Mask it first and write its jail (`sudo` before each command when not root):
+fail2ban starts the moment it is installed on most supported releases (firewall.md "Start order"), with the stock sshd jail and without the admin's IP. On start it re-reads recent journal lines, so your earlier test logins ban the user at once. Mask it first and write its jail (`sudo` before each command when not root):
 ```bash
-ADMIN_IP=$(vps-forge-deadman client-ip) && [[ $ADMIN_IP =~ ^[0-9A-Fa-f:.]+$ ]] || { echo "no admin IP: stop"; exit 1; }
+# ADMIN_NET: firewall.md "The admin's IP" (client-ip, an IPv6 address widened to its /64); stop if empty
 systemctl is-active --quiet fail2ban || systemctl mask fail2ban
 install -d -m 755 /etc/fail2ban/jail.d
-# write assets/fail2ban/vps-forge.local to /etc/fail2ban/jail.d/ with <admin-ip> = $ADMIN_IP
+# write assets/fail2ban/vps-forge.local to /etc/fail2ban/jail.d/ with <admin-ip> = $ADMIN_NET
 # and <ssh-port> = the port sshd listens on now
 ```
 Phase 5 unmasks and starts it (firewall.md "Start order"). If fail2ban is already running, don't mask it: write the jail, then `fail2ban-client -t && systemctl restart fail2ban`.
@@ -81,14 +81,14 @@ APT::Periodic::AutocleanInterval "7";
 
 The default origins already cover security updates (Ubuntu `-security`, Debian `Debian-Security`). Add `-updates` only if the user wants all stable updates applied automatically.
 
-Third-party repositories are not covered: Docker and Caddy then never update by themselves. Tell the user, and if they agree, add their origins to `52vps-forge-unattended`:
+Third-party repositories are not covered, so Docker, Caddy, Tailscale and CrowdSec never update by themselves, and `audit.sh` warns about each one (`updates.third_party`). When you add one of these repositories, add its origin to `52vps-forge-unattended` in the same phase. Caddy, Tailscale and CrowdSec restart in seconds; for Docker ask first, because an upgrade restarts the daemon and with it every container (below). If the user says no, note in SERVER.md who updates it and how (`apt-get install --only-upgrade docker-ce`).
 ```
 Unattended-Upgrade::Origins-Pattern {
   "origin=Docker,label=Docker CE";
   "origin=cloudsmith/caddy/stable";
 };
 ```
-Check the exact `origin`/`label` values with `apt-cache policy | grep -A1 -E 'docker|caddy'` (the `o=` and `l=` fields). Unattended Docker upgrades restart the daemon, and with it every container that has no restart policy.
+Add a line per repository you installed. Check the exact `origin`/`label` values with `apt-cache policy | grep -A1 -E 'docker|caddy|tailscale|crowdsec'` (the `o=` and `l=` fields), then run `audit.sh` again: `updates.third_party` must pass, or name only the repositories the user chose to update by hand. Unattended Docker upgrades restart the daemon, and with it every container that has no restart policy.
 
 Verify:
 ```bash
@@ -153,6 +153,6 @@ Never add a remote to `/etc/.git` or push it anywhere: it contains `shadow`, hos
 With the user's OK, and with the provider console at hand, prove that SSH, the firewall and the app survive a reboot:
 1. `vps-forge-deadman status` must say `not armed`. Don't arm for the drill: a reboot while armed rolls back at boot by design, and that restore re-applies the SSH and firewall state, which would hide exactly what the drill looks for. `disarm` would then report `ROLLED BACK`.
 2. `systemctl reboot`. The multiplexed master dies with it.
-3. After a minute, from a new connection: `ssh -o ControlPath=none -o BatchMode=yes -p <port> <admin>@<host> 'sudo -n ufw status | head -n 1; systemctl --failed --no-legend'`. Under password sudo without the temporary grant, expect `a password is required` and have the user run the checks. Then check the app (`docker ps`, `curl -sI https://<domain>`).
+3. After a minute, from a new connection: `ssh -o ControlPath=none -o BatchMode=yes -p <port> <admin>@<host> 'sudo -n ufw status | head -n 1; systemctl --failed --no-legend'`. Under password sudo without the temporary grant, expect `a password is required` (`interactive authentication is required` from sudo-rs on Ubuntu 26.04) and have the user run the checks. Then check the app (`docker ps`, `curl -sI https://<domain>`).
 
 Under password sudo without the temporary grant, the reboot also ends the root session that the remaining root work depends on: run the drill after phase 12, or leave it to the user. If SSH doesn't come back, use the console: `systemctl status ssh ssh.socket ufw`, `journalctl -b -u ssh`.

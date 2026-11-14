@@ -27,11 +27,21 @@ What the file does, so you can explain it:
 - **Filesystem:** `protected_{hardlinks,symlinks,fifos,regular}` blocks classic `/tmp` race attacks. `suid_dumpable=0` stops setuid programs from dumping memory.
 - **Memory:** `vm.swappiness=10` keeps hot memory in RAM.
 
+What each group costs. Say it in one line when you apply the file on a box where the user debugs or profiles, and write it into SERVER.md:
+- **Network:** nothing on a single-homed server. Asymmetric routing is the exception (next section).
+- **`kptr_restrict=2`:** kernel addresses read as zeros **even for root**, so `perf` and `bpftrace` lose kernel symbols under `sudo` too. While profiling, `sysctl -w kernel.kptr_restrict=1` shows them to root again and `audit.sh` still passes it.
+- **`dmesg_restrict=1`:** `dmesg` needs `sudo`. Most distros already default to this.
+- **`yama.ptrace_scope=1`:** `strace -p`, `gdb -p` and similar attach tools, such as py-spy, fail without `sudo` on a process they didn't start. Starting a program under `strace` still works, and root (`CAP_SYS_PTRACE`) can attach to anything.
+- **`protected_fifos=2`, `protected_regular=2`:** in a sticky world- or group-writable directory such as `/tmp`, opening a file or FIFO with `O_CREAT` is refused when it already exists and belongs to another user. Rare; it shows up as root getting "Permission denied" writing to a user's file in `/tmp`.
+- **`suid_dumpable=0`, `swappiness=10`, BBR:** no practical cost.
+
+To relax one setting, never delete the whole file. troubleshooting.md "A tool broke after the kernel hardening" has the procedure. A setting the user relaxed (in `/etc/sysctl.d/99-zz-local.conf`, or noted in SERVER.md) is their choice: keep it on later runs, don't offer to revert it, and explain the `kernel.sysctl` WARN it causes instead of fixing it.
+
 ## When NOT to apply a setting
 
 - **VPN gateway, Tailscale exit node or subnet router, or multi-homed host:** use `rp_filter = 2` (loose). Strict mode drops legitimate asymmetric traffic, and Tailscale warns about it.
 - **Docker or VPN:** never set `net.ipv4.ip_forward = 0`. Docker and WireGuard need forwarding. Docker turns it on itself; vpn.md covers WireGuard.
-- **IPv6 via router advertisements:** don't touch `accept_ra`. Most VPS get their IPv6 default route from RAs, and disabling them silently kills IPv6.
+- **IPv6 via router advertisements:** never set `accept_ra` to 0. Most VPS get their IPv6 default route from RAs, and disabling them silently kills IPv6. The one change is the other way: a VPN gateway that forwards IPv6 sets `accept_ra = 2` on its WAN interface, because forwarding makes the kernel ignore RAs otherwise (vpn.md).
 - **Container VPS (OpenVZ/LXC):** most sysctls are read-only. Errors from `sysctl --system` are expected there. Report what couldn't be applied, and don't fight it.
 
 ## BBR
@@ -65,7 +75,7 @@ Disable with `systemctl disable --now <unit>`. Purge only with the user's OK.
 
 Each of these has a real cost. Offer them, explain the cost, and apply only what the user accepts.
 
-- **auditd:** `apt-get install auditd`, then load a rules file that watches identity and privilege files (`/etc/passwd`, `/etc/shadow`, `/etc/sudoers*`, `/etc/ssh/sshd_config*`) and `execve` by uid 0. Cost: log volume. Query with `ausearch -k <key>`.
+- **auditd:** `apt-get install auditd`, copy `assets/auditd/50-vps-forge.rules` to `/etc/audit/rules.d/`, then `augenrules --load && auditctl -l`. It watches the identity files (`/etc/passwd`, `/etc/shadow`, groups), sudoers, the sshd config and root's `~/.ssh`, and logs every program a logged-in person runs as root (`execve` with euid 0 and a login UID; services are left out). Cost: log volume. Query with `ausearch -i -k <key>` (`identity`, `sudoers`, `sshd`, `ssh-keys`, `root-cmd`). On a container VPS (OpenVZ, LXC) the kernel's audit system is usually not available.
 - **AIDE** (file integrity): `apt-get install aide && aideinit` (takes minutes), then copy the new database into place as the installer prints. A daily check runs via `dailyaidecheck`. Pipe its output to `vps-notify`. Cost: you must re-baseline after every legitimate change. Run `aide --update` after upgrades.
 - **/dev/shm noexec:** the fstab line `tmpfs /dev/shm tmpfs defaults,nodev,nosuid,noexec 0 0`, then `mount -o remount /dev/shm`. Cost: rare apps break, mostly browsers or JITs in containers.
 - **Core dumps off:** `/etc/systemd/coredump.conf.d/vps-forge.conf` with `[Coredump]` `Storage=none` and `ProcessSizeMax=0`, plus `/etc/security/limits.d/vps-forge.conf` with `* hard core 0`.

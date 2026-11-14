@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# vps-forge deadman: automatic rollback of SSH / firewall / sudo / PAM config unless disarmed.
+# vps-forge deadman: automatic rollback of SSH / firewall / sudo / PAM config and authorized_keys
+# unless disarmed.
 #
 #   vps-forge-deadman arm [MINUTES] [--ip ADDR]
 #                                     snapshot config now, roll back in MINUTES (default 5). The
 #                                     rollback also unbans ADDR in fail2ban (default: the SSH
 #                                     client address of this session)
+#   vps-forge-deadman extend MINUTES  still armed and need more time before the test: move the
+#                                     rollback to MINUTES from now. Same snapshot; never use it to
+#                                     keep a change whose test login failed
 #   vps-forge-deadman disarm          the change works: cancel the rollback. Exits 3 (and prints
 #                                     ROLLED BACK) if a rollback already ran since arm: then the
 #                                     changes were NOT kept
@@ -49,6 +53,7 @@ PATHS=(etc/ssh etc/default/ssh etc/ufw etc/default/ufw etc/nftables.conf etc/ipt
        etc/pam.d/common-session-noninteractive etc/security/access.conf
        etc/systemd/system/ssh.socket etc/systemd/system/ssh.service
        etc/systemd/system/ssh.socket.d etc/systemd/system/ssh.service.d)
+# Also snapshotted: the authorized_keys of root and of every account with a login shell (key_paths).
 # Their `systemctl is-enabled` state is recorded at snapshot time and re-applied by the rollback.
 UNITS=(ssh.service ssh.socket ufw.service nftables.service netfilter-persistent.service)
 
@@ -170,16 +175,92 @@ unban_client() { # snapshot-dir
   fi
 }
 
+# A home-relative path is only touched when its directory is real: no symlink anywhere on the way,
+# so a user who points ~/.ssh elsewhere can't make the root-run rollback write outside the home.
+safe_parent() { # relative path
+  local base d
+  base=$(readlink -f "$ROOT") || return 1
+  d="${base%/}/$(dirname "$1")"
+  [[ -d "$d" && ! -L "$d" && "$(readlink -f "$d")" == "$d" ]]
+}
+# Who controls a path: uid:gid of the one account that owns directories on the way, 0:0 when root
+# owns them all and none is group- or world-writable, -1 (leave the path alone) when a directory
+# can't be read, two accounts share the way, or a root directory is writable by others. A user can
+# swap a directory they control for a symlink at any moment, even after safe_parent said yes, so
+# such paths are read and written only with that user's rights (as_owner): the race then gets
+# them nothing they couldn't do anyway.
+path_owner() { # relative path
+  local d s owner=0:0
+  d="${ROOT%/}/$(dirname "$1")"
+  while [[ -n "$d" && "$d" != / && "$d" != "${ROOT%/}" ]]; do
+    s=$(stat -c '%u:%g %a' -- "$d" 2>/dev/null) || { echo -1; return; }
+    if [[ "$s" == 0:* ]]; then
+      (( 8#${s#* } & 8#022 )) && { echo -1; return; }
+    elif [[ "$owner" == 0:0 ]]; then owner=${s% *}
+    elif [[ "${owner%%:*}" != "${s%%:*}" ]]; then echo -1; return
+    fi
+    d=$(dirname "$d")
+  done
+  echo "$owner"
+}
+# Reads a user's file for root: regular files only, at most 1 MiB, 10 seconds (no /dev/zero, no FIFO).
+read_owned() { # owner path out-file
+  as_owner "$1" test -f "$2" || return 1
+  as_owner "$1" timeout 10 head -c 1048577 -- "$2" > "$3" || return 1
+  (( $(stat -c %s -- "$3") <= 1048576 )) || { : > "$3"; return 1; }
+}
+as_owner() { # uid:gid command...
+  local o=$1; shift
+  if [[ "${o%%:*}" == "$(id -u)" ]]; then "$@"
+  else setpriv --reuid="${o%%:*}" --regid="${o#*:}" --clear-groups -- "$@"; fi
+}
+# The skill edits these (the admin's key, emptying root's file), and a wrong edit locks the user out.
+key_paths() {
+  local home seen=" "
+  { echo /root; awk -F: '$7 !~ /(nologin|false|sync|halt|shutdown)$/ {print $6}' "${ROOT%/}/etc/passwd" 2>/dev/null; } |
+  while IFS= read -r home; do
+    home=${home%/}
+    [[ "$home" == /?* && "$home" != *..* && "$seen" != *" $home "* ]] || continue
+    seen+="$home "
+    safe_parent "${home#/}/.ssh/authorized_keys" && echo "${home#/}/.ssh/authorized_keys"
+  done
+}
+
 snapshot() { # -> prints snapshot dir
-  local ts dir p u existing=() absent=() keep
+  local ts dir p u o m stage existing=() owned=() absent=() keep all=()
   ts=$(date +%Y%m%d-%H%M%S)
   # unique even within one second: a second snapshot must never overwrite the armed one
   mkdir -p "$STATE" && dir=$(mktemp -d "$STATE/$ts-XXXX") || die "cannot create a snapshot dir in $STATE"
-  for p in "${PATHS[@]}"; do
-    if [[ -e "${ROOT%/}/$p" || -L "${ROOT%/}/$p" ]]; then existing+=("$p"); else absent+=("$p"); fi
+  all=("${PATHS[@]}")
+  while IFS= read -r p; do [[ -n "$p" ]] && all+=("$p"); done < <(key_paths)
+  for p in "${all[@]}"; do
+    o=0:0; [[ "$p" == etc/* ]] || o=$(path_owner "$p")
+    if [[ "$o" == -1 ]]; then log "WARNING: cannot inspect /$(dirname "$p"); /$p is not in the snapshot"
+    elif [[ "$o" != 0:* ]]; then
+      if as_owner "$o" test -e "${ROOT%/}/$p" -o -L "${ROOT%/}/$p"; then owned+=("$p")
+      elif [[ -e "${ROOT%/}/$p" || -L "${ROOT%/}/$p" ]]; then log "WARNING: /$p exists but its owner can't reach it; it is not in the snapshot"
+      else absent+=("$p"); fi
+    elif [[ -e "${ROOT%/}/$p" || -L "${ROOT%/}/$p" ]]; then existing+=("$p"); else absent+=("$p"); fi
   done
   ((${#existing[@]})) || die "nothing to snapshot"
   tar -C "$ROOT" -cpf "$dir/snapshot.tar" "${existing[@]}" || die "tar failed"
+  # Files in a home root doesn't control: copied with the owner's rights, never followed as root.
+  if ((${#owned[@]})); then
+    stage=$(mktemp -d) || die "mktemp failed"
+    for p in "${owned[@]}"; do
+      o=$(path_owner "$p")
+      mkdir -p "$stage/$(dirname "$p")"
+      if [[ "$o" != -1 && "$o" != 0:* ]] && read_owned "$o" "${ROOT%/}/$p" "$stage/$p" \
+         && m=$(as_owner "$o" stat -L -c %a -- "${ROOT%/}/$p"); then
+        chmod "$m" "$stage/$p"; chown "$o" "$stage/$p" 2>/dev/null || true
+        tar -C "$stage" -rpf "$dir/snapshot.tar" "$p" || die "tar failed"
+        existing+=("$p")
+      else
+        log "WARNING: cannot read /$p as its owner (not a regular file, over 1 MiB, or unreadable); it is not in the snapshot"
+      fi
+    done
+    rm -rf "$stage"
+  fi
   printf '%s\n' "${existing[@]}" > "$dir/paths"
   printf '%s\n' "${absent[@]}" > "$dir/absent"
   if [[ "$SKIP_SERVICES" != 1 ]]; then
@@ -203,6 +284,21 @@ snapshot() { # -> prints snapshot dir
   find "$STATE" -mindepth 1 -maxdepth 1 -type d -name '20*' -printf '%f\n' | sort | head -n -"$KEEP" \
     | while read -r old; do [[ "$keep" == *" $old "* ]] || rm -rf "${STATE:?}/$old"; done
   echo "$dir"
+}
+
+restore_owned() { # rel-path owner tmpdir rbdir: put a home file back with its owner's rights
+  local p=$1 o=$2 src="$3/$1" dst="${ROOT%/}/$1" bak="$4/$1" mode
+  # An old-format snapshot may hold a symlink; reading through it as root could leak its target.
+  [[ -f "$src" && ! -L "$src" ]] || { log "ERROR: the snapshot of /$p is not a regular file"; return 1; }
+  mode=$(stat -c %a -- "$src")
+  mkdir -p "$(dirname "$bak")"
+  if as_owner "$o" test -e "$dst"; then
+    read_owned "$o" "$dst" "$bak" 2>/dev/null || log "WARNING: the current /$p could not be kept (not a regular file or over 1 MiB)"
+    chmod 600 "$bak" 2>/dev/null
+  fi
+  # shellcheck disable=SC2016  # expanded by the inner shell
+  as_owner "$o" sh -c 'umask 077; n="$1.vps-forge-new"; rm -f -- "$n" && cat > "$n" && chmod "$2" "$n" && mv -fT -- "$n" "$1"' \
+    sh "$dst" "$mode" < "$src" || { log "ERROR: cannot write /$p as its owner; it was NOT restored"; return 1; }
 }
 
 swap_in() { # src dst bak: replace dst with src; the replaced version is moved to bak
@@ -275,9 +371,9 @@ drop_new_nft_tables() { # snapshot-dir rolled-back-dir changed-paths...
 }
 
 restore() { # snapshot-dir
-  local dir=${1:-} tmp p ufw_active=0 ssh_socket=0 nft_active=0 failed=() changed=() gone
+  local dir=${1:-} tmp p o ufw_active=0 ssh_socket=0 nft_active=0 failed=() changed=() gone
   [[ -n "$dir" && -f "$dir/snapshot.tar" ]] || die "no snapshot found (looked at ${dir:-$STATE/latest})"
-  log "restoring SSH/firewall/sudo/PAM config from $dir"
+  log "restoring SSH/firewall/sudo/PAM config and authorized_keys from $dir"
   local rb
   rb="$dir/rolled-back-$(date +%Y%m%d-%H%M%S)"
   tmp=$(mktemp -d) || die "mktemp failed"
@@ -287,6 +383,17 @@ restore() { # snapshot-dir
   rm -f "$STATE/restore-partial"
   while read -r p; do
     [[ -n "$p" ]] && [[ -e "$tmp/$p" || -L "$tmp/$p" ]] || continue
+    if [[ "$p" != etc/* ]] && ! safe_parent "$p"; then
+      log "ERROR: /$(dirname "$p") is now missing or a symlink; /$p was NOT restored"; failed+=("/$p"); continue
+    fi
+    o=0:0; [[ "$p" == etc/* ]] || o=$(path_owner "$p")
+    if [[ "$o" == -1 ]]; then
+      log "ERROR: cannot inspect /$(dirname "$p"); /$p was NOT restored"; failed+=("/$p"); continue
+    elif [[ "$o" != 0:* ]]; then
+      { read_owned "$o" "${ROOT%/}/$p" "$tmp/.current" 2>/dev/null && cmp -s "$tmp/.current" "$tmp/$p"; } || changed+=("$p")
+      if restore_owned "$p" "$o" "$tmp" "$rb"; then log "restored /$p"; else failed+=("/$p"); fi
+      continue
+    fi
     diff -rq --no-dereference "$tmp/$p" "${ROOT%/}/$p" >/dev/null 2>&1 || changed+=("$p")
     if swap_in "$tmp/$p" "${ROOT%/}/$p" "$rb/$p"; then log "restored /$p"; else failed+=("/$p"); fi
   done < "$dir/paths"
@@ -299,6 +406,19 @@ restore() { # snapshot-dir
   else gone=$(printf '%s\n' etc/systemd/system/ssh.socket.d etc/systemd/system/ssh.service.d); fi
   while read -r p; do
     [[ -n "$p" ]] && ! grep -qxF "$p" "$dir/paths" && [[ -e "${ROOT%/}/$p" || -L "${ROOT%/}/$p" ]] || continue
+    if [[ "$p" != etc/* ]] && ! safe_parent "$p"; then
+      log "ERROR: /$(dirname "$p") is now a symlink; /$p (created after the snapshot) was NOT removed"; failed+=("/$p (not removed)"); continue
+    fi
+    o=0:0; [[ "$p" == etc/* ]] || o=$(path_owner "$p")
+    if [[ "$o" != 0:* ]]; then
+      mkdir -p "$(dirname "$rb/$p")"
+      if [[ "$o" != -1 ]] && { read_owned "$o" "${ROOT%/}/$p" "$rb/$p" 2>/dev/null; chmod 600 "$rb/$p" 2>/dev/null; as_owner "$o" rm -f -- "${ROOT%/}/$p"; }; then
+        log "removed /$p (created after the snapshot)"; changed+=("$p")
+      else
+        log "ERROR: cannot remove /$p (created after the snapshot) as its owner"; failed+=("/$p (not removed)")
+      fi
+      continue
+    fi
     if mkdir -p "$(dirname "$rb/$p")" && mv -T "${ROOT%/}/$p" "$rb/$p"; then
       log "removed /$p (created after the snapshot)"
       changed+=("$p")
@@ -472,6 +592,33 @@ case "$cmd" in
       /bin/bash "$STATE/bin/deadman.sh" restore --armed "$dir" || { rm -f "$STATE/armed-at"; remove_boot_unit; die "systemd-run failed"; }
     at=$(date -d "+${min} min" +%H:%M:%S 2>/dev/null || echo "in ${min} min")
     log "ARMED: rollback at $at unless you run 'vps-forge-deadman disarm' (snapshot $(basename "$dir"); $boot_note; $ip_note)"
+    ;;
+  extend)
+    need_root
+    min=${1:-}
+    [[ "$min" =~ ^[0-9]+$ ]] && (( min >= 1 && min <= 120 )) || die "usage: extend MINUTES (1..120)"
+    lock 10 || die "another vps-forge-deadman command is running; NOT extended. Try again"
+    if rolled_back_since_arm; then report_rollback; exit 3; fi
+    if restore_running; then report_running; exit 3; fi
+    is_armed || die "not armed: nothing to extend"
+    dir=$(cat "$STATE/armed-snapshot" 2>/dev/null)
+    [[ -n "$dir" && -d "$dir" ]] || die "no armed snapshot recorded; NOT extended"
+    if [[ "$SKIP_SERVICES" == 1 ]]; then
+      log "EXTENDED (test mode: no timer scheduled, snapshot $(basename "$dir"))"
+      exit 0
+    fi
+    systemctl stop "$UNIT.timer" || die "could not stop $UNIT.timer; the old rollback time still holds"
+    # the timer may have fired between the checks above and the stop
+    if rolled_back_since_arm; then report_rollback; exit 3; fi
+    if restore_running; then report_running; exit 3; fi
+    systemctl reset-failed "$UNIT.service" "$UNIT.timer" 2>/dev/null
+    if ! systemd-run --quiet --collect --unit="$UNIT" --description="vps-forge deadman rollback"         --on-active="${min}m" --timer-property=AccuracySec=1s         /bin/bash "$STATE/bin/deadman.sh" restore --armed "$dir"; then
+      # no timer now means no rollback: an unverified change must not outlive the arm
+      log "systemd-run failed while extending: rolling back now"
+      restore "$dir"; exit 1
+    fi
+    at=$(date -d "+${min} min" +%H:%M:%S 2>/dev/null || echo "in ${min} min")
+    log "EXTENDED: rollback at $at unless you run 'vps-forge-deadman disarm' (snapshot $(basename "$dir"))"
     ;;
   disarm)
     need_root

@@ -34,7 +34,7 @@ ufw status verbose
 ```
 - The admin rule comes first because ufw matches in order: `limit` knows nothing about fail2ban's `ignoreip`, and verification runs (`external-check.sh`, test logins with `ControlPath=none`) easily open 6 connections in 30 s. With key-only SSH the exemption costs nothing.
 - Always use `ufw prepend` for it. `ufw allow` appends, and behind an existing `limit` rule it never matches. `prepend` puts the v4 rule first and the v6 rule before the v6 `limit`. `ufw insert 1` fails for IPv6.
-- `<admin-ip>` is the validated `ADMIN_IP` from "The admin's IP" below, never an empty string: `ufw allow from  to …` fails, and an empty `ignoreip` entry protects nobody.
+- `<admin-ip>` is the validated `ADMIN_NET` from "The admin's IP" below, never an empty string: `ufw allow from  to …` fails, and an empty `ignoreip` entry protects nobody.
 - `ufw limit` is fine with SSH multiplexing (ControlMaster). Tools that open many parallel connections (Ansible without pipelining, some CI) can trip it. In that case use `allow` and let fail2ban do the work.
 - Add a `comment` to every rule. SERVER.md is built from `ufw status`.
 - Admin panels, databases, Redis, metrics: **never** open these to the world. Bind them to `127.0.0.1` and reach them via an SSH tunnel or the VPN interface (`ufw allow in on wg0 to any port 5432` / `ufw allow in on tailscale0`).
@@ -59,22 +59,40 @@ Real client IPs: configure the proxy's trusted proxies to the same ranges (see w
 Docker writes its own iptables/nftables rules for published ports, and they are evaluated **before** ufw's. `-p 8080:8080` is open to the internet even if `ufw status` doesn't show it. This is one of the most common real-world exposures. In order of preference:
 
 1. **Publish to localhost only** and put a reverse proxy in front: `ports: ["127.0.0.1:8080:8080"]`. Services that only talk to each other need no `ports:` at all; use a compose network.
-2. **Filter in the DOCKER-USER chain** when a container must be reachable directly. The maintained helper is [`ufw-docker`](https://github.com/chaifeng/ufw-docker). Show the user what it does, get their OK to download it, review it, then run `ufw-docker install && systemctl restart ufw`. After that, expose with `ufw route allow proto tcp from any to any port 8080`.
+2. **Filter in the DOCKER-USER chain** when a container must be reachable directly. The maintained helper is [`ufw-docker`](https://github.com/chaifeng/ufw-docker). Show the user what it does and get their OK. Download it pinned to a commit, never from the moving `master`, and check the hash before it runs as root:
+   ```bash
+   C=020a8699f95592561f254d8d4ad1bb40d401dfc7   # master on 2026-05-12
+   curl -fsSL -o /root/ufw-docker "https://raw.githubusercontent.com/chaifeng/ufw-docker/$C/ufw-docker"
+   echo "643e56b080567c567b4aa28650196849b2a2da5dd0473fd3e5216b0886035ab0  /root/ufw-docker" | sha256sum -c - &&
+     install -m 755 /root/ufw-docker /usr/local/bin/ufw-docker; rm -f /root/ufw-docker
+   ```
+   A newer commit is fine once reviewed: take its SHA from `git ls-remote https://github.com/chaifeng/ufw-docker HEAD`, read the diff, and put its hash in place of the one above. Then, inside a deadman window, `ufw-docker install && systemctl restart ufw`. After that, expose with `ufw route allow proto tcp from any to any port 8080`.
 3. Do **not** set `"iptables": false` in daemon.json. It breaks container networking in subtle ways.
+
+**Docker's nftables backend** (`"firewall-backend": "nftables"` in daemon.json, experimental since Docker 29) has **no DOCKER-USER chain**: Docker never jumps to one, so ufw-docker and any rules left in DOCKER-USER filter nothing. There, filter published ports in your own nftables table with a `type filter hook forward priority filter` chain (https://docs.docker.com/engine/network/firewall-nftables/), or stay on the default iptables backend. `audit.sh` notes the backend and treats DOCKER-USER rules as absent under it.
 
 `audit.sh` reports any container port published on `0.0.0.0` or `[::]` as FAIL.
 
 ## Provider firewall (second layer, hardened+)
 
-Hetzner Cloud Firewall, DigitalOcean Cloud Firewall, Vultr Firewall, AWS Security Groups and similar filter traffic **before** it reaches the VM. Mirror the ufw policy there (SSH, 80/443, VPN port). Benefits: Docker can't bypass it, it survives a broken ufw config, and it absorbs scan noise. Tell the user exactly which rules to create in the panel. If they use a provider API/CLI (`hcloud`), you can do it from their machine with their consent. Before an SSH port change, the new port must be open here first (ssh.md).
+Hetzner Cloud Firewall, DigitalOcean Cloud Firewall, Vultr Firewall, AWS Security Groups and similar filter traffic **before** it reaches the VM. Mirror the ufw policy there (SSH, 80/443, VPN port). Benefits: Docker can't bypass it, it survives a broken ufw config, and it absorbs scan noise. Tell the user exactly which rules to create in the panel. If they use a provider API/CLI (`hcloud`, `doctl`, `aws`), you can do it from their machine with their consent. providers.md has the panel path and the command that adds one rule for each provider.
+
+The dead-man switch can't roll back a provider firewall, so change it additively: add the new rule, prove a login over a new connection, and only then remove the old rule. Never replace a rule set in one call (`hcloud firewall replace-rules`, a Security Group rewrite): one wrong list locks the user out with nothing on the server to undo it. Before an SSH port change, the new port must be open here first (ssh.md).
 
 ## The admin's IP
 
 ```bash
 ADMIN_IP=$(sudo vps-forge-deadman client-ip)   # without sudo when root
 [[ $ADMIN_IP =~ ^[0-9A-Fa-f:.]+$ ]] || { echo "no admin IP: stop"; exit 1; }
+# What goes on the exemption lists: an IPv4 address as is, an IPv6 address as its /64
+if [[ $ADMIN_IP == *:* ]]; then
+  ADMIN_NET=$(python3 -c 'import ipaddress,sys; print(ipaddress.ip_network(sys.argv[1] + "/64", strict=False))' "$ADMIN_IP") || ADMIN_NET=$ADMIN_IP
+else ADMIN_NET=$ADMIN_IP; fi
+echo "$ADMIN_NET"
 ```
 `${SSH_CLIENT%% *}` is empty under sudo (`env_reset`), on every supported distro. `client-ip` finds the address of the calling SSH client even through sudo, and exits 1 when there is none. Stop if the result is empty or not an IP, before writing any file.
+
+`ADMIN_NET` is the value for all three exemptions: the ufw allow rule, fail2ban's `ignoreip` and sshd's `PerSourcePenaltyExemptList`. All three accept a CIDR range. An IPv6 client usually changes its low 64 bits over time (privacy extensions), so a single IPv6 address would stop matching within a day and the user's next test logins would count again. The `/64` is the user's own network; nobody else shares it. Wherever this guide writes `<admin-ip>`, fill in `ADMIN_NET`. If the user's machine has both IPv4 and IPv6, ask for (or look up) the other family's address as well and exempt both, since `external-check.sh` may connect over either one.
 
 **Is it really the user's IP?** It's the address *this session* comes from. If you aren't running on the user's own machine (a cloud sandbox, CI, a jump host), it's your address, not theirs. Whitelist it anyway, so your own tests don't ban you, but mark it: a comment line `# agent session <date>: <ip>` right above `ignoreip`, and `comment 'agent session <date>'` on the ufw rule. Ask the user for their real IP or range and add that too. Remove the agent entries in phase 12 (ssh.md "Hand-off cleanup").
 
@@ -109,14 +127,14 @@ findtime = 1d
 maxretry = 5
 ```
 - Set both `port` lines to the real SSH port. Change them again whenever the SSH port moves (ssh.md). `audit.sh` warns when the jail and sshd disagree.
-- Set `<admin-ip>` to `ADMIN_IP` (above) **before fail2ban starts for the first time** (see "Start order"). If that is an IPv6 address, whitelist its `/64`: privacy extensions rotate the low bits. If the user's machine has both IPv4 and IPv6, ask for (or look up) the other family's address as well, since `external-check.sh` may connect over either one.
+- Set `<admin-ip>` to `ADMIN_NET` ("The admin's IP": an IPv6 address becomes its `/64`) **before fail2ban starts for the first time** (see "Start order").
 - `mode = normal` is enough on a key-only box with `AllowGroups`: scanners show up as `Invalid user` or `not allowed because none of user's groups`, and both count. `aggressive` also counts the surplus keys a real user's agent offers.
 - recidive bans repeat offenders from SSH for a day; bans still grow up to a week (`bantime.increment`). An all-ports recidive (`banaction = %(banaction_allports)s`) suits only boxes without a public website (worker, vpn): on a web server it locks everyone behind the same CGNAT address out of the site.
 - `backend = systemd` needs `python3-systemd`. Debian 12+ has no `/var/log/auth.log`, so the default file backend finds nothing and fail2ban may refuse to start.
 - The nftables actions keep bans in their own table (`f2b-table`), separate from ufw. `ufw status` stays clean.
 - Debian 13 / OpenSSH 9.8+ logs from `sshd-session`. Debian's own fail2ban package (1.1.0-6 and later) carries the fix. A stock upstream 1.1.0 (pip, older backports) does not match `sshd-session`, so verify detection as described next.
 
-**Start order.** Debian 13 and Ubuntu 24.04 start fail2ban the moment it is installed, with the stock sshd jail and no admin IP. So on a fresh box (base.md, phase 2): `systemctl mask fail2ban`, write `vps-forge.local` with the admin IP and SSH port filled in, and only then run the big `apt-get install`. In phase 5:
+**Start order.** On Debian 12 and 13 and Ubuntu 24.04 and 26.04, installing fail2ban enables it and starts it at once, with the stock sshd jail and no admin IP. (Debian 12's stock jail usually fails to start for lack of `/var/log/auth.log`, but it is enabled and starts as soon as a working jail appears.) Ubuntu 22.04 doesn't enable it. Mask it on every release anyway, so the order is the same everywhere: on a fresh box (base.md, phase 2): `systemctl mask fail2ban`, write `vps-forge.local` with the admin IP and SSH port filled in, and only then run the big `apt-get install`. In phase 5:
 ```bash
 fail2ban-client -t && systemctl unmask fail2ban && systemctl enable --now fail2ban
 fail2ban-client get sshd ignoreip; fail2ban-client get recidive ignoreip   # both list the admin IP

@@ -11,7 +11,7 @@
 set -uo pipefail
 export LC_ALL=C
 
-VERSION="1.1.1"
+VERSION="1.2.0"
 JSON=0
 QUIET=0
 COLOR=1
@@ -200,6 +200,26 @@ if dpkg-query -W -f='${Status}' unattended-upgrades 2>/dev/null | grep -q 'insta
   else
     info updates.last_run "no unattended-upgrades log yet"
   fi
+  # Third-party repositories (Docker, Caddy, Tailscale...) are only updated when their origin is
+  # listed. Origins come from the repositories' own Release files, so they are untrusted text.
+  tp=$(apt-cache -o Dir::Cache::pkgcache= -o Dir::Cache::srcpkgcache= policy 2>/dev/null | sed -n 's/^ *release.*[ ,]o=\([^,]*\).*/\1/p' | sort -u \
+       | grep -vxE 'Debian|Debian Backports|Ubuntu|UbuntuESM|UbuntuESMApps|Canonical')
+  if [[ -n "$tp" ]]; then
+    pats=$(apt-config dump 2>/dev/null | grep -E '^Unattended-Upgrade::(Origins-Pattern|Allowed-Origins)')
+    uncovered=""
+    while IFS= read -r o; do
+      [[ -n "$o" ]] || continue
+      grep -qF -e "origin=$o" -e "o=$o" -e "\"$o:" -e 'origin=*"' <<<"$pats" || uncovered+="${uncovered:+, }$(untrusted "$o" 40)"
+    done <<<"$tp"
+    # WARN for the repositories the skill itself adds; a provider's agent repository is the provider's call.
+    if [[ -n "$uncovered" ]] && grep -qiE 'docker|caddy|tailscale|crowdsec' <<<"$uncovered"; then
+      warn updates.third_party "not updated automatically: $uncovered. Add their origins to Unattended-Upgrade::Origins-Pattern, or update them by hand"
+    elif [[ -n "$uncovered" ]]; then
+      info updates.third_party "not updated automatically: $uncovered (add their origins to Unattended-Upgrade::Origins-Pattern if they should be)"
+    else
+      pass updates.third_party "third-party repositories are in unattended-upgrades"
+    fi
+  fi
   reboot_auto=$(apt-config dump Unattended-Upgrade::Automatic-Reboot 2>/dev/null | sed -n 's/.*"\(.*\)";/\1/p' | tail -n 1)
   info updates.auto_reboot "automatic reboot: ${reboot_auto:-false}"
 else
@@ -330,7 +350,7 @@ if [[ -n "$SSHD_T" ]]; then
     if (( key_required )); then
       info ssh.password_auth "PasswordAuthentication yes${srcs:+ (set in: $srcs)} has no effect while AuthenticationMethods $methods requires a key; set it to no so removing AuthenticationMethods can't bring passwords back"
     else
-    fail ssh.password_auth "password authentication enabled${srcs:+ (set in: $srcs; the first value read wins)}"
+    fail ssh.password_auth "password authentication enabled${srcs:+ (set in: $srcs; the first value read wins, so set PasswordAuthentication no in a drop-in that sorts before it, such as sshd_config.d/00-vps-forge.conf)}"
     fi
   fi
 
@@ -767,9 +787,16 @@ if have docker && docker info >/dev/null 2>&1; then
       sed '1,/chain DOCKER-USER/d' <<<"$out" | grep -vE '^[[:space:]]*(\}|$|(counter packets [0-9]+ bytes [0-9]+ )?return$)'
     fi
   }
-  DU4=0; DU6=0
-  (( IS_ROOT )) && [[ -n "$(du_rules 4)" ]] && DU4=1
-  (( IS_ROOT )) && [[ -n "$(du_rules 6)" ]] && DU6=1
+  DU4=0; DU6=0; DU_HINT="filter in DOCKER-USER"
+  # Docker's nftables backend has no DOCKER-USER chain and never jumps to one, so rules left in it
+  # filter nothing; filtering then belongs in an own nftables table with a forward-hook chain.
+  if grep -qsE '"firewall-backend"[[:space:]]*:[[:space:]]*"nftables"' /etc/docker/daemon.json; then
+    DU_HINT="filter in an own nftables table (hook forward): Docker's nftables firewall backend has no DOCKER-USER chain"
+    info exposure.docker_backend "Docker uses its nftables firewall backend: there is no DOCKER-USER chain, so audit.sh can't see filtering of published ports"
+  else
+    (( IS_ROOT )) && [[ -n "$(du_rules 4)" ]] && DU4=1
+    (( IS_ROOT )) && [[ -n "$(du_rules 6)" ]] && DU6=1
+  fi
   # Every published mapping "HostIp:HostPort->Port/proto"; any non-loopback host IP bypasses ufw.
   while IFS='|' read -r cname cports; do
     [[ -n "$cname" ]] || continue
@@ -809,10 +836,10 @@ if have docker && docker info >/dev/null 2>&1; then
       warn exposure.docker "container '$cname' publishes ${filtered%,} publicly; Docker bypasses ufw, but DOCKER-USER has filtering rules: verify they restrict these ports (iptables -S DOCKER-USER)"
     fi
     if [[ -n "$all" ]]; then dock_flag=1
-      fail exposure.docker "container '$cname' publishes ${all%,} on all interfaces; Docker bypasses ufw. Bind to 127.0.0.1 or filter in DOCKER-USER"
+      fail exposure.docker "container '$cname' publishes ${all%,} on all interfaces; Docker bypasses ufw. Bind to 127.0.0.1 or $DU_HINT"
     fi
     if [[ -n "$public" ]]; then dock_flag=1
-      fail exposure.docker "container '$cname' publishes ${public%,} on a public address; Docker bypasses ufw. Bind to 127.0.0.1 or filter in DOCKER-USER"
+      fail exposure.docker "container '$cname' publishes ${public%,} on a public address; Docker bypasses ufw. Bind to 127.0.0.1 or $DU_HINT"
     fi
     if [[ -n "$private" ]]; then dock_flag=1
       warn exposure.docker "container '$cname' publishes ${private%,} on a private address; Docker bypasses ufw, so everyone on that network reaches it"
@@ -857,7 +884,15 @@ f2b_port_covers() { # spec port -> 0 covered, 1 not covered, 2 unknown name in s
 agent_f2b=$(grep -lsi 'agent session' /etc/fail2ban/jail.local /etc/fail2ban/jail.d/* 2>/dev/null | paste -sd, -)
 [[ -n "$agent_f2b" ]] && warn intrusion.agent_ip "fail2ban config still has an entry for a temporary agent session ($(untrusted "$agent_f2b" 200)): remove that ignoreip address and reload fail2ban"
 if systemctl is-active --quiet crowdsec 2>/dev/null; then
-  pass intrusion.ips "CrowdSec running"
+  # The engine only detects; a bouncer does the blocking. Without one CrowdSec bans nothing.
+  if systemctl is-active --quiet crowdsec-firewall-bouncer 2>/dev/null; then
+    pass intrusion.ips "CrowdSec running with crowdsec-firewall-bouncer"
+  elif (( IS_ROOT )) && have cscli && cs_b=$(cscli bouncers list -o json 2>/dev/null) \
+       && cs_names=$(grep -oE '"name": *"[^"]*"' <<<"$cs_b" | sed -E 's/.*: *"(.*)"/\1/' | paste -sd, -) && [[ -n "$cs_names" ]]; then
+    pass intrusion.ips "CrowdSec running with bouncer(s): $(untrusted "$cs_names" 120)"
+  else
+    warn intrusion.ips "CrowdSec running but no active bouncer: it detects attacks and blocks nothing. Install crowdsec-firewall-bouncer-nftables (or -iptables), or check 'cscli bouncers list'"
+  fi
 elif systemctl is-active --quiet fail2ban 2>/dev/null; then
   if (( IS_ROOT )) && have fail2ban-client; then
     st=$(fail2ban-client status sshd 2>/dev/null || true)
