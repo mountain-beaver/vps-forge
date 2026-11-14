@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2.0 (2026-11-13)
+## 1.2.0 (2026-11-14)
 
 ### Distribution
 - **Signed releases.** The release workflow attests SLSA build provenance for `vps-forge-skill.zip` and every script, so `gh attestation verify audit.sh -R mountain-beaver/vps-forge` proves a downloaded file came from this repository's release workflow.
